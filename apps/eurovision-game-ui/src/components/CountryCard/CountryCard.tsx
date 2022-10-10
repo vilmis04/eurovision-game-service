@@ -1,12 +1,12 @@
-import { Card, Grid, Typography } from "@mui/material"
-import VoteButton from "components/VoteButton/VoteButton"
-import { styles } from "./CountryCard.styles"
+import { Card, Grid, Typography } from "@mui/material";
+import VoteDropdownMenu from "components/VoteDropdownMenu/VoteDropdownMenu";
+import { styles } from "./CountryCard.styles";
 
 interface ICountryCardProps {
-	country: string
-	artist: string
-	song: string
-	toggleModal: () => void
+	country: string;
+	artist: string;
+	song: string;
+	toggleModal: () => void;
 }
 
 const CountryCard: React.FC<ICountryCardProps> = ({
@@ -31,10 +31,10 @@ const CountryCard: React.FC<ICountryCardProps> = ({
 				</Grid>
 			</Grid>
 			<Grid item sx={styles.button}>
-				<VoteButton country={country} handleClick={toggleModal} />
+				<VoteDropdownMenu />
 			</Grid>
 		</Grid>
 	</Card>
-)
+);
 
-export default CountryCard
+export default CountryCard;
