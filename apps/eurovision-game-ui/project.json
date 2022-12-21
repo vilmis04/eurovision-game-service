@@ -5,24 +5,11 @@
 	"projectType": "application",
 	"targets": {
 		"build": {
-			"executor": "@nrwl/webpack:webpack",
+			"executor": "@nrwl/vite:build",
 			"outputs": ["{options.outputPath}"],
 			"defaultConfiguration": "production",
 			"options": {
-				"compiler": "babel",
-				"outputPath": "dist/apps/eurovision-game-ui",
-				"index": "apps/eurovision-game-ui/src/index.html",
-				"baseHref": "/",
-				"main": "apps/eurovision-game-ui/src/main.tsx",
-				"polyfills": "apps/eurovision-game-ui/src/polyfills.ts",
-				"tsConfig": "apps/eurovision-game-ui/tsconfig.app.json",
-				"assets": [
-					"apps/eurovision-game-ui/src/favicon.ico",
-					"apps/eurovision-game-ui/src/assets"
-				],
-				"styles": [],
-				"scripts": [],
-				"webpackConfig": "@nrwl/react/plugins/webpack"
+				"outputPath": "dist/apps/eurovision-game-ui"
 			},
 			"configurations": {
 				"development": {
@@ -48,12 +35,11 @@
 			}
 		},
 		"serve": {
-			"executor": "@nrwl/webpack:dev-server",
+			"executor": "@nrwl/vite:dev-server",
 			"defaultConfiguration": "development",
 			"options": {
 				"buildTarget": "eurovision-game-ui:build",
-				"hmr": true,
-				"port": 3000
+				"host": true
 			},
 			"configurations": {
 				"development": {

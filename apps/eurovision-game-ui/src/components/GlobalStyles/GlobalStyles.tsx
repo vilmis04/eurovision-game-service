@@ -1,6 +1,6 @@
-import { GlobalStyles as MUIGlobalStyles } from "@mui/material"
+import { GlobalStyles as MUIGlobalStyles } from "@mui/material";
 
-const GlobalStyles = () => (
+const GlobalStyles: React.FC = () => (
 	<MUIGlobalStyles
 		styles={{
 			html: {
@@ -17,6 +17,6 @@ const GlobalStyles = () => (
 			},
 		}}
 	/>
-)
+);
 
-export default GlobalStyles
+export default GlobalStyles;

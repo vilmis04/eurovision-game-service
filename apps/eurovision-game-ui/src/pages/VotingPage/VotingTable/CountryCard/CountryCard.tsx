@@ -1,19 +1,20 @@
 import { Card, Grid, Typography } from "@mui/material";
-import VoteDropdownMenu from "components/VoteDropdownMenu/VoteDropdownMenu";
+import VoteDropdownMenu from "./VoteDropdownMenu/VoteDropdownMenu";
 import { styles } from "./CountryCard.styles";
 
-interface ICountryCardProps {
+export interface ICountryCardProps {
 	country: string;
 	artist: string;
 	song: string;
 	toggleModal: () => void;
+	submitForm: () => Promise<void>;
 }
-
+// TODO: count already selected votes and allow to choose only available votes
 const CountryCard: React.FC<ICountryCardProps> = ({
 	country,
 	artist,
 	song,
-	toggleModal,
+	submitForm,
 }) => (
 	<Card variant="outlined" sx={styles.card}>
 		<Grid container direction="column">
@@ -31,7 +32,7 @@ const CountryCard: React.FC<ICountryCardProps> = ({
 				</Grid>
 			</Grid>
 			<Grid item sx={styles.button}>
-				<VoteDropdownMenu />
+				<VoteDropdownMenu country={country} submitForm={submitForm} />
 			</Grid>
 		</Grid>
 	</Card>
