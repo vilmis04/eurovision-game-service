@@ -1,5 +1,10 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { IGetVotesResponse } from "@eurovision-game-monorepo/core";
+import { HttpMethods } from "@eurovision-game-monorepo/core";
+
+interface IGetVotesRequest {
+	votes: IGetVotesResponse;
+}
 
 export const votesApi = createApi({
 	reducerPath: "votesApi",
@@ -8,11 +13,18 @@ export const votesApi = createApi({
 		getVotesByUsername: builder.query<IGetVotesResponse, void>({
 			query: () => `votes`,
 		}),
-		editVotesByUsername: builder.query<IGetVotesResponse, void>({
-			query: () => `votes`,
+		editVotesByUsername: builder.mutation<
+			IGetVotesResponse,
+			IGetVotesRequest
+		>({
+			query: ({ votes }) => ({
+				url: `votes`,
+				method: HttpMethods.PATCH,
+				body: votes,
+			}),
 		}),
 	}),
 });
 
-export const { useGetVotesByUsernameQuery, useEditVotesByUsernameQuery } =
+export const { useGetVotesByUsernameQuery, useEditVotesByUsernameMutation } =
 	votesApi;

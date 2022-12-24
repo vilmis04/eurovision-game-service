@@ -1,4 +1,5 @@
-import { Controller, Get } from "@nestjs/common";
+import { IGetVotesResponse } from "@eurovision-game-monorepo/core";
+import { Body, Controller, Get, Patch } from "@nestjs/common";
 import { VotesService } from "./votes.service";
 
 @Controller("votes")
@@ -8,5 +9,9 @@ export class VotesController {
 	@Get()
 	getVotesByUsername() {
 		return this.votesService.getVotesByUsername();
+	}
+	@Patch()
+	editVotesByUsername(@Body() votes: IGetVotesResponse) {
+		return this.votesService.editVotesByUsername(votes);
 	}
 }

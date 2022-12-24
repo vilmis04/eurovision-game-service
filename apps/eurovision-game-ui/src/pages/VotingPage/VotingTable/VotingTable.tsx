@@ -6,13 +6,17 @@ import {
 	CountryTypes,
 	IGetVotesResponse,
 } from "@eurovision-game-monorepo/core";
-import { useGetVotesByUsernameQuery } from "../@module/votes.api";
+import {
+	useEditVotesByUsernameMutation,
+	useGetVotesByUsernameQuery,
+} from "../@module/votes.api";
 
 const VotingTable: React.FC = () => {
 	const { data: countries, isFetching } = useGetVotesByUsernameQuery();
+	const [editVotesByUsername] = useEditVotesByUsernameMutation();
 
 	const onSubmit = (values: IGetVotesResponse): void => {
-		console.log(values);
+		editVotesByUsername({ votes: values });
 	};
 
 	return isFetching ? (
