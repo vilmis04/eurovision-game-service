@@ -1,4 +1,4 @@
-import AppBar from "components/AppBar/AppBar";
+import AppBar from "../../components/AppBar/AppBar";
 import VotingTable from "./VotingTable/VotingTable";
 
 const VotingPage: React.FC = () => {

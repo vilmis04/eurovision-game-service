@@ -1,3 +1,4 @@
+import { VoteTypes } from "@eurovision-game-monorepo/core";
 import {
 	FormControl,
 	InputLabel,
@@ -7,7 +8,6 @@ import {
 } from "@mui/material";
 import { useField } from "formik";
 import { ICountryCardProps } from "../CountryCard";
-import { VoteTypes } from "../../VotingTable.types";
 
 interface IVoteDropdownMenuProps
 	extends Pick<ICountryCardProps, "country" | "submitForm"> {}
@@ -41,6 +41,7 @@ const VoteDropdownMenu: React.FC<IVoteDropdownMenuProps> = ({
 			>
 				<MenuItem value="">Vote</MenuItem>
 				{Object.values(VoteTypes).map((item) => (
+					// TODO: disable based on used votes count
 					<MenuItem disabled={false} key={item} value={item}>
 						{item}
 					</MenuItem>
