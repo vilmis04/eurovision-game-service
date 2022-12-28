@@ -29,7 +29,6 @@ const VotingTable: React.FC = () => {
 					{({ submitForm }): React.ReactNode => (
 						<Form>
 							<Grid container sx={styles.tableContainer}>
-								{/* {filterCountries(countries).map((country) => { */}
 								{Object.entries(countries).map(([country]) => {
 									return (
 										<Grid
