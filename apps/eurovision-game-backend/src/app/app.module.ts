@@ -1,12 +1,8 @@
 import { Module } from "@nestjs/common";
+import { AuthModule } from "../modules/auth/auth.module";
 import { VotesModule } from "../modules/votes/votes.module";
 
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
-
 @Module({
-	imports: [VotesModule],
-	controllers: [AppController],
-	providers: [AppService],
+	imports: [VotesModule, AuthModule],
 })
 export class AppModule {}

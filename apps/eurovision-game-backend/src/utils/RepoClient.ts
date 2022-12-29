@@ -1,10 +1,14 @@
-import { IGetVotesResponse } from "@eurovision-game-monorepo/core";
-import { Injectable } from "@nestjs/common";
+import {
+	IGetUserResponse,
+	IGetVotesResponse,
+} from "@eurovision-game-monorepo/core";
+import { Injectable, Logger } from "@nestjs/common";
 
 import { MongoClient, ServerApiVersion } from "mongodb";
 
 enum CollectionTypes {
 	VOTES = "votes",
+	USERS = "users",
 }
 
 enum DatabaseTypes {
@@ -29,19 +33,27 @@ export class RepoClient {
 
 		// TODO: add error handling
 		this.client.connect();
+
+		this.client.on("connectionReady", () =>
+			Logger.log("[RepoClient] Connection OK")
+		);
+		this.client.on("error", (err) =>
+			Logger.log("[RepoClient] ERROR: " + err)
+		);
 	}
 
-	public getVotesByUserName = async ({ username }: IGetVotes) => {
+	// VOTES
+	async getVotesByUserName({ username }: IGetVotes) {
 		const collection = this.client
 			.db(DatabaseTypes.EUROVISION_GAME)
 			.collection<IGetVotesResponse>(CollectionTypes.VOTES);
 
-		// TODO: add error handling
 		const votes = await collection.findOne({ username });
-		return votes;
-	};
 
-	public editVotesByUserName = async ({ username, votes }: IEditVotes) => {
+		return votes;
+	}
+
+	async editVotesByUserName({ username, votes }: IEditVotes) {
 		const collection = this.client
 			.db(DatabaseTypes.EUROVISION_GAME)
 			.collection<IGetVotesResponse>(CollectionTypes.VOTES);
@@ -58,5 +70,16 @@ export class RepoClient {
 		);
 
 		return response;
-	};
+	}
+
+	// USERS
+	async getUserByUsername(username: string) {
+		const collection = this.client
+			.db(DatabaseTypes.EUROVISION_GAME)
+			.collection<IGetUserResponse>(CollectionTypes.USERS);
+
+		const user = await collection.findOne({ username });
+
+		return user;
+	}
 }
