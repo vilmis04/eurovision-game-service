@@ -1,3 +1,4 @@
+// TODO: make it as close to a production server as possible
 /**
  * This is not a production server yet!
  * This is only a minimal backend to get started.
@@ -15,7 +16,15 @@ async function bootstrap() {
 	app.setGlobalPrefix(globalPrefix);
 	const port = process.env.PORT || 3333;
 	app.use(cookieParser());
-	app.enableCors({ credentials: true, origin: ["http://localhost:3000"] });
+	app.enableCors({
+		credentials: true,
+		// TODO: add real origins
+		origin: [
+			"http://localhost:3000",
+			"http://127.0.0.1:3000",
+			"http://192.168.1.205:3000",
+		],
+	});
 	await app.listen(port);
 	Logger.log(
 		`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
