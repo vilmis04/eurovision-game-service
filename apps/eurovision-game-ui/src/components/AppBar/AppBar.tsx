@@ -7,6 +7,20 @@ import {
 	Typography,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import { HttpMethods } from "@eurovision-game-monorepo/core";
+
+const handleLogin = async () => {
+	const response = await fetch("http://localhost:4200/api/auth/login", {
+		method: HttpMethods.POST,
+		headers: [["Content-Type", "application/json"]],
+		credentials: "include",
+		body: JSON.stringify({ username: "test_user1", password: "changeme" }),
+	});
+	const result = await response.json();
+
+	console.log(result);
+	return response;
+};
 
 const ButtonAppBar: React.FC = () => (
 	<Box sx={{ flexGrow: 1 }}>
@@ -24,7 +38,9 @@ const ButtonAppBar: React.FC = () => (
 				<Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
 					EuroVision Guessing Game
 				</Typography>
-				<Button color="inherit">Login</Button>
+				<Button color="inherit" onClick={handleLogin}>
+					Login
+				</Button>
 			</Toolbar>
 		</AppBar>
 	</Box>

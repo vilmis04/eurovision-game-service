@@ -1,8 +1,8 @@
-import { CountryTypes } from "../../types/country.types";
-import { VoteTypes } from "../../types/vote.types";
+import { CountryTypes } from "../country.types";
+import { VoteTypes } from "./votes.types";
 
 export interface IGetVotesResponse {
-	username: string;
+	username?: string;
 	[CountryTypes.ARMENIA]: VoteTypes;
 	[CountryTypes.AUSTRALIA]: VoteTypes;
 	[CountryTypes.AZERBAIJAN]: VoteTypes;
