@@ -1,9 +1,11 @@
 import { IUserDataForToken } from "@eurovision-game-monorepo/core";
-import { Injectable } from "@nestjs/common";
+import { Injectable, Res } from "@nestjs/common";
 import { RepoClient } from "../../utils/RepoClient";
 import * as jwt from "jsonwebtoken";
+import * as bcrypt from "bcrypt";
+import { Response } from "express";
 
-interface ILoginResponse {
+export interface ILoginResponse {
 	success: boolean;
 	errors?: string[];
 	access_token?: string;
@@ -12,19 +14,21 @@ interface ILoginResponse {
 @Injectable()
 export class AuthService {
 	constructor(private readonly repoClient: RepoClient) {}
+
 	async login(
+		@Res({ passthrough: true }) res: Response,
 		username: string,
 		enteredPassword: string
 	): Promise<ILoginResponse> {
-		// TODO: sanitize inputs
 		const user = await this.repoClient.getUserByUsername(username);
 
-		// TODO: add error codes (?)
 		if (!user) {
-			return { success: false, errors: ["no user found"] };
+			res.status(400).send();
+			throw new Error("Incorrect username");
 		}
 		if (!this.validateUser(enteredPassword, user.password)) {
-			return { success: false, errors: ["invalid password"] };
+			res.status(400).send();
+			throw new Error("Incorrect password");
 		}
 
 		const { password, ...userData } = user;
@@ -34,8 +38,7 @@ export class AuthService {
 	}
 
 	async validateUser(enteredPassword: string, userPassword: string) {
-		// TODO: add bcrypt here
-		return enteredPassword === userPassword;
+		return await bcrypt.compare(enteredPassword, userPassword);
 	}
 
 	async generateToken(user: IUserDataForToken) {

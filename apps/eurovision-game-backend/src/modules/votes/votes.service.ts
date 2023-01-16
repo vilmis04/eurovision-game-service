@@ -2,14 +2,14 @@ import { Injectable } from "@nestjs/common";
 
 import { IGetVotesResponse } from "@eurovision-game-monorepo/core";
 import { RepoClient } from "../../utils/RepoClient";
-import { UpdateResult } from "mongodb";
+import { InsertOneResult, UpdateResult } from "mongodb";
 
 @Injectable()
 export class VotesService {
 	constructor(private repoClient: RepoClient) {}
 
 	async getVotesByUsername(): Promise<IGetVotesResponse> {
-		// TODO: get username from auth session
+		// TODO: get username from jwt cookie
 		const username = "test_user1";
 		const values = await this.repoClient.getVotesByUserName({
 			username,
@@ -23,7 +23,7 @@ export class VotesService {
 		throw new Error("No values found");
 	}
 	async editVotesByUsername(votes: IGetVotesResponse): Promise<UpdateResult> {
-		// TODO: get username from auth session
+		// TODO: get username from jwt cookie
 		const username = "test_user1";
 		const response = await this.repoClient.editVotesByUserName({
 			username,
@@ -31,5 +31,10 @@ export class VotesService {
 		});
 
 		return response;
+	}
+	async createNewUserVotes(username: string): Promise<InsertOneResult> {
+		const userVotes = await this.repoClient.createNewUserVotes(username);
+
+		return userVotes;
 	}
 }

@@ -4,7 +4,8 @@ import {
 } from "@eurovision-game-monorepo/core";
 import { Injectable, Logger } from "@nestjs/common";
 
-import { MongoClient, ServerApiVersion } from "mongodb";
+import { MongoClient, ObjectId, ServerApiVersion } from "mongodb";
+import { initialVotes } from "./RepoClient.config";
 
 enum CollectionTypes {
 	VOTES = "votes",
@@ -71,6 +72,19 @@ export class RepoClient {
 
 		return response;
 	}
+	async createNewUserVotes(username: string) {
+		const collection = this.client
+			.db(DatabaseTypes.EUROVISION_GAME)
+			.collection<IGetVotesResponse>(CollectionTypes.VOTES);
+
+		// TODO: add error handling
+		const response = await collection.insertOne({
+			username,
+			...initialVotes,
+		});
+
+		return response;
+	}
 
 	// USERS
 	async getUserByUsername(username: string) {
@@ -79,6 +93,26 @@ export class RepoClient {
 			.collection<IGetUserResponse>(CollectionTypes.USERS);
 
 		const user = await collection.findOne({ username });
+
+		return user;
+	}
+
+	async getUserById(_id: ObjectId) {
+		const collection = this.client
+			.db(DatabaseTypes.EUROVISION_GAME)
+			.collection<IGetUserResponse>(CollectionTypes.USERS);
+
+		const user = await collection.findOne({ _id });
+
+		return user;
+	}
+
+	async createUser(username: string, password: string) {
+		const collection = this.client
+			.db(DatabaseTypes.EUROVISION_GAME)
+			.collection<IGetUserResponse>(CollectionTypes.USERS);
+
+		const user = await collection.insertOne({ username, password });
 
 		return user;
 	}
