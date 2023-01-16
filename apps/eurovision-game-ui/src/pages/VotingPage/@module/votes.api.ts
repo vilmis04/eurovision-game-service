@@ -11,14 +11,17 @@ export const votesApi = createApi({
 	baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:4200/api/" }),
 	endpoints: (builder) => ({
 		getVotesByUsername: builder.query<IGetVotesResponse, void>({
-			query: () => `votes`,
+			query: () => ({
+				url: "votes",
+				credentials: "include",
+			}),
 		}),
 		editVotesByUsername: builder.mutation<
 			IGetVotesResponse,
 			IGetVotesRequest
 		>({
 			query: ({ votes }) => ({
-				url: `votes`,
+				url: "votes",
 				method: HttpMethods.PATCH,
 				body: votes,
 			}),
