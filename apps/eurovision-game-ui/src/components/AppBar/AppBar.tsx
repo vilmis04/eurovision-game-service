@@ -1,5 +1,5 @@
 import {
-	AppBar,
+	AppBar as MUIAppBar,
 	Box,
 	Button,
 	IconButton,
@@ -14,7 +14,7 @@ const handleLogin = async () => {
 		method: HttpMethods.POST,
 		headers: [["Content-Type", "application/json"]],
 		credentials: "include",
-		body: JSON.stringify({ username: "test_user1", password: "changeme" }),
+		body: JSON.stringify({ username: "test_user2", password: "changeme" }),
 	});
 	const result = await response.json();
 
@@ -22,9 +22,9 @@ const handleLogin = async () => {
 	return response;
 };
 
-const ButtonAppBar: React.FC = () => (
+const AppBar: React.FC = () => (
 	<Box sx={{ flexGrow: 1 }}>
-		<AppBar position="sticky">
+		<MUIAppBar position="sticky">
 			<Toolbar>
 				<IconButton
 					size="large"
@@ -42,8 +42,8 @@ const ButtonAppBar: React.FC = () => (
 					Login
 				</Button>
 			</Toolbar>
-		</AppBar>
+		</MUIAppBar>
 	</Box>
 );
 
-export default ButtonAppBar;
+export default AppBar;
