@@ -3,12 +3,13 @@ import {
 	Middleware,
 	MiddlewareAPI,
 } from "@reduxjs/toolkit";
+import { paths } from "../paths";
 
 export const authMiddleware: Middleware =
 	(api: MiddlewareAPI) => (next) => (action) => {
-		console.log("action intercepted");
-		if (isRejectedWithValue(action) && action.payload.status === 304)
-			window.location.replace("/login");
+		if (isRejectedWithValue(action) && action.payload.status === 401) {
+			window.location.replace(`/${paths.login}`);
+		}
 
 		return next(action);
 	};

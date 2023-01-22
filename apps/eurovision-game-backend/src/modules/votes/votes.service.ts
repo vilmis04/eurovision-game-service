@@ -10,7 +10,7 @@ export class VotesService {
 
 	async getVotesByUsername(): Promise<IGetVotesResponse> {
 		// TODO: get username from jwt cookie
-		const username = "test_user1";
+		const username = "test_user2";
 		const values = await this.repoClient.getVotesByUserName({
 			username,
 		});
@@ -24,7 +24,7 @@ export class VotesService {
 	}
 	async editVotesByUsername(votes: IGetVotesResponse): Promise<UpdateResult> {
 		// TODO: get username from jwt cookie
-		const username = "test_user1";
+		const username = "test_user2";
 		const response = await this.repoClient.editVotesByUserName({
 			username,
 			votes,

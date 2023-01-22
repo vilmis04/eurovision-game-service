@@ -18,7 +18,6 @@ export class UsersController {
 		@Res({ passthrough: true }) response: Response,
 		@Body() { username, password }: IGetUserResponse
 	) {
-		console.log("reached users controller");
 		const result = await this.userService.signUp(
 			response,
 			username,
