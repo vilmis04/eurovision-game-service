@@ -7,20 +7,9 @@ import {
 	Typography,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { HttpMethods } from "@eurovision-game-monorepo/core";
 
-const handleLogin = async () => {
-	const response = await fetch("http://localhost:4200/api/auth/login", {
-		method: HttpMethods.POST,
-		headers: [["Content-Type", "application/json"]],
-		credentials: "include",
-		body: JSON.stringify({ username: "test_user2", password: "changeme" }),
-	});
-	const result = await response.json();
-
-	console.log(result);
-	return response;
-};
+// TODO: add logout functionality
+const handleLogout = async () => {};
 
 const AppBar: React.FC = () => (
 	<Box sx={{ flexGrow: 1 }}>
@@ -36,10 +25,10 @@ const AppBar: React.FC = () => (
 					<MenuIcon />
 				</IconButton>
 				<Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-					EuroVision Guessing Game
+					EuroVision game
 				</Typography>
-				<Button color="inherit" onClick={handleLogin}>
-					Login
+				<Button color="inherit" onClick={handleLogout}>
+					Log out
 				</Button>
 			</Toolbar>
 		</MUIAppBar>
