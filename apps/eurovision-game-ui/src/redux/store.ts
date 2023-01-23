@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
-import { votesApi } from "../pages/VotingPage/@module/votes.api";
+import { votesApi } from "../pages/VotingPage/modules/votes.api";
 import { authMiddleware } from "./authMiddleware";
 
 export const store = configureStore({
