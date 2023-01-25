@@ -16,12 +16,10 @@ const routes = [
 	{
 		path: paths.home,
 		element: <VotingPage />,
-		errorElement: "This is a vote page error",
 	},
 	{
 		path: paths.login,
 		element: <LoginPage />,
-		errorElement: "This is a login page error",
 	},
 	{
 		path: paths.signup,
