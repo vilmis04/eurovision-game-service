@@ -27,4 +27,11 @@ export class AuthController {
 
 		return { success: true };
 	}
+	@Post(AuthPaths.LOGOUT)
+	async logout(@Res({ passthrough: true }) response: Response) {
+		response.cookie("jwt", "", {
+			maxAge: 1,
+			httpOnly: true,
+		});
+	}
 }
