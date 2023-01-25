@@ -1,17 +1,18 @@
 import { IGetVotesResponse } from "@eurovision-game-monorepo/core";
-import { Body, Controller, Get, Patch } from "@nestjs/common";
+import { Body, Controller, Get, Patch, Req } from "@nestjs/common";
+import { RootPaths } from "../../types/paths";
 import { VotesService } from "./votes.service";
-
-@Controller("votes")
+import { Request } from "express";
+@Controller(RootPaths.VOTES)
 export class VotesController {
 	constructor(private readonly votesService: VotesService) {}
 
 	@Get()
-	getVotesByUsername() {
-		return this.votesService.getVotesByUsername();
+	getVotesByUsername(@Req() req: Request) {
+		return this.votesService.getVotesByUsername(req);
 	}
 	@Patch()
-	editVotesByUsername(@Body() votes: IGetVotesResponse) {
-		return this.votesService.editVotesByUsername(votes);
+	editVotesByUsername(@Req() req: Request, @Body() votes: IGetVotesResponse) {
+		return this.votesService.editVotesByUsername(req, votes);
 	}
 }

@@ -4,7 +4,7 @@ import { Response } from "express";
 import { UsersService } from "./users.service";
 
 enum UserPaths {
-	SIGN_UP = "signUp",
+	SIGN_UP = "signup",
 }
 
 const MAX_AGE = 1000 * 24 * 3600;
@@ -18,7 +18,6 @@ export class UsersController {
 		@Res({ passthrough: true }) response: Response,
 		@Body() { username, password }: IGetUserResponse
 	) {
-		console.log("reached users controller");
 		const result = await this.userService.signUp(
 			response,
 			username,
