@@ -1,18 +1,18 @@
-import { IPostLoginRequest } from "@eurovision-game-monorepo/core";
 import { Button, Grid, Typography } from "@mui/material";
 import { Form, Formik } from "formik";
-import { initialValues } from "./LoginPage.configs";
-import { styles } from "./LoginPage.styles";
-import { usePostLoginDetailsMutation } from "./modules/auth.api";
-import FormTextField from "../../components/FormTextField/FormTextField";
-import { loginValidationSchema } from "./LoginPage.validation.schema";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import FormTextField from "../../components/FormTextField/FormTextField";
 import { paths } from "../../paths";
+import { useCreateUserMutation } from "../LoginPage/modules/auth.api";
+import { initialValues } from "./SignupPage.configs";
+import { styles } from "./SignupPage.styles";
+import { ISignupFormData } from "./SignupPage.types";
+import { signupValidationSchema } from "./SignupPage.validation.schema";
 
-const LoginPage: React.FC = () => {
+const SignupPage: React.FC = () => {
 	// TODO: isError handling
-	const [postLoginDetails, { isSuccess }] = usePostLoginDetailsMutation();
+	const [createUser, { isSuccess }] = useCreateUserMutation();
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -21,16 +21,15 @@ const LoginPage: React.FC = () => {
 		}
 	}, [isSuccess]);
 
-	const handleSubmit = (values: IPostLoginRequest) => {
-		postLoginDetails(values);
+	const handleSubmit = (values: ISignupFormData) => {
+		const { repeatPassword, ...body } = values;
+		createUser(body);
 	};
-
-	const navigateToSignupPage = () => navigate(`/${paths.signup}`);
 
 	return (
 		<Formik
 			initialValues={initialValues}
-			validationSchema={loginValidationSchema}
+			validationSchema={signupValidationSchema}
 			onSubmit={handleSubmit}
 		>
 			{({ errors, touched }) => (
@@ -38,7 +37,7 @@ const LoginPage: React.FC = () => {
 					<Form>
 						<Grid item sx={styles.fieldGroup}>
 							<Typography sx={styles.title} component="h1">
-								Login to your account
+								Create new account
 							</Typography>
 						</Grid>
 						<Grid item sx={styles.fieldGroup}>
@@ -66,18 +65,20 @@ const LoginPage: React.FC = () => {
 							</Grid>
 						</Grid>
 						<Grid item sx={styles.fieldGroup}>
-							<Button variant="outlined" fullWidth type="submit">
-								Login
-							</Button>
+							<Grid item>
+								<Typography>Repeat password</Typography>
+							</Grid>
+							<Grid item>
+								<FormTextField
+									name="repeatPassword"
+									errors={errors}
+									touched={touched}
+									type="password"
+								/>
+							</Grid>
 						</Grid>
 						<Grid item sx={styles.fieldGroup}>
-							{/* TODO: add sign up logic */}
-							<Button
-								variant="text"
-								onClick={navigateToSignupPage}
-								fullWidth
-								type="button"
-							>
+							<Button variant="outlined" fullWidth type="submit">
 								Sign up
 							</Button>
 						</Grid>
@@ -88,4 +89,4 @@ const LoginPage: React.FC = () => {
 	);
 };
 
-export default LoginPage;
+export default SignupPage;

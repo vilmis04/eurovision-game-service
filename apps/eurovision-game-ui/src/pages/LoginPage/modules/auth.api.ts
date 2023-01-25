@@ -3,6 +3,8 @@ import {
 	HttpMethods,
 	IPostLoginRequest,
 	IPostLoginResponse,
+	IPostSignUpRequest,
+	IPostSignUpResponse,
 } from "@eurovision-game-monorepo/core";
 import { paths } from "apps/eurovision-game-ui/src/paths";
 
@@ -23,7 +25,16 @@ export const authApi = createApi({
 				body,
 			}),
 		}),
+		createUser: builder.mutation<IPostSignUpResponse, IPostSignUpRequest>({
+			query: (body) => ({
+				method: HttpMethods.POST,
+				url: paths.authSignup,
+				credentials: "include",
+				headers: [["Content-Type", "application/json"]],
+				body,
+			}),
+		}),
 	}),
 });
 
-export const { usePostLoginDetailsMutation } = authApi;
+export const { usePostLoginDetailsMutation, useCreateUserMutation } = authApi;

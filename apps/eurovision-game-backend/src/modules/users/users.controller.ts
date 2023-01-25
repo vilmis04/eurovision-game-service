@@ -4,7 +4,7 @@ import { Response } from "express";
 import { UsersService } from "./users.service";
 
 enum UserPaths {
-	SIGN_UP = "signUp",
+	SIGN_UP = "signup",
 }
 
 const MAX_AGE = 1000 * 24 * 3600;

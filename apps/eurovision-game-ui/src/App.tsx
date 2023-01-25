@@ -10,6 +10,7 @@ import PageLayout from "./components/PageLayout/PageLayout";
 
 const VotingPage = lazy(() => import("./pages/VotingPage/VotingPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage/LoginPage"));
+const SignupPage = lazy(() => import("./pages/SignupPage/SignupPage"));
 
 const routes = [
 	{
@@ -22,10 +23,10 @@ const routes = [
 		element: <LoginPage />,
 		errorElement: "This is a login page error",
 	},
-	// {
-	// 	path: paths.signup,
-	// 	element: <SignupPage />,
-	// },
+	{
+		path: paths.signup,
+		element: <SignupPage />,
+	},
 ];
 
 const App: React.FC = () => (
