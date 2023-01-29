@@ -11,6 +11,7 @@ import PageLayout from "./components/PageLayout/PageLayout";
 const VotingPage = lazy(() => import("./pages/VotingPage/VotingPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage/LoginPage"));
 const SignupPage = lazy(() => import("./pages/SignupPage/SignupPage"));
+const AdminPage = lazy(() => import("./pages/AdminPage/AdminPage"));
 
 const routes = [
 	{
@@ -24,6 +25,10 @@ const routes = [
 	{
 		path: paths.signup,
 		element: <SignupPage />,
+	},
+	{
+		path: paths.admin,
+		element: <AdminPage />,
 	},
 ];
 

@@ -4,7 +4,7 @@ import { Form, Formik } from "formik";
 import { initialValues } from "./LoginPage.configs";
 import { styles } from "./LoginPage.styles";
 import { usePostLoginDetailsMutation } from "./modules/auth.api";
-import FormTextField from "../../components/FormTextField/FormTextField";
+import FormField from "../../components/FormField/FormField";
 import { loginValidationSchema } from "./LoginPage.validation.schema";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -46,7 +46,7 @@ const LoginPage: React.FC = () => {
 								<Typography>Username</Typography>
 							</Grid>
 
-							<FormTextField
+							<FormField
 								name="username"
 								errors={errors}
 								touched={touched}
@@ -57,7 +57,7 @@ const LoginPage: React.FC = () => {
 								<Typography>Password</Typography>
 							</Grid>
 							<Grid item>
-								<FormTextField
+								<FormField
 									name="password"
 									errors={errors}
 									touched={touched}

@@ -2,7 +2,7 @@ import { Button, Grid, Typography } from "@mui/material";
 import { Form, Formik } from "formik";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import FormTextField from "../../components/FormTextField/FormTextField";
+import FormField from "../../components/FormField/FormField";
 import { paths } from "../../paths";
 import { useCreateUserMutation } from "../LoginPage/modules/auth.api";
 import { initialValues } from "./SignupPage.configs";
@@ -45,7 +45,7 @@ const SignupPage: React.FC = () => {
 								<Typography>Username</Typography>
 							</Grid>
 
-							<FormTextField
+							<FormField
 								name="username"
 								errors={errors}
 								touched={touched}
@@ -56,7 +56,7 @@ const SignupPage: React.FC = () => {
 								<Typography>Password</Typography>
 							</Grid>
 							<Grid item>
-								<FormTextField
+								<FormField
 									name="password"
 									errors={errors}
 									touched={touched}
@@ -69,7 +69,7 @@ const SignupPage: React.FC = () => {
 								<Typography>Repeat password</Typography>
 							</Grid>
 							<Grid item>
-								<FormTextField
+								<FormField
 									name="repeatPassword"
 									errors={errors}
 									touched={touched}
