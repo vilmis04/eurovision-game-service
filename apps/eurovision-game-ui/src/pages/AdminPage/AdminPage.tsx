@@ -1,6 +1,6 @@
 import { CountryTypes } from "@eurovision-game-monorepo/core";
-import { Grid, Switch, Typography } from "@mui/material";
-import { Field, Form, Formik } from "formik";
+import { Button, Grid, Switch, Typography } from "@mui/material";
+import { Field, Form, Formik, FormikErrors, FormikTouched } from "formik";
 import { ChangeEvent } from "react";
 import FormField from "../../components/FormField/FormField";
 import { styles } from "./AdminPage.styles";
@@ -49,14 +49,21 @@ const AdminPage: React.FC = () => {
 
 	const { isRegistrationEnabled, ...countries } = initialValues;
 
+	const getIsSaveDisabled = <T extends {}>(
+		errors: FormikErrors<T>,
+		touched: FormikTouched<T>
+	): boolean =>
+		Boolean(Object.keys(errors).length) ||
+		!Boolean(Object.keys(touched).length);
+
 	return (
 		<Formik initialValues={initialValues} onSubmit={handleSubmit}>
-			{({ values, setFieldValue, submitForm }) => {
-				console.log(values);
+			{({ values, setFieldValue, submitForm, errors, touched }) => {
+				console.log(values.isRegistrationEnabled);
 				return (
 					<Form>
 						<Grid item container sx={styles.container}>
-							{/* TODO: add sorting of maybe?*/}
+							{/* TODO: add sorting of sorts maybe?*/}
 							{Object.entries(countries).map(([country]) => (
 								<Grid
 									key={country}
@@ -73,11 +80,24 @@ const AdminPage: React.FC = () => {
 										<FormField
 											name={country}
 											type="number"
-											onBlur={submitForm}
 										/>
 									</Grid>
 								</Grid>
 							))}
+							<Grid container sx={styles.saveButtonContainer}>
+								<Button
+									type="submit"
+									disabled={getIsSaveDisabled(
+										errors,
+										touched
+									)}
+									variant="contained"
+									fullWidth
+									sx={styles.saveButton}
+								>
+									Save
+								</Button>
+							</Grid>
 							{/* TODO: add proper divider */}
 							<Grid
 								container

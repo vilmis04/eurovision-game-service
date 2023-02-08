@@ -1,6 +1,6 @@
 export const styles: ISx = {
 	container: ({ spacing }) => ({
-		padding: spacing(2, 0, 6, 0),
+		padding: spacing(2, 0, 6),
 	}),
 	field: {
 		alignItems: "center",
@@ -11,4 +11,11 @@ export const styles: ISx = {
 		alignItems: "center",
 		justifyContent: "center",
 	}),
+	saveButtonContainer: {
+		justifyContent: "center",
+		padding: 2,
+	},
+	saveButton: {
+		maxWidth: "250px",
+	},
 };
