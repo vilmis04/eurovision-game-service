@@ -3,7 +3,7 @@ import { Button, Grid, Typography } from "@mui/material";
 import { Form, Formik } from "formik";
 import { initialValues } from "./LoginPage.configs";
 import { styles } from "./LoginPage.styles";
-import { usePostLoginDetailsMutation } from "./modules/auth.api";
+import { usePostLoginDetailsMutation } from "./@modules/auth.api";
 import FormField from "../../components/FormField/FormField";
 import { loginValidationSchema } from "./LoginPage.validation.schema";
 import { useEffect } from "react";

@@ -6,16 +6,17 @@ export const styles: ISx = {
 		alignItems: "center",
 		justifyContent: "center",
 	},
-	countryPoints: ({ spacing }) => ({
-		padding: spacing(1, 0),
-		alignItems: "center",
-		justifyContent: "center",
-	}),
 	saveButtonContainer: {
 		justifyContent: "center",
 		padding: 2,
 	},
-	saveButton: {
+	cancelButtonContainer: {
+		justifyContent: "center",
+		padding: 2,
+		paddingTop: 0,
+	},
+	inputField: {
 		maxWidth: "250px",
+		display: "block",
 	},
 };
