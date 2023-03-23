@@ -1,9 +1,9 @@
-import { SxProps, Theme } from "@mui/material"
+import { SxProps, Theme } from "@mui/material";
 
 declare global {
 	interface ISx {
-		[key: string]: SxProps<Theme>
+		[key: string]: SxProps<Theme>;
 	}
 }
 
-export {}
+export {};

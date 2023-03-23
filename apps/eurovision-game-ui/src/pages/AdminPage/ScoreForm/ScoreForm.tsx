@@ -1,34 +1,47 @@
-import { IScoreFormData } from "@eurovision-game-monorepo/core";
+import { GameTypes, IScoreFormData } from "@eurovision-game-monorepo/core";
 import { Button, Grid } from "@mui/material";
-import { Form, Formik, FormikState } from "formik";
+import { Form, Formik, FormikHelpers, FormikState } from "formik";
 import { useEffect, useState } from "react";
-import { styles } from "../AdminPage.styles";
 import { v4 as uuid } from "uuid";
 import { TCountriesToAdd } from "./ScoreForm.types";
 import { mapCountryChangesToValues } from "./ScoreForm.utils";
 import CountryEntry from "./CountryEntry/CountryEntry";
-
-// TODO: CONTINUE
-/*
-3. integrate with backend
-*/
+import { styles } from "./ScoreForm.styles";
+import {
+	useGetScoreQuery,
+	useUpdateScoreMutation,
+} from "../@modules/score.api";
 
 interface IScoreFormProps {
-	initialValues: IScoreFormData;
-	handleScoreFormSubmit: (values: IScoreFormData) => void;
+	type: GameTypes;
+	year: string;
+	setIsFetching?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const ScoreForm: React.FC<IScoreFormProps> = ({
-	initialValues,
-	handleScoreFormSubmit,
+	type,
+	year,
+	setIsFetching,
 }) => {
 	const [isEditMode, setIsEditMode] = useState(false);
 	const [countries, setCountries] = useState<string[]>([]);
 	const [countriesToAdd, setCountriesToAdd] = useState<TCountriesToAdd>({});
 
+	const {
+		data: scoreData,
+		isFetching,
+		refetch,
+	} = useGetScoreQuery({ type, year });
+
+	const [updateScore] = useUpdateScoreMutation();
+
 	useEffect(() => {
-		setCountries(Object.keys(initialValues.countries));
-	}, [initialValues]);
+		scoreData && setCountries(Object.keys(scoreData.countries));
+	}, [scoreData]);
+
+	useEffect(() => {
+		setIsFetching && setIsFetching(isFetching);
+	}, [isFetching]);
 
 	const toggleEditMode = () => setIsEditMode((s) => !s);
 
@@ -37,7 +50,7 @@ const ScoreForm: React.FC<IScoreFormProps> = ({
 	) => {
 		resetForm();
 		setIsEditMode(false);
-		setCountries(Object.keys(initialValues.countries));
+		scoreData && setCountries(Object.keys(scoreData.countries));
 		setCountriesToAdd({});
 	};
 
@@ -73,76 +86,106 @@ const ScoreForm: React.FC<IScoreFormProps> = ({
 		}));
 	};
 
-	const handleSubmit = (values: IScoreFormData): void => {
+	const handleSubmit = async (
+		values: IScoreFormData,
+		{ resetForm }: FormikHelpers<IScoreFormData>
+	): Promise<void> => {
 		const updatedValues = mapCountryChangesToValues({
 			countries,
 			countriesToAdd,
 			values,
 		});
 
-		handleScoreFormSubmit(updatedValues);
+		const response = await updateScore(updatedValues);
+
+		// TODO: fix saving data (something weird is happening)
+
+		if (response) {
+			setCountriesToAdd({});
+			refetch();
+			setIsEditMode(false);
+		}
+		// TODO: do something with an error
 	};
 
 	return (
-		<Formik initialValues={initialValues} onSubmit={handleSubmit}>
-			{({ dirty, resetForm }) => (
-				<Form>
-					<Grid item container sx={styles.container}>
-						{countries.map((country) => (
-							<CountryEntry
-								key={country}
-								country={country}
-								isEditMode={isEditMode}
-								removeCountry={() => removeCountry(country)}
-							/>
-						))}
-						{Object.entries(countriesToAdd).map(([id]) => (
-							<CountryEntry
-								key={id}
-								country={id}
-								isEditMode={isEditMode}
-								removeCountry={() => removeCountryFromToAdd(id)}
-								isCountriesToAdd
-								updateCountryObject={updateCountryObject}
-							/>
-						))}
-						<Grid container sx={styles.saveButtonContainer}>
-							<Button
-								color="secondary"
-								onClick={handleCountryButtonClick}
-								variant="contained"
-								fullWidth
-								sx={styles.inputField}
-							>
-								{isEditMode ? "Add country" : "Edit countries"}
-							</Button>
-						</Grid>
-						<Grid container sx={styles.cancelButtonContainer}>
-							<Button
-								type="submit"
-								disabled={!dirty && !isEditMode}
-								variant="contained"
-								fullWidth
-								sx={styles.inputField}
-							>
-								Save
-							</Button>
-						</Grid>
-						<Grid container sx={styles.cancelButtonContainer}>
-							<Button
-								onClick={() => handleCancel(resetForm)}
-								disabled={!dirty && !isEditMode}
-								variant="outlined"
-								fullWidth
-								sx={styles.inputField}
-							>
-								Cancel
-							</Button>
-						</Grid>
-					</Grid>
-				</Form>
+		<>
+			{scoreData && (
+				<Formik initialValues={scoreData} onSubmit={handleSubmit}>
+					{({ dirty, resetForm }) => (
+						<Form>
+							<Grid item container sx={styles.container}>
+								{countries.map((country) => (
+									<CountryEntry
+										key={country}
+										country={country}
+										isEditMode={isEditMode}
+										removeCountry={() =>
+											removeCountry(country)
+										}
+									/>
+								))}
+								{Object.entries(countriesToAdd).map(([id]) => (
+									<CountryEntry
+										key={id}
+										country={id}
+										isEditMode={isEditMode}
+										removeCountry={() =>
+											removeCountryFromToAdd(id)
+										}
+										isCountriesToAdd
+										updateCountryObject={
+											updateCountryObject
+										}
+									/>
+								))}
+								<Grid container sx={styles.saveButtonContainer}>
+									<Button
+										color="secondary"
+										onClick={handleCountryButtonClick}
+										variant="contained"
+										fullWidth
+										sx={styles.inputField}
+									>
+										{isEditMode
+											? "Add country"
+											: "Edit countries"}
+									</Button>
+								</Grid>
+								<Grid
+									container
+									sx={styles.cancelButtonContainer}
+								>
+									<Button
+										type="submit"
+										disabled={!dirty && !isEditMode}
+										variant="contained"
+										fullWidth
+										sx={styles.inputField}
+									>
+										Save
+									</Button>
+								</Grid>
+								<Grid
+									container
+									sx={styles.cancelButtonContainer}
+								>
+									<Button
+										onClick={() => handleCancel(resetForm)}
+										disabled={!dirty && !isEditMode}
+										variant="outlined"
+										fullWidth
+										sx={styles.inputField}
+									>
+										Cancel
+									</Button>
+								</Grid>
+							</Grid>
+						</Form>
+					)}
+				</Formik>
 			)}
-		</Formik>
+		</>
 	);
 };
 

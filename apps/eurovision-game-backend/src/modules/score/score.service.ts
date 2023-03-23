@@ -15,6 +15,14 @@ export class ScoreService {
 	}
 
 	async update(scoreInstance: Score) {
+		// const score = await this.repoClient.findScore(
+		// 	scoreInstance.year,
+		// 	scoreInstance.type
+		// );
+		// return await this.repoClient.updateScore({
+		// 	...score,
+		// 	...scoreInstance,
+		// });
 		return await this.repoClient.updateScore(scoreInstance);
 	}
 }

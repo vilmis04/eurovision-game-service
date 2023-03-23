@@ -17,7 +17,6 @@ export const adminApi = createApi({
 			}),
 		}),
 		updateAdminConfig: builder.mutation<UpdateResult, IAdminFormData>({
-			// updateAdminConfig: builder.mutation<IAdminFormData, IAdminFormData>({
 			query: (body) => ({
 				method: HttpMethods.PATCH,
 				url: paths.admin,

@@ -5,11 +5,13 @@ import {
 	MenuItem,
 	Select,
 	Switch,
+	SxProps,
 	Typography,
 } from "@mui/material";
+import { Theme } from "@mui/system";
 import { Field, FieldProps, Form, Formik, FormikHelpers } from "formik";
 import { ChangeEvent } from "react";
-import { styles } from "../AdminPage.styles";
+import { styles } from "./AdminConfigForm.styles";
 
 interface IAdminConfigFormProps {
 	initialValues: IAdminFormData;
@@ -30,8 +32,13 @@ const AdminConfigForm: React.FC<IAdminConfigFormProps> = ({
 					{/* TODO: add proper divider */}
 					<Grid
 						container
-						sx={styles.field} // TODO: move to a separate file
-						borderTop="1px solid black"
+						// TODO: figure out why it is not possible to just use sx={[styles.divider, styles.field]}
+						sx={
+							{
+								...styles.divider,
+								...styles.field,
+							} as SxProps<Theme>
+						}
 					>
 						<Typography>Registration posibility:</Typography>
 						<Field
@@ -49,14 +56,7 @@ const AdminConfigForm: React.FC<IAdminConfigFormProps> = ({
 							}}
 						/>
 					</Grid>
-					<Grid
-						container
-						// TODO: move styling
-						sx={{
-							margin: "0 auto",
-							width: "250px",
-						}}
-					>
+					<Grid container sx={styles.fieldTitle}>
 						<Grid container>
 							<Typography>Year:</Typography>
 						</Grid>
@@ -82,13 +82,7 @@ const AdminConfigForm: React.FC<IAdminConfigFormProps> = ({
 							</Field>
 						</Grid>
 					</Grid>
-					<Grid
-						container
-						sx={{
-							margin: "0 auto",
-							width: "250px",
-						}}
-					>
+					<Grid container sx={styles.fieldTitle}>
 						<Grid container>
 							<Typography>Game type:</Typography>
 						</Grid>

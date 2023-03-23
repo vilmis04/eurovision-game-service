@@ -10,8 +10,8 @@ export const store = configureStore({
 	reducer: {
 		[votesApi.reducerPath]: votesApi.reducer,
 		[authApi.reducerPath]: authApi.reducer,
-		[scoreApi.reducerPath]: scoreApi.reducer,
 		[adminApi.reducerPath]: adminApi.reducer,
+		[scoreApi.reducerPath]: scoreApi.reducer,
 	},
 	middleware: (getDefaultMiddleware) =>
 		getDefaultMiddleware().concat(

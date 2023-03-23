@@ -152,13 +152,13 @@ export class RepoClient {
 	}
 
 	async updateScore(scoreInstance: Score) {
-		const { year, type } = scoreInstance;
+		const { year, type, countries } = scoreInstance;
 		const updatedScore = await this.scoresCollection.updateOne(
 			{
 				year,
 				type,
 			},
-			scoreInstance
+			{ $set: { year, type, countries } }
 		);
 
 		if (!updatedScore) throw new NotFoundException();
