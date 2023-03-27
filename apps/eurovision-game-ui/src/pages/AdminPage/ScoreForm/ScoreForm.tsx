@@ -1,4 +1,8 @@
-import { GameTypes, IScoreFormData } from "@eurovision-game-monorepo/core";
+import {
+	GameTypes,
+	IScoreFormData,
+	isResponseError,
+} from "@eurovision-game-monorepo/core";
 import { Button, Grid } from "@mui/material";
 import { Form, Formik, FormikHelpers, FormikState } from "formik";
 import { useEffect, useState } from "react";
@@ -27,17 +31,13 @@ const ScoreForm: React.FC<IScoreFormProps> = ({
 	const [countries, setCountries] = useState<string[]>([]);
 	const [countriesToAdd, setCountriesToAdd] = useState<TCountriesToAdd>({});
 
-	const {
-		data: scoreData,
-		isFetching,
-		refetch,
-	} = useGetScoreQuery({ type, year });
+	const { data: scoreData, isFetching } = useGetScoreQuery({ type, year });
 
-	const [updateScore] = useUpdateScoreMutation();
+	const [updateScore] = useUpdateScoreMutation({ fixedCacheKey: "score" });
 
 	useEffect(() => {
 		scoreData && setCountries(Object.keys(scoreData.countries));
-	}, [scoreData]);
+	}, [scoreData?.countries]);
 
 	useEffect(() => {
 		setIsFetching && setIsFetching(isFetching);
@@ -88,24 +88,24 @@ const ScoreForm: React.FC<IScoreFormProps> = ({
 
 	const handleSubmit = async (
 		values: IScoreFormData,
-		{ resetForm }: FormikHelpers<IScoreFormData>
+		{ setFieldValue }: FormikHelpers<IScoreFormData>
 	): Promise<void> => {
 		const updatedValues = mapCountryChangesToValues({
 			countries,
 			countriesToAdd,
 			values,
 		});
+		setIsEditMode(false);
+		setCountriesToAdd({});
+		setFieldValue("countries", updatedValues.countries);
 
 		const response = await updateScore(updatedValues);
 
-		// TODO: fix saving data (something weird is happening)
-
-		if (response) {
-			setCountriesToAdd({});
-			refetch();
-			setIsEditMode(false);
+		if (isResponseError(response)) {
+			// TODO: do something with an error
+			console.log(response.error);
+			return;
 		}
-		// TODO: do something with an error
 	};
 
 	return (

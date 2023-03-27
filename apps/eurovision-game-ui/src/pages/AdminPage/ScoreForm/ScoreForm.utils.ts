@@ -14,19 +14,20 @@ export const mapCountryChangesToValues = ({
 }: IMapCountryChangesToValuesArgs): IScoreFormData => {
 	const { countries: formikCountries } = values;
 	const addedCountries = Object.values(countriesToAdd).reduce(
-		(list, { name, score }) => ({ ...list, [name]: score }),
+		(list, { name, score }) =>
+			name ? { ...list, [name]: Number(score) } : list,
 		{}
 	);
 	const reducedCountries = Object.entries(formikCountries).reduce(
 		(updatedList, countryEntry) => {
-			const [country] = countryEntry;
+			const [country, score] = countryEntry;
 			if (!countries.includes(country)) {
 				return updatedList;
 			}
 
 			return {
 				...updatedList,
-				...{ [country]: values.countries[country] },
+				...{ [country]: Number(score) },
 			};
 		},
 		{}

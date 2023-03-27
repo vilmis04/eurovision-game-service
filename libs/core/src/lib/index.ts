@@ -6,3 +6,6 @@ export * from "./types/scores";
 
 export * from "./types/country.types";
 export * from "./types/requests.types";
+export * from "./types/general.types";
+
+export * from "./type-guards";

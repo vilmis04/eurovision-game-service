@@ -11,7 +11,6 @@ import { CircularProgress } from "@mui/material";
 
 // TODO: CONTINUE
 /*
-5. Fix data saving (something weird is happening, data gets overriden)
 6. AuthGuard
 7. RoleGuard
 */
@@ -22,6 +21,8 @@ const AdminPage: React.FC = () => {
 	const { data: adminData } = useGetAdminConfigQuery();
 	const [updateAdminConfig, { isSuccess: isAdminConfigUpdateSuccess }] =
 		useUpdateAdminConfigMutation();
+
+	// console.log(result);
 
 	useEffect(() => {
 		// TODO: show something for success (snackbar?)

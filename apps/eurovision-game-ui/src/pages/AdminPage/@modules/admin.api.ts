@@ -3,10 +3,16 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/dist/query/react";
 import { paths } from "apps/eurovision-game-ui/src/paths";
 import { UpdateResult } from "mongodb";
 
+export enum Tags {
+	ADMIN = "admin",
+	SCORE = "score",
+}
+
 export const adminApi = createApi({
 	reducerPath: "adminApi",
 	// TODO: move baseUrl to .env
 	baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:4200/api/" }),
+	tagTypes: Object.values(Tags),
 	endpoints: (builder) => ({
 		getAdminConfig: builder.query<IAdminFormData, void>({
 			query: () => ({
@@ -15,6 +21,7 @@ export const adminApi = createApi({
 				credentials: "include",
 				headers: [["Content-Type", "application/json"]],
 			}),
+			// providesTags: [Tags.ADMIN, Tags.SCORE],
 		}),
 		updateAdminConfig: builder.mutation<UpdateResult, IAdminFormData>({
 			query: (body) => ({
@@ -24,6 +31,7 @@ export const adminApi = createApi({
 				headers: [["Content-Type", "application/json"]],
 				body,
 			}),
+			// invalidatesTags: [Tags.ADMIN],
 		}),
 	}),
 });
