@@ -4,7 +4,13 @@ import {
 	isResponseError,
 } from "@eurovision-game-monorepo/core";
 import { Button, Grid } from "@mui/material";
-import { Form, Formik, FormikHelpers, FormikState } from "formik";
+import {
+	Form,
+	Formik,
+	FormikHelpers,
+	FormikState,
+	FormikTouched,
+} from "formik";
 import { useEffect, useState } from "react";
 import { v4 as uuid } from "uuid";
 import { TCountriesToAdd } from "./ScoreForm.types";
@@ -88,7 +94,7 @@ const ScoreForm: React.FC<IScoreFormProps> = ({
 
 	const handleSubmit = async (
 		values: IScoreFormData,
-		{ setFieldValue }: FormikHelpers<IScoreFormData>
+		{ setFieldValue, setTouched }: FormikHelpers<IScoreFormData>
 	): Promise<void> => {
 		const updatedValues = mapCountryChangesToValues({
 			countries,
@@ -106,13 +112,18 @@ const ScoreForm: React.FC<IScoreFormProps> = ({
 			console.log(response.error);
 			return;
 		}
+
+		setTouched({});
 	};
+
+	const getIsDirty = (touched: FormikTouched<IScoreFormData>) =>
+		Boolean(Object.values(touched).length);
 
 	return (
 		<>
 			{scoreData && (
 				<Formik initialValues={scoreData} onSubmit={handleSubmit}>
-					{({ dirty, resetForm }) => (
+					{({ resetForm, touched }) => (
 						<Form>
 							<Grid item container sx={styles.container}>
 								{countries.map((country) => (
@@ -158,7 +169,9 @@ const ScoreForm: React.FC<IScoreFormProps> = ({
 								>
 									<Button
 										type="submit"
-										disabled={!dirty && !isEditMode}
+										disabled={
+											!getIsDirty(touched) && !isEditMode
+										}
 										variant="contained"
 										fullWidth
 										sx={styles.inputField}
@@ -172,7 +185,9 @@ const ScoreForm: React.FC<IScoreFormProps> = ({
 								>
 									<Button
 										onClick={() => handleCancel(resetForm)}
-										disabled={!dirty && !isEditMode}
+										disabled={
+											!getIsDirty(touched) && !isEditMode
+										}
 										variant="outlined"
 										fullWidth
 										sx={styles.inputField}

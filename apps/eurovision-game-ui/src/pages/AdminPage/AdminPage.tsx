@@ -19,10 +19,10 @@ const AdminPage: React.FC = () => {
 	// TODO: add effect to handle success / errors (snackbar or banner?)
 
 	const { data: adminData } = useGetAdminConfigQuery();
+	// igonring TS because the it shows no isSuccess when there is one
+	// @ts-ignore
 	const [updateAdminConfig, { isSuccess: isAdminConfigUpdateSuccess }] =
 		useUpdateAdminConfigMutation();
-
-	// console.log(result);
 
 	useEffect(() => {
 		// TODO: show something for success (snackbar?)
