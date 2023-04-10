@@ -1,9 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param } from "@nestjs/common";
+import {
+	Controller,
+	Get,
+	Post,
+	Body,
+	Patch,
+	Param,
+	UseGuards,
+} from "@nestjs/common";
 import { ScoreService } from "./score.service";
 import { Score } from "./entities/score.entity";
 import { RootPaths } from "../../types/paths";
+import { AdminRoleGuard } from "../admin/adminRole.guard";
 
 @Controller(RootPaths.SCORES)
+@UseGuards(AdminRoleGuard)
 export class ScoreController {
 	constructor(private readonly scoreService: ScoreService) {}
 

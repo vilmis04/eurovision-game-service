@@ -1,10 +1,12 @@
-import { Controller, Get, Body, Patch } from "@nestjs/common";
+import { Controller, Get, Body, Patch, UseGuards } from "@nestjs/common";
 import { AdminService } from "./admin.service";
 import { RootPaths } from "../../types/paths";
 import { Admin } from "./entities/admin.entity";
+import { AdminRoleGuard } from "./adminRole.guard";
 
 // TODO: add a RoleGuard
 @Controller(RootPaths.ADMIN)
+@UseGuards(AdminRoleGuard)
 export class AdminController {
 	constructor(private readonly adminService: AdminService) {}
 

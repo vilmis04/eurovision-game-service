@@ -6,8 +6,9 @@ import {
 	useGetAdminConfigQuery,
 	useUpdateAdminConfigMutation,
 } from "./@modules/admin.api";
-import ScoreForm from "./ScoreForm/ScoreForm";
+// import ScoreForm from "./ScoreForm/ScoreForm";
 import { CircularProgress } from "@mui/material";
+import CountryConfigForm from "./CountryConfigForm/CountryConfigForm";
 
 // TODO: CONTINUE
 /*
@@ -47,7 +48,11 @@ const AdminPage: React.FC = () => {
 		<>
 			{adminData ? (
 				<>
-					<ScoreForm type={adminData.type} year={adminData.year} />
+					{/* <ScoreForm type={adminData.type} year={adminData.year} /> */}
+					<CountryConfigForm
+						year={adminData.year}
+						type={adminData.type}
+					/>
 					<AdminConfigForm
 						initialValues={adminData}
 						handleAdminConfigUpdate={handleAdminConfigUpdate}

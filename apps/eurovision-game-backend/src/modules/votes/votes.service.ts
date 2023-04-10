@@ -11,23 +11,21 @@ export class VotesService {
 	constructor(private repoClient: RepoClient, private jwtUtils: JwtUtils) {}
 
 	async getVotesByUsername(@Req() req: Request): Promise<IGetVotesResponse> {
-		const username = this.jwtUtils.getUsername(req);
+		const { username } = this.jwtUtils.getUser(req);
 		const values = await this.repoClient.getVotesByUserName({
 			username,
 		});
 
-		if (values) {
-			const { _id, username, ...countries } = values;
-			return countries;
-		}
+		if (!values) throw new Error("No values found");
 
-		throw new Error("No values found");
+		const { _id, username: _, ...countries } = values;
+		return countries;
 	}
 	async editVotesByUsername(
 		@Req() req: Request,
 		votes: IGetVotesResponse
 	): Promise<UpdateResult> {
-		const username = this.jwtUtils.getUsername(req);
+		const { username } = this.jwtUtils.getUser(req);
 		const response = await this.repoClient.editVotesByUserName({
 			username,
 			votes,

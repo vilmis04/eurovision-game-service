@@ -1,6 +1,8 @@
 import {
+	GameTypes,
 	IGetUserResponse,
 	IGetVotesResponse,
+	RoleTypes,
 } from "@eurovision-game-monorepo/core";
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 
@@ -8,12 +10,14 @@ import { Collection, MongoClient, ObjectId, ServerApiVersion } from "mongodb";
 import { Admin } from "../modules/admin/entities/admin.entity";
 import { Score } from "../modules/score/entities/score.entity";
 import { initialVotes } from "./RepoClient.config";
+import { Country } from "../modules/country/entities/country.entity";
 
 enum CollectionTypes {
 	VOTES = "votes",
 	USERS = "users",
 	ADMIN = "admin",
 	SCORES = "scores",
+	COUNTRY = "country",
 }
 
 enum DatabaseTypes {
@@ -37,6 +41,7 @@ export class RepoClient {
 	private usersCollection: Collection<IGetUserResponse>;
 	private adminCollection: Collection<Admin>;
 	private scoresCollection: Collection<Score>;
+	private countryCollection: Collection<Country>;
 
 	constructor() {
 		this.client = new MongoClient(`${process.env.MONGO_URI}`, {
@@ -60,6 +65,9 @@ export class RepoClient {
 			this.scoresCollection = this.client
 				.db(DatabaseTypes.EUROVISION_GAME)
 				.collection<Score>(CollectionTypes.SCORES);
+			this.countryCollection = this.client
+				.db(DatabaseTypes.EUROVISION_GAME)
+				.collection<Country>(CollectionTypes.COUNTRY);
 		});
 
 		this.client.on("error", (err) =>
@@ -108,7 +116,12 @@ export class RepoClient {
 	}
 
 	async createUser(username: string, password: string) {
-		return await this.usersCollection.insertOne({ username, password });
+		return await this.usersCollection.insertOne({
+			username,
+			password,
+			roles: [RoleTypes.USER],
+			groups: [],
+		});
 	}
 
 	// ADMIN
@@ -164,5 +177,31 @@ export class RepoClient {
 		if (!updatedScore) throw new NotFoundException();
 
 		return updatedScore;
+	}
+
+	// COUNTRY
+
+	async createCountry(country: Country) {
+		return await this.countryCollection.insertOne(country);
+	}
+
+	async findCountries(year: string, type: GameTypes) {
+		return this.countryCollection.find({ year, type });
+	}
+
+	async getOneCountry(year: string, name: string) {
+		return await this.countryCollection.findOne({ year, name });
+	}
+
+	async removeCountry(year: string, name: string) {
+		return await this.countryCollection.deleteOne({ year, name });
+	}
+
+	async updateCountry(country: Partial<Country>) {
+		const { name, year } = country;
+		return await this.countryCollection.updateOne(
+			{ name, year },
+			{ $set: { ...country } }
+		);
 	}
 }
