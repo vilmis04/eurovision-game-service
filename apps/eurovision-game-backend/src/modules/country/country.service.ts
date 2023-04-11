@@ -20,7 +20,6 @@ export class CountryService {
 
 	async findCountries({ year, type }: { year: string; type: GameTypes }) {
 		const countryList = await this.repoClient.findCountries(year, type);
-		console.log({ countryList });
 
 		return countryList;
 	}

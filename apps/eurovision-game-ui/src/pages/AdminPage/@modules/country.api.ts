@@ -20,7 +20,10 @@ type TCreateCountryRequestBody = Omit<
 	ICountry,
 	"semiFinalScore" | "finalScore"
 >;
-type TUpdateCountryRequestBody = Partial<ICountry>;
+interface IUpdateCountryRequestBody extends Partial<ICountry> {
+	name: ICountry["name"];
+	year: ICountry["year"];
+}
 
 export const countryApi = createApi({
 	reducerPath: "countryApi",
@@ -28,7 +31,7 @@ export const countryApi = createApi({
 	baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:4200/api/" }),
 	tagTypes: Object.values(Tags),
 	endpoints: (builder) => ({
-		getCountryList: builder.query<ICountry, TCountryListParams>({
+		getCountryList: builder.query<ICountry[], TCountryListParams>({
 			query: ({ year, type }) => ({
 				method: HttpMethods.GET,
 				url: `${paths.country}/${year}/${type}`,
@@ -52,7 +55,7 @@ export const countryApi = createApi({
 		}),
 		updateCountry: builder.mutation<
 			UpdateResult,
-			TUpdateCountryRequestBody
+			IUpdateCountryRequestBody
 		>({
 			query: (body) => ({
 				method: HttpMethods.PATCH,

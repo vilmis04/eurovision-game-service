@@ -186,7 +186,7 @@ export class RepoClient {
 	}
 
 	async findCountries(year: string, type: GameTypes) {
-		return this.countryCollection.find({ year, type });
+		return this.countryCollection.find({ year, type }).toArray();
 	}
 
 	async getOneCountry(year: string, name: string) {

@@ -1,1 +1,1 @@
-export * from "./country.general.types";
+export * from "./country.types";

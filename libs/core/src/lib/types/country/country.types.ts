@@ -9,3 +9,6 @@ export interface ICountry {
 	semiFinalScore: boolean;
 	finalScore: number;
 }
+
+export interface ICreateCountryFormData
+	extends Pick<ICountry, "name" | "artist" | "song"> {}
