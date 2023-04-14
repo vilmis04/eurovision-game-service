@@ -5,7 +5,6 @@ import { UpdateResult } from "mongodb";
 
 export enum Tags {
 	ADMIN = "admin",
-	SCORE = "score",
 }
 
 export const adminApi = createApi({
@@ -21,7 +20,7 @@ export const adminApi = createApi({
 				credentials: "include",
 				headers: [["Content-Type", "application/json"]],
 			}),
-			// providesTags: [Tags.ADMIN, Tags.SCORE],
+			providesTags: [Tags.ADMIN],
 		}),
 		updateAdminConfig: builder.mutation<UpdateResult, IAdminFormData>({
 			query: (body) => ({
@@ -31,7 +30,7 @@ export const adminApi = createApi({
 				headers: [["Content-Type", "application/json"]],
 				body,
 			}),
-			// invalidatesTags: [Tags.ADMIN],
+			invalidatesTags: [Tags.ADMIN],
 		}),
 	}),
 });

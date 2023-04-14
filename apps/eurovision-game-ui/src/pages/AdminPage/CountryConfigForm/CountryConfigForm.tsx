@@ -7,6 +7,7 @@ import {
 	Box,
 	Button,
 	Card,
+	Checkbox,
 	CircularProgress,
 	Dialog,
 	Grid,
@@ -18,10 +19,10 @@ import {
 	useGetCountryListQuery,
 	useUpdateCountryMutation,
 } from "../@modules/country.api";
-import { useState } from "react";
-import { Form, Formik } from "formik";
+import { ChangeEvent, useState } from "react";
+import { Field, Form, Formik } from "formik";
 import FormField from "apps/eurovision-game-ui/src/components/FormField/FormField";
-import RefreshIcon from "@mui/icons-material/Refresh";
+import SaveIcon from "@mui/icons-material/Save";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 interface ICountryConfigFormProps {
@@ -47,6 +48,8 @@ const CountryConfigForm: React.FC<ICountryConfigFormProps> = ({
 	const [countryAction, setCountryAction] = useState<CountryActions>(
 		CountryActions.UPDATE
 	);
+
+	const isSemiFinal = type === GameTypes.SEMI_1 || GameTypes.SEMI_2;
 
 	const toggleAddCountryPopup = () =>
 		setShowAddCountryPopup(!showAddCountryPopup);
@@ -108,15 +111,38 @@ const CountryConfigForm: React.FC<ICountryConfigFormProps> = ({
 										initialValues={country}
 										onSubmit={handleUpdateCountry}
 									>
-										{() => (
+										{({
+											values,
+											setFieldValue,
+											submitForm,
+										}) => (
 											<Form>
-												{type === GameTypes.SEMI ? (
-													<FormField
+												{isSemiFinal ? (
+													<Field
 														name="semiFinalScore"
-														label="Semi Final Result"
+														as={Checkbox}
+														checked={
+															values.semiFinalScore
+														}
+														onChange={(
+															_event: ChangeEvent,
+															checked: boolean
+														) => {
+															setFieldValue(
+																"semiFinalScore",
+																checked
+																	? true
+																	: false
+															);
+															setCountryAction(
+																CountryActions.UPDATE
+															);
+															submitForm();
+														}}
 													/>
 												) : (
 													<FormField
+														// TODO: move sx
 														sx={{
 															maxWidth: "100px",
 														}}
@@ -124,12 +150,16 @@ const CountryConfigForm: React.FC<ICountryConfigFormProps> = ({
 														label="Final Result"
 													/>
 												)}
-												<Button
-													onClick={handleUpdateClick}
-													type="submit"
-												>
-													<RefreshIcon />
-												</Button>
+												{!isSemiFinal && (
+													<Button
+														onClick={
+															handleUpdateClick
+														}
+														type="submit"
+													>
+														<SaveIcon />
+													</Button>
+												)}
 												<Button
 													onClick={handleDeleteClick}
 													type="submit"
@@ -143,7 +173,6 @@ const CountryConfigForm: React.FC<ICountryConfigFormProps> = ({
 							</Card>
 						</Grid>
 					))}
-					{/* TODO: add country cards */}
 				</Grid>
 			) : (
 				<CircularProgress />

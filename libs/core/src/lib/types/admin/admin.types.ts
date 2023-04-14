@@ -9,11 +9,12 @@ export interface IAdminFormData {
 }
 
 export enum GameTypes {
-	SEMI = "SEMI",
+	SEMI_1 = "SEMI_1",
+	SEMI_2 = "SEMI_2",
 	FINAL = "FINAL",
 }
 
-export const initialValues = {
+export const deprecated_initialValues = {
 	ukraine: 0,
 	united_kingdom: 0,
 	spain: 0,
