@@ -13,25 +13,10 @@ export class AuthController {
 		@Res({ passthrough: true }) response: Response,
 		@Body() { username, password }: IGetUserResponse
 	) {
-		const result = await this.authService.login(
-			response,
-			username,
-			password
-		);
-		if (!result.success) return result;
-
-		response.cookie("jwt", result.access_token, {
-			maxAge: 1000 * 24 * 3600,
-			httpOnly: true,
-		});
-
-		return { success: true };
+		return await this.authService.login(response, username, password);
 	}
 	@Post(AuthPaths.LOGOUT)
 	async logout(@Res({ passthrough: true }) response: Response) {
-		response.cookie("jwt", "", {
-			maxAge: 1,
-			httpOnly: true,
-		});
+		return await this.authService.logout(response);
 	}
 }

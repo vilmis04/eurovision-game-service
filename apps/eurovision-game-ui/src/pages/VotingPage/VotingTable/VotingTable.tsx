@@ -9,7 +9,7 @@ import {
 import {
 	useEditVotesByUsernameMutation,
 	useGetVotesByUsernameQuery,
-} from "../modules/votes.api";
+} from "../@modules/votes.api";
 
 const VotingTable: React.FC = () => {
 	const { data: countries, isFetching } = useGetVotesByUsernameQuery();

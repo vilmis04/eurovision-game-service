@@ -1,4 +1,4 @@
-export enum CountryTypes {
+export enum Deprecated_CountryTypes {
 	UKRAINE = "ukraine",
 	UNITED_KINGDOM = "united_kingdom",
 	SPAIN = "spain",

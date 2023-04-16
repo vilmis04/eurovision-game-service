@@ -16,25 +16,31 @@ export class AuthService {
 	constructor(private readonly repoClient: RepoClient) {}
 
 	async login(
-		@Res({ passthrough: true }) res: Response,
+		@Res({ passthrough: true }) response: Response,
 		username: string,
 		enteredPassword: string
 	): Promise<ILoginResponse> {
 		const user = await this.repoClient.getUserByUsername(username);
 
+		console.log({ user });
+
 		if (!user) {
-			res.status(400).send();
+			response.status(400).send();
 			throw new Error("Incorrect username");
 		}
 		if (!this.validateUser(enteredPassword, user.password)) {
-			res.status(400).send();
+			response.status(400).send();
 			throw new Error("Incorrect password");
 		}
 
 		const { password, ...userData } = user;
 		const access_token = await this.generateToken(userData);
 
-		return { success: true, access_token };
+		response.cookie("jwt", access_token, {
+			maxAge: 1000 * 24 * 3600,
+		});
+
+		return { success: true };
 	}
 
 	async validateUser(enteredPassword: string, userPassword: string) {
@@ -47,5 +53,11 @@ export class AuthService {
 			expiresIn: MAX_AGE,
 		});
 		return access_token;
+	}
+
+	async logout(@Res({ passthrough: true }) response: Response) {
+		response.cookie("jwt", "", {
+			maxAge: 1,
+		});
 	}
 }

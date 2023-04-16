@@ -7,7 +7,8 @@
 	"files": [
 		"../../node_modules/@nrwl/react/typings/cssmodule.d.ts",
 		"../../node_modules/@nrwl/react/typings/image.d.ts",
-		"src/pages/LoginPage/LoginPage.validation.schema.tsx"
+		"src/pages/LoginPage/LoginPage.validation.schema.tsx",
+		"src/pages/AdminPage/AdminPage.utils.tsx"
 	],
 	"exclude": [
 		"jest.config.ts",

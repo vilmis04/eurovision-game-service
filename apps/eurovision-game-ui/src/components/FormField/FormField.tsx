@@ -7,7 +7,7 @@ type TFormFieldProps<T> = TextFieldProps & {
 	touched?: FormikTouched<T>;
 };
 
-const FormTextField = <T extends object>({
+const FormField = <T extends object>({
 	name,
 	errors,
 	touched,
@@ -26,4 +26,4 @@ const FormTextField = <T extends object>({
 	);
 };
 
-export default FormTextField;
+export default FormField;

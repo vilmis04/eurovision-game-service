@@ -1,21 +1,30 @@
 import {
+	GameTypes,
 	IGetUserResponse,
 	IGetVotesResponse,
+	RoleTypes,
 } from "@eurovision-game-monorepo/core";
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 
-import { MongoClient, ObjectId, ServerApiVersion } from "mongodb";
+import { Collection, MongoClient, ObjectId, ServerApiVersion } from "mongodb";
+import { Admin } from "../modules/admin/entities/admin.entity";
+import { Score } from "../modules/score/entities/score.entity";
 import { initialVotes } from "./RepoClient.config";
+import { Country } from "../modules/country/entities/country.entity";
 
 enum CollectionTypes {
 	VOTES = "votes",
 	USERS = "users",
+	ADMIN = "admin",
+	SCORES = "scores",
+	COUNTRY = "country",
 }
 
 enum DatabaseTypes {
 	EUROVISION_GAME = "eurovision-game",
 }
 
+// TODO: move IGetVotes & IEditVotes to types file
 interface IGetVotes {
 	username: string;
 }
@@ -24,9 +33,16 @@ interface IEditVotes extends IGetVotes {
 	votes: IGetVotesResponse;
 }
 
+// TODO: refactor repoClient to separate modular repositories
 @Injectable()
 export class RepoClient {
 	private readonly client: MongoClient;
+	private votesCollection: Collection<IGetVotesResponse>;
+	private usersCollection: Collection<IGetUserResponse>;
+	private adminCollection: Collection<Admin>;
+	private scoresCollection: Collection<Score>;
+	private countryCollection: Collection<Country>;
+
 	constructor() {
 		this.client = new MongoClient(`${process.env.MONGO_URI}`, {
 			serverApi: ServerApiVersion.v1,
@@ -35,32 +51,39 @@ export class RepoClient {
 		// TODO: add error handling
 		this.client.connect();
 
-		this.client.on("connectionReady", () =>
-			Logger.log("[RepoClient] Connection OK")
-		);
+		this.client.on("connectionReady", () => {
+			Logger.log("[RepoClient] Connection OK");
+			this.votesCollection = this.client
+				.db(DatabaseTypes.EUROVISION_GAME)
+				.collection<IGetVotesResponse>(CollectionTypes.VOTES);
+			this.usersCollection = this.client
+				.db(DatabaseTypes.EUROVISION_GAME)
+				.collection<IGetUserResponse>(CollectionTypes.USERS);
+			this.adminCollection = this.client
+				.db(DatabaseTypes.EUROVISION_GAME)
+				.collection<Admin>(CollectionTypes.ADMIN);
+			this.scoresCollection = this.client
+				.db(DatabaseTypes.EUROVISION_GAME)
+				.collection<Score>(CollectionTypes.SCORES);
+			this.countryCollection = this.client
+				.db(DatabaseTypes.EUROVISION_GAME)
+				.collection<Country>(CollectionTypes.COUNTRY);
+		});
+
 		this.client.on("error", (err) =>
 			Logger.log("[RepoClient] ERROR: " + err)
 		);
 	}
 
 	// VOTES
+
 	async getVotesByUserName({ username }: IGetVotes) {
-		const collection = this.client
-			.db(DatabaseTypes.EUROVISION_GAME)
-			.collection<IGetVotesResponse>(CollectionTypes.VOTES);
-
-		const votes = await collection.findOne({ username });
-
-		return votes;
+		return await this.votesCollection.findOne({ username });
 	}
 
 	async editVotesByUserName({ username, votes }: IEditVotes) {
-		const collection = this.client
-			.db(DatabaseTypes.EUROVISION_GAME)
-			.collection<IGetVotesResponse>(CollectionTypes.VOTES);
-
 		// TODO: add error handling
-		const response = await collection.updateOne(
+		const response = await this.votesCollection.updateOne(
 			{ username },
 			{
 				$set: {
@@ -73,12 +96,8 @@ export class RepoClient {
 		return response;
 	}
 	async createNewUserVotes(username: string) {
-		const collection = this.client
-			.db(DatabaseTypes.EUROVISION_GAME)
-			.collection<IGetVotesResponse>(CollectionTypes.VOTES);
-
 		// TODO: add error handling
-		const response = await collection.insertOne({
+		const response = await this.votesCollection.insertOne({
 			username,
 			...initialVotes,
 		});
@@ -87,33 +106,102 @@ export class RepoClient {
 	}
 
 	// USERS
+
 	async getUserByUsername(username: string) {
-		const collection = this.client
-			.db(DatabaseTypes.EUROVISION_GAME)
-			.collection<IGetUserResponse>(CollectionTypes.USERS);
-
-		const user = await collection.findOne({ username });
-
-		return user;
+		return await this.usersCollection.findOne({ username });
 	}
 
 	async getUserById(_id: ObjectId) {
-		const collection = this.client
-			.db(DatabaseTypes.EUROVISION_GAME)
-			.collection<IGetUserResponse>(CollectionTypes.USERS);
-
-		const user = await collection.findOne({ _id });
-
-		return user;
+		return await this.usersCollection.findOne({ _id });
 	}
 
 	async createUser(username: string, password: string) {
-		const collection = this.client
-			.db(DatabaseTypes.EUROVISION_GAME)
-			.collection<IGetUserResponse>(CollectionTypes.USERS);
+		return await this.usersCollection.insertOne({
+			username,
+			password,
+			roles: [RoleTypes.USER],
+			groups: [],
+		});
+	}
 
-		const user = await collection.insertOne({ username, password });
+	// ADMIN
 
-		return user;
+	async getAdminConfig() {
+		const adminWithId = await this.adminCollection.find({}).toArray();
+
+		const { _id, ...admin } = adminWithId[0]; // 0 because there is only one admin entry
+
+		return admin;
+	}
+
+	async updateAdminConfig(adminConfig: Admin) {
+		const adminArray = await this.adminCollection.find({}).toArray();
+
+		const updatedAdmin = {
+			...adminArray[0],
+			...adminConfig,
+		};
+
+		const adminResponse = await this.adminCollection.updateOne(
+			{ _id: updatedAdmin._id },
+			{ $set: adminConfig }
+		);
+
+		return adminResponse;
+	}
+
+	// SCORES
+
+	async createScore(scoreInstance: Score) {
+		return await this.scoresCollection.insertOne(scoreInstance);
+	}
+
+	async findScore(year: Score["year"], type: Score["type"]) {
+		const score = await this.scoresCollection.findOne({ year, type });
+
+		if (!score) throw new NotFoundException({ message: "Score not found" });
+
+		return score;
+	}
+
+	async updateScore(scoreInstance: Score) {
+		const { year, type, countries } = scoreInstance;
+		const updatedScore = await this.scoresCollection.updateOne(
+			{
+				year,
+				type,
+			},
+			{ $set: { year, type, countries } }
+		);
+
+		if (!updatedScore) throw new NotFoundException();
+
+		return updatedScore;
+	}
+
+	// COUNTRY
+
+	async createCountry(country: Country) {
+		return await this.countryCollection.insertOne(country);
+	}
+
+	async findCountries(year: string, type: GameTypes) {
+		return this.countryCollection.find({ year, type }).toArray();
+	}
+
+	async getOneCountry(year: string, name: string) {
+		return await this.countryCollection.findOne({ year, name });
+	}
+
+	async removeCountry(year: string, name: string) {
+		return await this.countryCollection.deleteOne({ year, name });
+	}
+
+	async updateCountry(country: Partial<Country>) {
+		const { name, year } = country;
+		return await this.countryCollection.updateOne(
+			{ name, year },
+			{ $set: { ...country } }
+		);
 	}
 }

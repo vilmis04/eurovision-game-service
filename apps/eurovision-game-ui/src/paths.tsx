@@ -2,6 +2,9 @@ enum RootPaths {
 	HOME = "/",
 	LOGIN = "login",
 	SIGNUP = "signup",
+	ADMIN = "admin",
+	SCORES = "scores",
+	COUNTRY = "country",
 }
 
 enum AuthPaths {
@@ -17,4 +20,7 @@ export const paths = {
 	authLogin: AuthPaths.AUTH_LOGIN,
 	authSignup: AuthPaths.AUTH_SIGNUP,
 	authLogOut: AuthPaths.AUTH_LOGOUT,
+	admin: RootPaths.ADMIN,
+	scores: RootPaths.SCORES,
+	country: RootPaths.COUNTRY,
 };
