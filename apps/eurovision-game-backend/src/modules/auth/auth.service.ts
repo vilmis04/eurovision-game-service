@@ -1,9 +1,10 @@
 import { IUserDataForToken } from "@eurovision-game-monorepo/core";
-import { Injectable, Res } from "@nestjs/common";
+import { Injectable, Req, Res } from "@nestjs/common";
 import { RepoClient } from "../../utils/RepoClient";
 import * as jwt from "jsonwebtoken";
 import * as bcrypt from "bcrypt";
-import { Response } from "express";
+import { Response, Request } from "express";
+import { JwtUtils } from "../../utils/JwtUtils";
 
 export interface ILoginResponse {
 	success: boolean;
@@ -13,7 +14,10 @@ export interface ILoginResponse {
 
 @Injectable()
 export class AuthService {
-	constructor(private readonly repoClient: RepoClient) {}
+	constructor(
+		private readonly repoClient: RepoClient,
+		private readonly jwtUtils: JwtUtils
+	) {}
 
 	async login(
 		@Res({ passthrough: true }) response: Response,
@@ -36,6 +40,7 @@ export class AuthService {
 
 		response.cookie("jwt", access_token, {
 			maxAge: 1000 * 24 * 3600,
+			httpOnly: true,
 		});
 
 		return { success: true };
@@ -56,6 +61,12 @@ export class AuthService {
 	async logout(@Res({ passthrough: true }) response: Response) {
 		response.cookie("jwt", "", {
 			maxAge: 1,
+			httpOnly: true,
 		});
+	}
+
+	async getRoles(@Req() request: Request) {
+		const { roles } = this.jwtUtils.getUser(request);
+		return roles ?? [];
 	}
 }

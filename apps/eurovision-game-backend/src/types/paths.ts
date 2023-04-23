@@ -9,4 +9,5 @@ export enum AuthPaths {
 	LOGIN = "login",
 	LOGOUT = "logout",
 	SIGN_UP = "signUp",
+	ROLES = "roles",
 }

@@ -18,7 +18,7 @@ const AppBar: React.FC = () => {
 
 	useEffect(() => {
 		if (isSuccess) {
-			navigate(paths.login);
+			navigate(`/${paths.login}`);
 		}
 	}, [isSuccess]);
 

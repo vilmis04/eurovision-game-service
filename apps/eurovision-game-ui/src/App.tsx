@@ -7,11 +7,15 @@ import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import { paths } from "./paths";
 import PageLayout from "./components/PageLayout/PageLayout";
+import AuthProvider from "./components/AuthProvider/AuthProvider";
 
 const VotingPage = lazy(() => import("./pages/VotingPage/VotingPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage/LoginPage"));
 const SignupPage = lazy(() => import("./pages/SignupPage/SignupPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage/AdminPage"));
+const ForbiddenScreen = lazy(
+	() => import("./components/ForbiddenScreen/ForbiddenScreen")
+);
 
 const routes = [
 	{
@@ -26,29 +30,69 @@ const routes = [
 		path: paths.signup,
 		element: <SignupPage />,
 	},
+];
+
+const protectedRoutes = [
 	{
 		path: paths.admin,
-		element: <AdminPage />,
+		element: <AuthProvider />,
+		subpaths: [
+			{
+				element: <AdminPage />,
+				index: true,
+			},
+		],
 	},
 ];
 
-const App: React.FC = () => (
-	<StrictMode>
-		<Provider store={store}>
-			<BrowserRouter>
-				<GlobalStyles />
-				<Suspense>
-					<Routes>
-						<Route path={paths.home} element={<PageLayout />}>
-							{routes.map((routeData) => (
-								<Route key={routeData.path} {...routeData} />
-							))}
-						</Route>
-					</Routes>
-				</Suspense>
-			</BrowserRouter>
-		</Provider>
-	</StrictMode>
-);
+const App: React.FC = () => {
+	return (
+		<StrictMode>
+			<Provider store={store}>
+				<BrowserRouter>
+					<GlobalStyles />
+					<Suspense>
+						<Routes>
+							<Route path={paths.home} element={<PageLayout />}>
+								{routes.map((routeData) => (
+									<Route
+										key={routeData.path}
+										{...routeData}
+									/>
+								))}
+							</Route>
+							{protectedRoutes.map(
+								({ element, path, subpaths }) => (
+									<Route
+										key={path}
+										element={element}
+										path={path}
+									>
+										{subpaths.map(
+											(
+												{ element, index: isIndex },
+												index
+											) => (
+												<Route
+													key={index}
+													element={element}
+													index={isIndex}
+												/>
+											)
+										)}
+									</Route>
+								)
+							)}
+							<Route
+								path={paths.forbidden}
+								element={<ForbiddenScreen />}
+							/>
+						</Routes>
+					</Suspense>
+				</BrowserRouter>
+			</Provider>
+		</StrictMode>
+	);
+};
 
 export default App;

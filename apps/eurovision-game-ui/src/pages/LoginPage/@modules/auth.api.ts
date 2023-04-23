@@ -5,6 +5,7 @@ import {
 	IPostLoginResponse,
 	IPostSignUpRequest,
 	IPostSignUpResponse,
+	RoleTypes,
 } from "@eurovision-game-monorepo/core";
 import { paths } from "apps/eurovision-game-ui/src/paths";
 
@@ -42,6 +43,14 @@ export const authApi = createApi({
 				headers: [["Content-Type", "application/json"]],
 			}),
 		}),
+		getRoles: builder.query<RoleTypes[], void>({
+			query: () => ({
+				method: HttpMethods.GET,
+				url: paths.authRoles,
+				credentials: "include",
+				headers: [["Content-Type", "application/json"]],
+			}),
+		}),
 	}),
 });
 
@@ -49,4 +58,5 @@ export const {
 	usePostLoginDetailsMutation,
 	useCreateUserMutation,
 	useLogOutMutation,
+	useGetRolesQuery,
 } = authApi;
