@@ -1,11 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
-import { adminApi } from "../pages/AdminPage/@modules/admin.api";
-import { scoreApi } from "../pages/AdminPage/@modules/score.api";
+import { adminApi } from "../pages/@modules/admin.api";
+import { scoreApi } from "../pages/@modules/score.api";
 import { authApi } from "../pages/LoginPage/@modules/auth.api";
 import { votesApi } from "../pages/VotingPage/@modules/votes.api";
 import { authMiddleware } from "./authMiddleware";
-import { countryApi } from "../pages/AdminPage/@modules/country.api";
+import { countryApi } from "../pages/@modules/country.api";
 
 export const store = configureStore({
 	reducer: {

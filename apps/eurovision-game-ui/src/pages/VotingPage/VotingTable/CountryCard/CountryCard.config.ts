@@ -1,4 +1,4 @@
-import { CountryTypes } from "@eurovision-game-monorepo/core";
+import { Deprecated_CountryTypes as CountryTypes } from "@eurovision-game-monorepo/core";
 
 type TCountryInfo = {
 	artist: string;
@@ -9,7 +9,7 @@ type TCountryData = {
 	[key in CountryTypes]: TCountryInfo;
 };
 // TODO: move to database? Maybe add data via admin portal for the future
-export const countryData: TCountryData = {
+export const deprecated_countryData: TCountryData = {
 	[CountryTypes.UKRAINE]: {
 		artist: "Kalush",
 		song: "Stefania",

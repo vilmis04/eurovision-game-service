@@ -8,4 +8,4 @@ export const styles: ISx = {
 	}),
 	song: { fontWeight: "bold" },
 	button: ({ spacing }) => ({ padding: "0 25%", paddingTop: spacing(1) }),
-}
+};

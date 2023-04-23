@@ -20,6 +20,8 @@ import { CountryModule } from "../modules/country/country.module";
 })
 export class AppModule {
 	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(AuthMiddleware).forRoutes(RootPaths.VOTES);
+		consumer
+			.apply(AuthMiddleware)
+			.forRoutes(RootPaths.VOTES, RootPaths.ADMIN);
 	}
 }

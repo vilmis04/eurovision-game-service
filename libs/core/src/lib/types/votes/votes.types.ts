@@ -1,3 +1,12 @@
+import { GameTypes, TCountries } from "../admin";
+
+export interface IVotes {
+	username: string;
+	type: GameTypes;
+	year: string;
+	votes: TCountries;
+}
+
 export enum VoteTypes {
 	P1 = "1",
 	P2_5 = "2-5",

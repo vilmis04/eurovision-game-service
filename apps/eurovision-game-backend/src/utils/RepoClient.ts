@@ -1,7 +1,7 @@
 import {
 	GameTypes,
 	IGetUserResponse,
-	IGetVotesResponse,
+	IGetVotesRequest,
 	RoleTypes,
 } from "@eurovision-game-monorepo/core";
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
@@ -9,8 +9,8 @@ import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { Collection, MongoClient, ObjectId, ServerApiVersion } from "mongodb";
 import { Admin } from "../modules/admin/entities/admin.entity";
 import { Score } from "../modules/score/entities/score.entity";
-import { initialVotes } from "./RepoClient.config";
 import { Country } from "../modules/country/entities/country.entity";
+import { Votes } from "../modules/votes/entities/Votes";
 
 enum CollectionTypes {
 	VOTES = "votes",
@@ -24,20 +24,11 @@ enum DatabaseTypes {
 	EUROVISION_GAME = "eurovision-game",
 }
 
-// TODO: move IGetVotes & IEditVotes to types file
-interface IGetVotes {
-	username: string;
-}
-
-interface IEditVotes extends IGetVotes {
-	votes: IGetVotesResponse;
-}
-
 // TODO: refactor repoClient to separate modular repositories
 @Injectable()
 export class RepoClient {
 	private readonly client: MongoClient;
-	private votesCollection: Collection<IGetVotesResponse>;
+	private votesCollection: Collection<Votes>;
 	private usersCollection: Collection<IGetUserResponse>;
 	private adminCollection: Collection<Admin>;
 	private scoresCollection: Collection<Score>;
@@ -55,7 +46,7 @@ export class RepoClient {
 			Logger.log("[RepoClient] Connection OK");
 			this.votesCollection = this.client
 				.db(DatabaseTypes.EUROVISION_GAME)
-				.collection<IGetVotesResponse>(CollectionTypes.VOTES);
+				.collection<Votes>(CollectionTypes.VOTES);
 			this.usersCollection = this.client
 				.db(DatabaseTypes.EUROVISION_GAME)
 				.collection<IGetUserResponse>(CollectionTypes.USERS);
@@ -77,17 +68,16 @@ export class RepoClient {
 
 	// VOTES
 
-	async getVotesByUserName({ username }: IGetVotes) {
-		return await this.votesCollection.findOne({ username });
+	async getVotes({ username, type, year }: IGetVotesRequest) {
+		return await this.votesCollection.findOne({ username, type, year });
 	}
 
-	async editVotesByUserName({ username, votes }: IEditVotes) {
-		// TODO: add error handling
+	async updateVotes({ username, type, year, votes }: Votes) {
 		const response = await this.votesCollection.updateOne(
-			{ username },
+			{ username, type, year },
 			{
 				$set: {
-					...votes,
+					votes,
 				},
 			},
 			{ upsert: true }
@@ -95,14 +85,11 @@ export class RepoClient {
 
 		return response;
 	}
-	async createNewUserVotes(username: string) {
-		// TODO: add error handling
-		const response = await this.votesCollection.insertOne({
-			username,
-			...initialVotes,
-		});
+	async createVotes(voteData: IGetVotesRequest) {
+		const votes = { ...voteData, votes: {} };
+		await this.votesCollection.insertOne(votes);
 
-		return response;
+		return votes;
 	}
 
 	// USERS

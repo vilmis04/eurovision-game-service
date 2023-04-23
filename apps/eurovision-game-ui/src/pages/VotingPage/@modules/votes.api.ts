@@ -1,33 +1,34 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { IGetVotesResponse } from "@eurovision-game-monorepo/core";
+import {
+	GameTypes,
+	IGetVotesResponse,
+	IUpdateVotesRequest,
+	TCountries,
+} from "@eurovision-game-monorepo/core";
 import { HttpMethods } from "@eurovision-game-monorepo/core";
 
-interface IGetVotesRequest {
-	votes: IGetVotesResponse;
-}
+type TGetVotesParams = { type: GameTypes; year: string };
 
 export const votesApi = createApi({
 	reducerPath: "votesApi",
 	baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:4200/api/" }),
 	endpoints: (builder) => ({
-		getVotesByUsername: builder.query<IGetVotesResponse, void>({
-			query: () => ({
-				url: "votes",
+		getVotes: builder.query<TCountries, TGetVotesParams>({
+			query: ({ type, year }) => ({
+				url: `votes/${year}/${type}`,
 				credentials: "include",
 			}),
 		}),
-		editVotesByUsername: builder.mutation<
-			IGetVotesResponse,
-			IGetVotesRequest
-		>({
-			query: ({ votes }) => ({
+
+		updateVotes: builder.mutation<IGetVotesResponse, IUpdateVotesRequest>({
+			query: (requestBody) => ({
 				url: "votes",
 				method: HttpMethods.PATCH,
-				body: votes,
+				body: requestBody,
+				credentials: "include",
 			}),
 		}),
 	}),
 });
 
-export const { useGetVotesByUsernameQuery, useEditVotesByUsernameMutation } =
-	votesApi;
+export const { useGetVotesQuery, useUpdateVotesMutation } = votesApi;

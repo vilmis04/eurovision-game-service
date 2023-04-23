@@ -18,7 +18,7 @@ import {
 	useDeleteCountryMutation,
 	useGetCountryListQuery,
 	useUpdateCountryMutation,
-} from "../@modules/country.api";
+} from "../../@modules/country.api";
 import { ChangeEvent, useState } from "react";
 import { Field, Form, Formik } from "formik";
 import FormField from "apps/eurovision-game-ui/src/components/FormField/FormField";
@@ -49,7 +49,7 @@ const CountryConfigForm: React.FC<ICountryConfigFormProps> = ({
 		CountryActions.UPDATE
 	);
 
-	const isSemiFinal = type === GameTypes.SEMI_1 || GameTypes.SEMI_2;
+	const isFinal = type === GameTypes.FINAL;
 
 	const toggleAddCountryPopup = () =>
 		setShowAddCountryPopup(!showAddCountryPopup);
@@ -117,7 +117,16 @@ const CountryConfigForm: React.FC<ICountryConfigFormProps> = ({
 											submitForm,
 										}) => (
 											<Form>
-												{isSemiFinal ? (
+												{isFinal ? (
+													<FormField
+														// TODO: move sx
+														sx={{
+															maxWidth: "100px",
+														}}
+														name="finalScore"
+														label="Final Result"
+													/>
+												) : (
 													<Field
 														name="semiFinalScore"
 														as={Checkbox}
@@ -140,17 +149,8 @@ const CountryConfigForm: React.FC<ICountryConfigFormProps> = ({
 															submitForm();
 														}}
 													/>
-												) : (
-													<FormField
-														// TODO: move sx
-														sx={{
-															maxWidth: "100px",
-														}}
-														name="finalScore"
-														label="Final Result"
-													/>
 												)}
-												{!isSemiFinal && (
+												{isFinal && (
 													<Button
 														onClick={
 															handleUpdateClick

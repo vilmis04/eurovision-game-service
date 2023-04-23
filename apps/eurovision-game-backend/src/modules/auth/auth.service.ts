@@ -22,8 +22,6 @@ export class AuthService {
 	): Promise<ILoginResponse> {
 		const user = await this.repoClient.getUserByUsername(username);
 
-		console.log({ user });
-
 		if (!user) {
 			response.status(400).send();
 			throw new Error("Incorrect username");

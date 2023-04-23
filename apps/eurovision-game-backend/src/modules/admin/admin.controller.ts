@@ -6,7 +6,6 @@ import { AdminRoleGuard } from "./adminRole.guard";
 
 // TODO: add a RoleGuard
 @Controller(RootPaths.ADMIN)
-@UseGuards(AdminRoleGuard)
 export class AdminController {
 	constructor(private readonly adminService: AdminService) {}
 
@@ -15,6 +14,7 @@ export class AdminController {
 		return await this.adminService.getAdminConfig();
 	}
 
+	@UseGuards(AdminRoleGuard)
 	@Patch()
 	async updateAdminConfig(@Body() body: Admin) {
 		return await this.adminService.updateAdminConfig(body);

@@ -5,16 +5,10 @@ import AdminConfigForm from "./AdminConfigForm/AdminConfigForm";
 import {
 	useGetAdminConfigQuery,
 	useUpdateAdminConfigMutation,
-} from "./@modules/admin.api";
+} from "../@modules/admin.api";
 // import ScoreForm from "./ScoreForm/ScoreForm";
 import { CircularProgress } from "@mui/material";
 import CountryConfigForm from "./CountryConfigForm/CountryConfigForm";
-
-// TODO: CONTINUE
-/*
-6. AuthGuard
-7. RoleGuard
-*/
 
 const AdminPage: React.FC = () => {
 	// TODO: add effect to handle success / errors (snackbar or banner?)
@@ -27,7 +21,6 @@ const AdminPage: React.FC = () => {
 
 	useEffect(() => {
 		// TODO: show something for success (snackbar?)
-		// TODO: we really need it ^^^
 	}, [isAdminConfigUpdateSuccess]);
 
 	const handleAdminConfigUpdate = async (
@@ -48,7 +41,6 @@ const AdminPage: React.FC = () => {
 		<>
 			{adminData ? (
 				<>
-					{/* <ScoreForm type={adminData.type} year={adminData.year} /> */}
 					<CountryConfigForm
 						year={adminData.year}
 						type={adminData.type}
