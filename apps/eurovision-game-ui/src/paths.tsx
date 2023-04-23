@@ -15,6 +15,16 @@ enum AuthPaths {
 	AUTH_ROLES = "auth/roles",
 }
 
+enum AdminPaths {
+	PROMOTE = "promote",
+	SUBMIT_FINAL = "submit-final",
+}
+
+const adminPaths = {
+	promote: `${RootPaths.ADMIN}/${AdminPaths.PROMOTE}`,
+	submitFinal: `${RootPaths.ADMIN}/${AdminPaths.SUBMIT_FINAL}`,
+};
+
 export const paths = {
 	home: RootPaths.HOME,
 	login: RootPaths.LOGIN,
@@ -27,4 +37,6 @@ export const paths = {
 	scores: RootPaths.SCORES,
 	country: RootPaths.COUNTRY,
 	forbidden: RootPaths.FORBIDDEN,
+	promote: adminPaths.promote,
+	submitFinal: adminPaths.submitFinal,
 };

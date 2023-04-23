@@ -172,6 +172,10 @@ export class RepoClient {
 		return await this.countryCollection.insertOne(country);
 	}
 
+	async createManyCountries(countries: Country[]) {
+		return await this.countryCollection.insertMany(countries);
+	}
+
 	async findCountries(year: string, type: GameTypes) {
 		return this.countryCollection.find({ year, type }).toArray();
 	}

@@ -1,6 +1,6 @@
-import { Controller, Get, Body, Patch, UseGuards } from "@nestjs/common";
+import { Controller, Get, Body, Patch, UseGuards, Post } from "@nestjs/common";
 import { AdminService } from "./admin.service";
-import { RootPaths } from "../../types/paths";
+import { AdminPaths, RootPaths } from "../../types/paths";
 import { Admin } from "./entities/admin.entity";
 import { AdminRoleGuard } from "./adminRole.guard";
 
@@ -18,5 +18,17 @@ export class AdminController {
 	@Patch()
 	async updateAdminConfig(@Body() body: Admin) {
 		return await this.adminService.updateAdminConfig(body);
+	}
+
+	@UseGuards(AdminRoleGuard)
+	@Post(AdminPaths.PROMOTE)
+	async promoteToFinal() {
+		return await this.adminService.promoteToFinal();
+	}
+
+	@UseGuards(AdminRoleGuard)
+	@Post(AdminPaths.SUBMIT_FINAL)
+	async submitFinalScore() {
+		return await this.adminService.submitFinalScore();
 	}
 }

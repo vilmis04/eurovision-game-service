@@ -11,3 +11,8 @@ export enum AuthPaths {
 	SIGN_UP = "signUp",
 	ROLES = "roles",
 }
+
+export enum AdminPaths {
+	PROMOTE = "promote",
+	SUBMIT_FINAL = "submit-final",
+}

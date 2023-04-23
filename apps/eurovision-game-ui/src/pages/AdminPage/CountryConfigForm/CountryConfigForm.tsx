@@ -19,11 +19,12 @@ import {
 	useGetCountryListQuery,
 	useUpdateCountryMutation,
 } from "../../@modules/country.api";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { Field, Form, Formik } from "formik";
 import FormField from "apps/eurovision-game-ui/src/components/FormField/FormField";
 import SaveIcon from "@mui/icons-material/Save";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { usePromoteToFinalMutation } from "../../@modules/admin.api";
 
 interface ICountryConfigFormProps {
 	type: GameTypes;
@@ -43,16 +44,27 @@ const CountryConfigForm: React.FC<ICountryConfigFormProps> = ({
 	const [createCountry, { isLoading }] = useCreateCountryMutation();
 	const [updateCountry] = useUpdateCountryMutation();
 	const [deleteCountry] = useDeleteCountryMutation();
+	// @ts-ignore
+	const [promoteToFinal, { isSuccess: isPromoteToFinalSuccess }] =
+		usePromoteToFinalMutation();
 
 	const [showAddCountryPopup, setShowAddCountryPopup] = useState(false);
+	const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
 	const [countryAction, setCountryAction] = useState<CountryActions>(
 		CountryActions.UPDATE
 	);
 
+	useEffect(() => {
+		if (isPromoteToFinalSuccess) {
+			toggleConfirmationPopup();
+		}
+	}, [isPromoteToFinalSuccess]);
+
 	const isFinal = type === GameTypes.FINAL;
 
-	const toggleAddCountryPopup = () =>
-		setShowAddCountryPopup(!showAddCountryPopup);
+	const toggleAddCountryPopup = () => setShowAddCountryPopup((s) => !s);
+
+	const toggleConfirmationPopup = () => setShowConfirmationPopup((s) => !s);
 
 	const handleCreateCountry = async (values: ICreateCountryFormData) => {
 		const requestBody = {
@@ -86,6 +98,15 @@ const CountryConfigForm: React.FC<ICountryConfigFormProps> = ({
 
 	const handleUpdateClick = () => setCountryAction(CountryActions.UPDATE);
 	const handleDeleteClick = () => setCountryAction(CountryActions.DELETE);
+
+	const handlePromoteToFinal = () => {
+		promoteToFinal();
+	};
+	const handleSubmitFinalScore = () => console.log("submit final score");
+
+	const handleNextStage = isFinal
+		? handleSubmitFinalScore
+		: handlePromoteToFinal;
 
 	// TODO: add a spinner until the results
 	return (
@@ -178,6 +199,34 @@ const CountryConfigForm: React.FC<ICountryConfigFormProps> = ({
 				<CircularProgress />
 			)}
 			<Button onClick={toggleAddCountryPopup}>Add country</Button>
+			<Button onClick={toggleConfirmationPopup}>
+				{isFinal ? "Calculate score" : "Promote to final"}
+			</Button>
+			{/* TODO: Move to a separate component */}
+			<Dialog open={showConfirmationPopup}>
+				<Box
+					sx={{
+						padding: 2,
+						display: "flex",
+						flexDirection: "column",
+						alignItems: "center",
+					}}
+				>
+					<Typography
+						variant="body1"
+						sx={{ fontSize: "20px" }}
+					>{`Confirm ${
+						isFinal ? "final score" : "country promotion"
+					}?`}</Typography>
+					<Box>
+						<Button onClick={handleNextStage}>Confirm</Button>
+						<Button onClick={toggleConfirmationPopup}>
+							Cancel
+						</Button>
+					</Box>
+				</Box>
+			</Dialog>
+			{/* Move to separate component */}
 			<Dialog open={showAddCountryPopup} onClose={toggleAddCountryPopup}>
 				<Box>
 					<Formik

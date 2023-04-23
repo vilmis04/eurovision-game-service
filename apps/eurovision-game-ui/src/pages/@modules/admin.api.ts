@@ -1,7 +1,7 @@
 import { HttpMethods, IAdminFormData } from "@eurovision-game-monorepo/core";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/dist/query/react";
-import { paths } from "apps/eurovision-game-ui/src/paths";
 import { UpdateResult } from "mongodb";
+import { paths } from "../../paths";
 
 export enum Tags {
 	ADMIN = "admin",
@@ -32,8 +32,28 @@ export const adminApi = createApi({
 			}),
 			invalidatesTags: [Tags.ADMIN],
 		}),
+		promoteToFinal: builder.mutation<void, void>({
+			query: () => ({
+				method: HttpMethods.POST,
+				url: paths.promote,
+				credentials: "include",
+				headers: [["Content-Type", "application/json"]],
+			}),
+		}),
+		submitFinalScore: builder.mutation<void, void>({
+			query: () => ({
+				method: HttpMethods.POST,
+				url: paths.submitFinal,
+				credentials: "include",
+				headers: [["Content-Type", "application/json"]],
+			}),
+		}),
 	}),
 });
 
-export const { useGetAdminConfigQuery, useUpdateAdminConfigMutation } =
-	adminApi;
+export const {
+	useGetAdminConfigQuery,
+	useUpdateAdminConfigMutation,
+	usePromoteToFinalMutation,
+	useSubmitFinalScoreMutation,
+} = adminApi;
