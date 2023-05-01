@@ -7,7 +7,7 @@ import {
 	Typography,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { useLogOutMutation } from "../../pages/LoginPage/@modules/auth.api";
+import { useLogOutMutation } from "../../pages/@modules/auth.api";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { paths } from "../../paths";

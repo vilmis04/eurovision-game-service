@@ -3,26 +3,35 @@ import { Button, Grid, Typography } from "@mui/material";
 import { Form, Formik } from "formik";
 import { initialValues } from "./LoginPage.configs";
 import { styles } from "./LoginPage.styles";
-import { usePostLoginDetailsMutation } from "./@modules/auth.api";
+import {
+	useGetAuthStatusQuery,
+	usePostLoginDetailsMutation,
+} from "../@modules/auth.api";
 import FormField from "../../components/FormField/FormField";
 import { loginValidationSchema } from "./LoginPage.validation.schema";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { paths } from "../../paths";
+import { useJoinGroupMutation } from "../@modules/group.api";
 
 const LoginPage: React.FC = () => {
 	// TODO: isError handling
+	// @ts-ignore
 	const [postLoginDetails, { isSuccess }] = usePostLoginDetailsMutation();
+	const [joinGroup] = useJoinGroupMutation();
+	const { data: isAuthenticated } = useGetAuthStatusQuery();
+
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		if (isSuccess) {
+		if (isSuccess || isAuthenticated) {
 			navigate(paths.home);
 		}
-	}, [isSuccess]);
+	}, [isSuccess, isAuthenticated]);
 
-	const handleSubmit = (values: IPostLoginRequest) => {
-		postLoginDetails(values);
+	const handleSubmit = async (values: IPostLoginRequest) => {
+		await postLoginDetails(values);
+		await joinGroup();
 	};
 
 	const navigateToSignupPage = () => navigate(`/${paths.signup}`);

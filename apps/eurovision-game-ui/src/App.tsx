@@ -13,6 +13,8 @@ const VotingPage = lazy(() => import("./pages/VotingPage/VotingPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage/LoginPage"));
 const SignupPage = lazy(() => import("./pages/SignupPage/SignupPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage/AdminPage"));
+const GroupPage = lazy(() => import("./pages/GroupPage/GroupPage"));
+const JoinGroup = lazy(() => import("./components/JoinGroup/JoinGroup"));
 const ForbiddenScreen = lazy(
 	() => import("./components/ForbiddenScreen/ForbiddenScreen")
 );
@@ -29,6 +31,14 @@ const routes = [
 	{
 		path: paths.signup,
 		element: <SignupPage />,
+	},
+	{
+		path: paths.groups,
+		element: <GroupPage />,
+	},
+	{
+		path: "/groups/join/:token1/:token2/:token3",
+		element: <JoinGroup />,
 	},
 ];
 

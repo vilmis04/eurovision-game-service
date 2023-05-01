@@ -1,35 +1,18 @@
-import { IGetUserResponse } from "@eurovision-game-monorepo/core";
-import { Body, Controller, Post, Res } from "@nestjs/common";
-import { Response } from "express";
+import { Body, Controller, Patch, Req } from "@nestjs/common";
+import { Request } from "express";
 import { UsersService } from "./users.service";
+import { RootPaths } from "../../types/paths";
+import { User } from "./entities/user.entity";
 
-enum UserPaths {
-	SIGN_UP = "signup",
-}
-
-const MAX_AGE = 1000 * 24 * 3600;
-
-@Controller("users")
+@Controller(RootPaths.USERS)
 export class UsersController {
 	constructor(private readonly userService: UsersService) {}
 
-	@Post(UserPaths.SIGN_UP)
-	async signUp(
-		@Res({ passthrough: true }) response: Response,
-		@Body() { username, password }: IGetUserResponse
+	@Patch()
+	async updateUser(
+		@Req() request: Request,
+		@Body() requestBody: Partial<User>
 	) {
-		const result = await this.userService.signUp(
-			response,
-			username,
-			password
-		);
-		if (!result.success) return result;
-
-		response.cookie("jwt", result.access_token, {
-			maxAge: MAX_AGE,
-			httpOnly: true,
-		});
-
-		return { success: true };
+		return await this.userService.updateUser(request, requestBody);
 	}
 }

@@ -6,11 +6,13 @@ enum RootPaths {
 	SCORES = "scores",
 	COUNTRY = "country",
 	FORBIDDEN = "/forbidden",
+	GROUPS = "groups",
+	AUTH = "auth",
 }
 
 enum AuthPaths {
 	AUTH_LOGIN = "auth/login",
-	AUTH_SIGNUP = "users/signup",
+	AUTH_SIGNUP = "auth/signup",
 	AUTH_LOGOUT = "auth/logout",
 	AUTH_ROLES = "auth/roles",
 }
@@ -26,6 +28,7 @@ const adminPaths = {
 };
 
 export const paths = {
+	auth: RootPaths.AUTH,
 	home: RootPaths.HOME,
 	login: RootPaths.LOGIN,
 	signup: RootPaths.SIGNUP,
@@ -37,6 +40,8 @@ export const paths = {
 	scores: RootPaths.SCORES,
 	country: RootPaths.COUNTRY,
 	forbidden: RootPaths.FORBIDDEN,
+	groups: RootPaths.GROUPS,
 	promote: adminPaths.promote,
 	submitFinal: adminPaths.submitFinal,
+	joinGroup: `${RootPaths.AUTH}/${RootPaths.GROUPS}/join`,
 };

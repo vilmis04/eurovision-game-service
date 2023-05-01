@@ -1,6 +1,6 @@
 import { useEffect, FC } from "react";
 import { useNavigate } from "react-router-dom";
-import { useGetRolesQuery } from "../../pages/LoginPage/@modules/auth.api";
+import { useGetRolesQuery } from "../../pages/@modules/auth.api";
 import PageLayout from "../PageLayout/PageLayout";
 import { RoleTypes } from "@eurovision-game-monorepo/core";
 

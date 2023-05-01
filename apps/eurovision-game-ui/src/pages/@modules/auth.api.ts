@@ -51,6 +51,15 @@ export const authApi = createApi({
 				headers: [["Content-Type", "application/json"]],
 			}),
 		}),
+		getAuthStatus: builder.query<boolean, void>({
+			query: () => ({
+				method: HttpMethods.GET,
+				url: paths.auth,
+				credentials: "include",
+				headers: [["Content-Type", "application/json"]],
+			}),
+			keepUnusedDataFor: 0,
+		}),
 	}),
 });
 
@@ -59,4 +68,5 @@ export const {
 	useCreateUserMutation,
 	useLogOutMutation,
 	useGetRolesQuery,
+	useGetAuthStatusQuery,
 } = authApi;

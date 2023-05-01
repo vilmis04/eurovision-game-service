@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import FormField from "../../components/FormField/FormField";
 import { paths } from "../../paths";
-import { useCreateUserMutation } from "../LoginPage/@modules/auth.api";
+import { useCreateUserMutation } from "../@modules/auth.api";
 import { initialValues } from "./SignupPage.configs";
 import { styles } from "./SignupPage.styles";
 import { ISignupFormData } from "./SignupPage.types";

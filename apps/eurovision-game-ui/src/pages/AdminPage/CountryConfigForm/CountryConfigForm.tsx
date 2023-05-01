@@ -109,6 +109,7 @@ const CountryConfigForm: React.FC<ICountryConfigFormProps> = ({
 		: handlePromoteToFinal;
 
 	// TODO: add a spinner until the results
+	// TODO: move all sx
 	return (
 		<Box>
 			{countryList ? (
@@ -203,7 +204,10 @@ const CountryConfigForm: React.FC<ICountryConfigFormProps> = ({
 				{isFinal ? "Calculate score" : "Promote to final"}
 			</Button>
 			{/* TODO: Move to a separate component */}
-			<Dialog open={showConfirmationPopup}>
+			<Dialog
+				open={showConfirmationPopup}
+				onClose={toggleConfirmationPopup}
+			>
 				<Box
 					sx={{
 						padding: 2,

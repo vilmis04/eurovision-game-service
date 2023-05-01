@@ -6,7 +6,7 @@ import { GameTypes, IVotes } from "@eurovision-game-monorepo/core";
 import {
 	useUpdateVotesMutation,
 	useGetVotesQuery,
-} from "../@modules/votes.api";
+} from "../../@modules/votes.api";
 import { useGetCountryListQuery } from "../../@modules/country.api";
 import { TVoteFormData } from "./VotingTable.types";
 
