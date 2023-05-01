@@ -6,7 +6,7 @@ import {
 	Alert,
 	Box,
 	Button,
-	ButtonBase,
+	IconButton,
 	Snackbar,
 	Typography,
 } from "@mui/material";
@@ -31,6 +31,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import Popup from "../../components/Popup/Popup";
 import { IGroupForAction, SubmitTypes } from "./GroupPage.types";
 import { getPopupConfig } from "./GroupPage.config";
+import { getUsernameFromCookie } from "../../utils/getUsernameFromCookie";
 
 const GroupPage: React.FC = () => {
 	const { data: groups } = useGetGroupsQuery({
@@ -133,10 +134,7 @@ const GroupPage: React.FC = () => {
 		toggleCreateGroupDialog();
 	};
 
-	const username = document.cookie
-		.split("; ")
-		.find((cookie) => cookie.startsWith("username"))
-		?.split("=")[1];
+	const username = getUsernameFromCookie();
 
 	const checkOwner = (owner: string) => owner === username;
 
@@ -173,7 +171,7 @@ const GroupPage: React.FC = () => {
 									>
 										<Box>
 											{checkOwner(owner) && (
-												<ButtonBase
+												<IconButton
 													sx={{ margin: 1 }}
 													onClick={() =>
 														handleInvitation({
@@ -183,12 +181,12 @@ const GroupPage: React.FC = () => {
 													}
 												>
 													<LinkIcon />
-												</ButtonBase>
+												</IconButton>
 											)}
 										</Box>
 										<Box>
 											{checkOwner(owner) && (
-												<ButtonBase
+												<IconButton
 													sx={{ margin: 1 }}
 													onClick={() =>
 														handleEdit({
@@ -199,9 +197,9 @@ const GroupPage: React.FC = () => {
 													value={name}
 												>
 													<EditIcon />
-												</ButtonBase>
+												</IconButton>
 											)}
-											<ButtonBase
+											<IconButton
 												sx={{ margin: 1 }}
 												onClick={() =>
 													checkOwner(owner)
@@ -220,7 +218,7 @@ const GroupPage: React.FC = () => {
 												) : (
 													<LogoutIcon />
 												)}
-											</ButtonBase>
+											</IconButton>
 										</Box>
 									</Box>
 									{members.map((member) => (
