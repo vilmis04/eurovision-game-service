@@ -6,12 +6,13 @@ import {
 	TCountries,
 } from "@eurovision-game-monorepo/core";
 import { HttpMethods } from "@eurovision-game-monorepo/core";
+import { BASE_URL } from "./admin.api";
 
 type TGetVotesParams = { type: GameTypes; year: string };
 
 export const votesApi = createApi({
 	reducerPath: "votesApi",
-	baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:4200/api/" }),
+	baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
 	endpoints: (builder) => ({
 		getVotes: builder.query<TCountries, TGetVotesParams>({
 			query: ({ type, year }) => ({

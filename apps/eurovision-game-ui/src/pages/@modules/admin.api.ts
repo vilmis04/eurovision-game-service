@@ -3,6 +3,8 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/dist/query/react";
 import { UpdateResult } from "mongodb";
 import { paths } from "../../paths";
 
+export const BASE_URL = "http://134.122.81.2/api/";
+
 export enum Tags {
 	ADMIN = "admin",
 }
@@ -10,7 +12,7 @@ export enum Tags {
 export const adminApi = createApi({
 	reducerPath: "adminApi",
 	// TODO: move baseUrl to .env
-	baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:4200/api/" }),
+	baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
 	tagTypes: Object.values(Tags),
 	endpoints: (builder) => ({
 		getAdminConfig: builder.query<IAdminFormData, void>({

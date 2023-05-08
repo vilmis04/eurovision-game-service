@@ -6,12 +6,12 @@ import {
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/dist/query/react";
 import { paths } from "apps/eurovision-game-ui/src/paths";
 import { UpdateResult } from "mongodb";
-import { Tags } from "./admin.api";
+import { BASE_URL, Tags } from "./admin.api";
 
 export const scoreApi = createApi({
 	reducerPath: "scoreApi",
 	// TODO: move baseUrl to .env
-	baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:4200/api/" }),
+	baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
 	tagTypes: Object.values(Tags),
 	endpoints: (builder) => ({
 		createScore: builder.mutation<string, IScoreFormData>({

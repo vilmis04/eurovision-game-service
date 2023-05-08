@@ -7,6 +7,7 @@ import {
 import { HttpMethods } from "@eurovision-game-monorepo/core";
 import { paths } from "apps/eurovision-game-ui/src/paths";
 import { DeleteResult, InsertOneResult, UpdateResult, WithId } from "mongodb";
+import { BASE_URL } from "./admin.api";
 
 type TGroupIdParam = { id: string };
 type TGetGroupsParams = { year: string };
@@ -22,7 +23,7 @@ enum GroupTags {
 
 export const groupApi = createApi({
 	reducerPath: "groupApi",
-	baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:4200/api/" }),
+	baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
 	tagTypes: Object.values(GroupTags),
 	endpoints: (builder) => ({
 		createGroup: builder.mutation<

@@ -8,11 +8,12 @@ import {
 	RoleTypes,
 } from "@eurovision-game-monorepo/core";
 import { paths } from "apps/eurovision-game-ui/src/paths";
+import { BASE_URL } from "./admin.api";
 
 export const authApi = createApi({
 	reducerPath: "authApi",
 	// TODO: move baseUrl to .env
-	baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:4200/api/" }),
+	baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
 	endpoints: (builder) => ({
 		postLoginDetails: builder.mutation<
 			IPostLoginResponse,

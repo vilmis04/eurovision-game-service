@@ -6,6 +6,7 @@ import {
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/dist/query/react";
 import { paths } from "apps/eurovision-game-ui/src/paths";
 import { DeleteResult, InsertOneResult, UpdateResult } from "mongodb";
+import { BASE_URL } from "./admin.api";
 
 export enum Tags {
 	ADMIN = "admin",
@@ -28,7 +29,7 @@ interface IUpdateCountryRequestBody extends Partial<ICountry> {
 export const countryApi = createApi({
 	reducerPath: "countryApi",
 	// TODO: move baseUrl to .env
-	baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:4200/api/" }),
+	baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
 	tagTypes: Object.values(Tags),
 	endpoints: (builder) => ({
 		getCountryList: builder.query<ICountry[], TCountryListParams>({
