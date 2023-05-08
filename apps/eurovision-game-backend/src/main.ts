@@ -20,6 +20,7 @@ async function bootstrap() {
 		credentials: true,
 		// TODO: add real origins (after hosting)
 		origin: [
+			process.env.BASE_URL || "",
 			"http://localhost:3000",
 			"http://127.0.0.1:3000",
 			"http://192.168.1.205:3000",

@@ -103,7 +103,7 @@ export class GroupService {
 		const token = await this.jwtUtils.encryptLink(id);
 		const splitToken = token.split(".").join("/");
 		// TODO: update with correct link and move to .env
-		const link = `http://localhost:3000/groups/join/${splitToken}`;
+		const link = `${process.env.BASE_URL}/groups/join/${splitToken}`;
 
 		return link;
 	}
