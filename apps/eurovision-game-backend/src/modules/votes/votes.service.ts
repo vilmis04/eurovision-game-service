@@ -6,6 +6,9 @@ import {
 	IGetVotesRequest,
 	IUpdateVotesRequest,
 	TCountries,
+	TUserVoteResponse,
+	mapFinalVotesList,
+	mapSemiVotesList,
 } from "@eurovision-game-monorepo/core";
 import { RepoClient } from "../../utils/RepoClient";
 import { UpdateResult } from "mongodb";
@@ -59,5 +62,38 @@ export class VotesService {
 		});
 
 		return userVotes;
+	}
+
+	async getGroupVotes(
+		users: string[],
+		year: string
+	): Promise<TUserVoteResponse[]> {
+		return await Promise.all(
+			users.map(async (username): Promise<TUserVoteResponse> => {
+				const semiVotes1 = await this.repoClient.getVotes({
+					username,
+					year,
+					type: GameTypes.SEMI_1,
+				});
+
+				const semiVotes2 = await this.repoClient.getVotes({
+					username,
+					year,
+					type: GameTypes.SEMI_2,
+				});
+				const finalVotes = await this.repoClient.getVotes({
+					username,
+					year,
+					type: GameTypes.FINAL,
+				});
+
+				return {
+					member: username,
+					semi1: mapSemiVotesList(semiVotes1?.votes),
+					semi2: mapSemiVotesList(semiVotes2?.votes),
+					finals: mapFinalVotesList(finalVotes?.votes),
+				};
+			})
+		);
 	}
 }

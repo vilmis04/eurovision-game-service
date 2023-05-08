@@ -4,6 +4,7 @@ import {
 	ICreateCountryFormData,
 } from "@eurovision-game-monorepo/core";
 import {
+	Alert,
 	Box,
 	Button,
 	Card,
@@ -11,6 +12,7 @@ import {
 	CircularProgress,
 	Dialog,
 	Grid,
+	Snackbar,
 	Typography,
 } from "@mui/material";
 import {
@@ -24,7 +26,10 @@ import { Field, Form, Formik } from "formik";
 import FormField from "apps/eurovision-game-ui/src/components/FormField/FormField";
 import SaveIcon from "@mui/icons-material/Save";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import { usePromoteToFinalMutation } from "../../@modules/admin.api";
+import {
+	usePromoteToFinalMutation,
+	useSubmitFinalScoreMutation,
+} from "../../@modules/admin.api";
 
 interface ICountryConfigFormProps {
 	type: GameTypes;
@@ -47,24 +52,28 @@ const CountryConfigForm: React.FC<ICountryConfigFormProps> = ({
 	// @ts-ignore
 	const [promoteToFinal, { isSuccess: isPromoteToFinalSuccess }] =
 		usePromoteToFinalMutation();
+	// @ts-ignore
+	const [submitFinalScore, { isSuccess: isSubmitFinalScoreSuccess }] =
+		useSubmitFinalScoreMutation();
 
 	const [showAddCountryPopup, setShowAddCountryPopup] = useState(false);
 	const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
+	const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false);
 	const [countryAction, setCountryAction] = useState<CountryActions>(
 		CountryActions.UPDATE
 	);
 
 	useEffect(() => {
-		if (isPromoteToFinalSuccess) {
+		if (isPromoteToFinalSuccess || isSubmitFinalScoreSuccess) {
 			toggleConfirmationPopup();
+			toggleSnackbar();
 		}
-	}, [isPromoteToFinalSuccess]);
+	}, [isPromoteToFinalSuccess, isSubmitFinalScoreSuccess]);
 
 	const isFinal = type === GameTypes.FINAL;
-
 	const toggleAddCountryPopup = () => setShowAddCountryPopup((s) => !s);
-
 	const toggleConfirmationPopup = () => setShowConfirmationPopup((s) => !s);
+	const toggleSnackbar = () => setShowSuccessSnackbar((s) => !s);
 
 	const handleCreateCountry = async (values: ICreateCountryFormData) => {
 		const requestBody = {
@@ -102,7 +111,7 @@ const CountryConfigForm: React.FC<ICountryConfigFormProps> = ({
 	const handlePromoteToFinal = () => {
 		promoteToFinal();
 	};
-	const handleSubmitFinalScore = () => console.log("submit final score");
+	const handleSubmitFinalScore = () => submitFinalScore();
 
 	const handleNextStage = isFinal
 		? handleSubmitFinalScore
@@ -290,6 +299,19 @@ const CountryConfigForm: React.FC<ICountryConfigFormProps> = ({
 					</Formik>
 				</Box>
 			</Dialog>
+			<Snackbar
+				open={showSuccessSnackbar}
+				autoHideDuration={5000}
+				onClose={toggleSnackbar}
+			>
+				<Alert
+					onClose={toggleSnackbar}
+					severity="success"
+					sx={{ width: "100%" }}
+				>
+					Success!
+				</Alert>
+			</Snackbar>
 		</Box>
 	);
 };

@@ -36,6 +36,9 @@ export class AdminService {
 	}
 
 	async submitFinalScore() {
-		// TODO: add submit final score logic
+		const adminConfig = await this.getAdminConfig();
+		const updatedConfig = { ...adminConfig, calculateFinalsScore: true };
+
+		return await this.updateAdminConfig(updatedConfig);
 	}
 }

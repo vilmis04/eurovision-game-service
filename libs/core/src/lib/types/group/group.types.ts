@@ -1,3 +1,6 @@
+import { ICountry } from "../country";
+import { VoteTypes } from "../votes";
+
 export const initialValues = {
 	name: "",
 	_id: "",
@@ -14,3 +17,14 @@ export interface IGroup {
 	owner: string;
 	yearCreated: string;
 }
+
+export interface IFinalsList extends Pick<ICountry, "name"> {
+	position: VoteTypes;
+}
+
+export type TUserVoteResponse = {
+	member: string;
+	semi1: string[];
+	semi2: string[];
+	finals: IFinalsList[];
+};

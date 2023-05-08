@@ -6,10 +6,10 @@ import {
 	Alert,
 	Box,
 	Button,
-	IconButton,
 	Snackbar,
 	Typography,
 } from "@mui/material";
+import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import {
 	ICreateGroupFormData,
 	initialValues,
@@ -19,22 +19,30 @@ import {
 	useCreateGroupMutation,
 	useDeleteGroupMutation,
 	useGenerateInvitationLinkMutation,
+	useGetGroupUserVotesMutation,
 	useGetGroupsQuery,
 	useLeaveGroupMutation,
 	useUpdateGroupMutation,
 } from "../@modules/group.api";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import LinkIcon from "@mui/icons-material/Link";
-import LogoutIcon from "@mui/icons-material/Logout";
 import Popup from "../../components/Popup/Popup";
 import { IGroupForAction, SubmitTypes } from "./GroupPage.types";
 import { getPopupConfig } from "./GroupPage.config";
+import ScoreTable from "./ScoreTable/ScoreTable";
 import { getUsernameFromCookie } from "../../utils/getUsernameFromCookie";
+import { useGetAdminConfigQuery } from "../@modules/admin.api";
+import { useGetCountryList } from "./utils/useGetCountryList";
+import CenterSpinner from "../../components/CenterSpinner/CenterSpinner";
 
 const GroupPage: React.FC = () => {
-	const { data: groups } = useGetGroupsQuery({
+	const { data: adminConfig } = useGetAdminConfigQuery();
+	const { semiWinnersList1, semiWinnersList2, finalsList } =
+		useGetCountryList(adminConfig?.type, adminConfig?.year);
+	const {
+		data: groups,
+		isFetching: isFetchingGroups,
+		isSuccess: isGetGroupsSuccess,
+	} = useGetGroupsQuery({
 		year: new Date().getFullYear().toString(),
 	});
 	const [showCreateGroupDialog, setShowCreateGroupDialog] = useState(false);
@@ -65,6 +73,11 @@ const GroupPage: React.FC = () => {
 		{ isSuccess: isLeaveGroupSuccess, reset: resetLeave },
 	] = useLeaveGroupMutation();
 	const [generateInvitationLink] = useGenerateInvitationLinkMutation();
+	const [
+		getGroupUserVotes,
+		// @ts-ignore
+		{ isSuccess: isGetUserVotesSuccess, data: userVotes },
+	] = useGetGroupUserVotesMutation();
 
 	const toggleCreateGroupDialog = () => setShowCreateGroupDialog((s) => !s);
 
@@ -88,6 +101,12 @@ const GroupPage: React.FC = () => {
 	useEffect(() => {
 		if (isSuccess) handleClose();
 	}, [isSuccess]);
+
+	useEffect(() => {
+		if (isGetGroupsSuccess) {
+			getGroupUserVotes(groups);
+		}
+	}, [isGetGroupsSuccess]);
 
 	const handleSubmit = async ({ name, _id }: ICreateGroupFormData) => {
 		if (submitType === SubmitTypes.CREATE) createGroup({ name });
@@ -134,131 +153,103 @@ const GroupPage: React.FC = () => {
 		toggleCreateGroupDialog();
 	};
 
-	const username = getUsernameFromCookie();
-
-	const checkOwner = (owner: string) => owner === username;
-
 	const popupConfig = getPopupConfig({ groupToEdit, link });
+	const username = getUsernameFromCookie();
 
 	// TODO: move all sx
 	return (
-		<Box>
-			<Box>
-				<Button
-					variant="outlined"
-					onClick={handleCreate}
-					sx={{ margin: 1 }}
-				>
-					Create group
-				</Button>
-			</Box>
-			<Box>
-				{groups && groups.length > 0 ? (
-					groups.map(({ _id, name, members, owner }) => (
-						<Box key={`${_id}`} sx={{ margin: 2 }}>
-							<Accordion sx={{ background: "#9dd2fa" }}>
-								<AccordionSummary
-									expandIcon={<ExpandMoreIcon />}
-								>
-									{name}
-								</AccordionSummary>
-								<AccordionDetails>
-									<Box
-										sx={{
-											display: "flex",
-											justifyContent: "space-between",
-										}}
-									>
-										<Box>
-											{checkOwner(owner) && (
-												<IconButton
-													sx={{ margin: 1 }}
-													onClick={() =>
-														handleInvitation({
-															_id: `${_id}`,
-															name,
-														})
-													}
-												>
-													<LinkIcon />
-												</IconButton>
+		<>
+			{isFetchingGroups ? (
+				<CenterSpinner />
+			) : (
+				<Box>
+					<Box>
+						<Button
+							variant="outlined"
+							onClick={handleCreate}
+							sx={{ margin: 1 }}
+						>
+							Create group
+						</Button>
+					</Box>
+					<Box>
+						{groups && groups.length > 0 ? (
+							groups.map((group) => (
+								<Box key={`${group._id}`} sx={{ margin: 2 }}>
+									<Accordion sx={{ background: "#9dd2fa" }}>
+										<AccordionSummary
+											expandIcon={<ExpandMoreIcon />}
+										>
+											{group.name}
+											{group.owner === username && (
+												<ManageAccountsIcon
+													sx={{
+														fontSize: "16px",
+														paddingLeft: 1,
+													}}
+												/>
 											)}
-										</Box>
-										<Box>
-											{checkOwner(owner) && (
-												<IconButton
-													sx={{ margin: 1 }}
-													onClick={() =>
-														handleEdit({
-															_id: `${_id}`,
-															name,
-														})
-													}
-													value={name}
-												>
-													<EditIcon />
-												</IconButton>
-											)}
-											<IconButton
-												sx={{ margin: 1 }}
-												onClick={() =>
-													checkOwner(owner)
-														? handleDelete({
-																_id: `${_id}`,
-																name,
-														  })
-														: handleLeave({
-																_id: `${_id}`,
-																name,
-														  })
+										</AccordionSummary>
+										<AccordionDetails
+											sx={{
+												paddingTop: 0,
+												marginTop: -2,
+											}}
+										>
+											<ScoreTable
+												group={group}
+												handleInvitation={
+													handleInvitation
 												}
-											>
-												{checkOwner(owner) ? (
-													<DeleteIcon />
-												) : (
-													<LogoutIcon />
-												)}
-											</IconButton>
-										</Box>
-									</Box>
-									{members.map((member) => (
-										<Box key={member}>{member}</Box>
-									))}
-								</AccordionDetails>
-							</Accordion>
-						</Box>
-					))
-				) : (
-					<Typography variant="subtitle1">
-						No groups to show
-					</Typography>
-				)}
-			</Box>
-			<Popup
-				cancelLabel={popupConfig[submitType].cancelLabel}
-				confirmLabel={popupConfig[submitType].confirmLabel}
-				isOpen={showCreateGroupDialog}
-				togglePopup={handleClose}
-				initialValues={groupToEdit || initialValues}
-				handleSubmit={handleSubmit}
-				isLoading={popupConfig[submitType].isLoading}
-			>
-				{popupConfig[submitType].component}
-			</Popup>
-			<Snackbar
-				open={showLinkCopiedSnackbar}
-				autoHideDuration={5000}
-				onClose={toggleLinkCopiedSnackbar}
-			>
-				<Alert
-					onClose={toggleLinkCopiedSnackbar}
-					severity="success"
-					sx={{ width: "100%" }}
-				>
-					Link copied!
-				</Alert>
-			</Snackbar>
-		</Box>
+												handleLeave={handleLeave}
+												handleDelete={handleDelete}
+												handleEdit={handleEdit}
+												semiWinnersList1={
+													semiWinnersList1
+												}
+												semiWinnersList2={
+													semiWinnersList2
+												}
+												finalsList={finalsList}
+												userVotes={userVotes}
+											/>
+										</AccordionDetails>
+									</Accordion>
+								</Box>
+							))
+						) : (
+							<Typography variant="subtitle1">
+								No groups to show
+							</Typography>
+						)}
+					</Box>
+					<Popup
+						cancelLabel={popupConfig[submitType].cancelLabel}
+						confirmLabel={popupConfig[submitType].confirmLabel}
+						isOpen={showCreateGroupDialog}
+						togglePopup={handleClose}
+						initialValues={groupToEdit || initialValues}
+						handleSubmit={handleSubmit}
+						isLoading={popupConfig[submitType].isLoading}
+					>
+						{popupConfig[submitType].component}
+					</Popup>
+					<Snackbar
+						open={showLinkCopiedSnackbar}
+						autoHideDuration={5000}
+						onClose={toggleLinkCopiedSnackbar}
+					>
+						<Alert
+							onClose={toggleLinkCopiedSnackbar}
+							severity="success"
+							sx={{ width: "100%" }}
+						>
+							Link copied!
+						</Alert>
+					</Snackbar>
+				</Box>
+			)}
+		</>
 	);
 };
 

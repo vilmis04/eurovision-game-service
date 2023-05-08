@@ -38,11 +38,18 @@ const AppBar: React.FC = () => {
 		}
 	}, [isSuccess]);
 
-	const handleLogout = () => logout();
+	useEffect(() => {
+		setIsDrawerOpen(false);
+	}, []);
+
+	const handleLogout = () => {
+		logout();
+		setIsDrawerOpen(false);
+	};
 
 	const navigateTo = (path: string) => {
 		navigate(path);
-		toggleDrawer();
+		setIsDrawerOpen(false);
 	};
 
 	return (

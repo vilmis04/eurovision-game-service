@@ -40,7 +40,7 @@ export const adminApi = createApi({
 				headers: [["Content-Type", "application/json"]],
 			}),
 		}),
-		submitFinalScore: builder.mutation<void, void>({
+		submitFinalScore: builder.mutation<UpdateResult, void>({
 			query: () => ({
 				method: HttpMethods.POST,
 				url: paths.submitFinal,

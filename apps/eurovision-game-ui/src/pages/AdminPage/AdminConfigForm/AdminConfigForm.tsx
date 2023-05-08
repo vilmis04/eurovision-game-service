@@ -1,6 +1,8 @@
 import { GameTypes, IAdminFormData } from "@eurovision-game-monorepo/core";
 import {
 	Button,
+	Checkbox,
+	FormControlLabel,
 	Grid,
 	MenuItem,
 	Select,
@@ -110,6 +112,21 @@ const AdminConfigForm: React.FC<IAdminConfigFormProps> = ({
 								)}
 							</Field>
 						</Grid>
+					</Grid>
+					<Grid container item justifyContent="center">
+						<FormControlLabel
+							control={
+								<Field name="isVotingDisabled">
+									{({ field }: FieldProps<boolean>) => (
+										<Checkbox
+											{...field}
+											checked={field.value}
+										/>
+									)}
+								</Field>
+							}
+							label={<Typography>Is voting disabled</Typography>}
+						/>
 					</Grid>
 					<Grid container sx={styles.saveButtonContainer}>
 						<Button

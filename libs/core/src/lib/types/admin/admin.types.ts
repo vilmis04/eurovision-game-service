@@ -8,6 +8,8 @@ export interface IAdminFormData {
 	isRegistrationEnabled: boolean;
 	year: string;
 	type: GameTypes;
+	isVotingDisabled: boolean;
+	calculateFinalsScore: boolean;
 }
 
 export enum GameTypes {

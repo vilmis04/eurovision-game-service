@@ -15,6 +15,8 @@ import { UpdateGroupRequestDto } from "./dto/update-group.request.dto";
 import { CreateGroupRequestDto } from "./dto/create-group.request.dto";
 import { Request, Response } from "express";
 import { RootPaths } from "../../types/paths";
+import { Group } from "./entities/group.entity";
+import { WithId } from "mongodb";
 
 @Controller(RootPaths.GROUPS)
 export class GroupController {
@@ -67,5 +69,10 @@ export class GroupController {
 	@Patch("leave/:id")
 	leaveGroup(@Req() request: Request, @Param("id") id: string) {
 		return this.groupService.leaveGroup(request, id);
+	}
+
+	@Post("scores")
+	getGroupUserVotes(@Body() groups: WithId<Group>[]) {
+		return this.groupService.getGroupUserVotes(groups);
 	}
 }

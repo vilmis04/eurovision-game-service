@@ -1,5 +1,9 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { ICreateGroupFormData, IGroup } from "@eurovision-game-monorepo/core";
+import {
+	ICreateGroupFormData,
+	IGroup,
+	TUserVoteResponse,
+} from "@eurovision-game-monorepo/core";
 import { HttpMethods } from "@eurovision-game-monorepo/core";
 import { paths } from "apps/eurovision-game-ui/src/paths";
 import { DeleteResult, InsertOneResult, UpdateResult, WithId } from "mongodb";
@@ -95,6 +99,18 @@ export const groupApi = createApi({
 			}),
 			invalidatesTags: [GroupTags.GROUPS],
 		}),
+
+		getGroupUserVotes: builder.mutation<
+			TUserVoteResponse[],
+			TGetGroupsResponse
+		>({
+			query: (body) => ({
+				url: "groups/scores",
+				method: HttpMethods.POST,
+				credentials: "include",
+				body,
+			}),
+		}),
 	}),
 });
 
@@ -107,4 +123,5 @@ export const {
 	useSetGroupToJoinQuery,
 	useJoinGroupMutation,
 	useLeaveGroupMutation,
+	useGetGroupUserVotesMutation,
 } = groupApi;

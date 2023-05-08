@@ -7,13 +7,17 @@ import { JwtUtils } from "../../utils/JwtUtils";
 import { ObjectId, WithId } from "mongodb";
 import { UsersService } from "../users/users.service";
 import { Group } from "./entities/group.entity";
+import { VotesService } from "../votes/votes.service";
+import { AdminService } from "../admin/admin.service";
 
 @Injectable()
 export class GroupService {
 	constructor(
 		private readonly repoClient: RepoClient,
 		private readonly jwtUtils: JwtUtils,
-		private readonly usersService: UsersService
+		private readonly usersService: UsersService,
+		private readonly votesService: VotesService,
+		private readonly adminService: AdminService
 	) {}
 
 	async create({ name }: CreateGroupRequestDto, @Req() request: Request) {
@@ -156,5 +160,16 @@ export class GroupService {
 
 		await this.update(id, { members: updatedMembers });
 		await this.usersService.updateUser(username, { groups: updatedGroups });
+	}
+
+	async getGroupUserVotes(groups: WithId<Group>[]) {
+		const members = groups.reduce(
+			(arr, { members }) => [...arr, ...members],
+			[] as string[]
+		);
+		const uniqueMembers = [...new Set(members)];
+		const { year } = await this.adminService.getAdminConfig();
+
+		return await this.votesService.getGroupVotes(uniqueMembers, year);
 	}
 }
