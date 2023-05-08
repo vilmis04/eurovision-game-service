@@ -38,7 +38,7 @@ export const getPopupConfig = ({
 		cancelLabel: "Cancel",
 		component: (
 			<FormControlLabel
-				control={<FormField name="name" />}
+				control={<FormField name="name" fullWidth />}
 				label={
 					<Typography
 						variant="body1"
