@@ -1,7 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { adminApi } from "../pages/@modules/admin.api";
-import { scoreApi } from "../pages/@modules/score.api";
 import { authApi } from "../pages/@modules/auth.api";
 import { votesApi } from "../pages/@modules/votes.api";
 import { authMiddleware } from "./authMiddleware";
@@ -13,7 +12,6 @@ export const store = configureStore({
 		[votesApi.reducerPath]: votesApi.reducer,
 		[authApi.reducerPath]: authApi.reducer,
 		[adminApi.reducerPath]: adminApi.reducer,
-		[scoreApi.reducerPath]: scoreApi.reducer,
 		[countryApi.reducerPath]: countryApi.reducer,
 		[groupApi.reducerPath]: groupApi.reducer,
 	},
@@ -21,7 +19,6 @@ export const store = configureStore({
 		getDefaultMiddleware().concat(
 			votesApi.middleware,
 			authApi.middleware,
-			scoreApi.middleware,
 			adminApi.middleware,
 			countryApi.middleware,
 			groupApi.middleware,

@@ -3,6 +3,8 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/dist/query/react";
 import { UpdateResult } from "mongodb";
 import { paths } from "../../paths";
 
+// for local dev:
+// export const BASE_URL = "http://localhost:4200/api/";
 export const BASE_URL = "http://134.122.81.2/api/";
 
 export enum Tags {

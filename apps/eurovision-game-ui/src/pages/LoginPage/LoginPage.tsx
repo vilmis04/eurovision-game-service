@@ -66,7 +66,6 @@ const LoginPage: React.FC = () => {
 								<Grid item>
 									<Typography>Username</Typography>
 								</Grid>
-
 								<FormField
 									name="username"
 									errors={errors}
@@ -77,14 +76,12 @@ const LoginPage: React.FC = () => {
 								<Grid item>
 									<Typography>Password</Typography>
 								</Grid>
-								<Grid item>
-									<FormField
-										name="password"
-										errors={errors}
-										touched={touched}
-										type="password"
-									/>
-								</Grid>
+								<FormField
+									name="password"
+									errors={errors}
+									touched={touched}
+									type="password"
+								/>
 							</Grid>
 							<Grid item sx={styles.fieldGroup}>
 								<Button

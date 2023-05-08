@@ -56,7 +56,6 @@ const SignupPage: React.FC = () => {
 								<Grid item>
 									<Typography>Username</Typography>
 								</Grid>
-
 								<FormField
 									name="username"
 									errors={errors}
@@ -67,27 +66,23 @@ const SignupPage: React.FC = () => {
 								<Grid item>
 									<Typography>Password</Typography>
 								</Grid>
-								<Grid item>
-									<FormField
-										name="password"
-										errors={errors}
-										touched={touched}
-										type="password"
-									/>
-								</Grid>
+								<FormField
+									name="password"
+									errors={errors}
+									touched={touched}
+									type="password"
+								/>
 							</Grid>
 							<Grid item sx={styles.fieldGroup}>
 								<Grid item>
 									<Typography>Repeat password</Typography>
 								</Grid>
-								<Grid item>
-									<FormField
-										name="repeatPassword"
-										errors={errors}
-										touched={touched}
-										type="password"
-									/>
-								</Grid>
+								<FormField
+									name="repeatPassword"
+									errors={errors}
+									touched={touched}
+									type="password"
+								/>
 							</Grid>
 							<Grid item sx={styles.fieldGroup}>
 								<Button
