@@ -43,10 +43,15 @@ const Popup = <T extends {}>({
 										justifyContent: "space-between",
 									})}
 								>
-									<Button variant="contained" type="submit">
+									<Button
+										sx={{ marginRight: 1 }}
+										variant="contained"
+										type="submit"
+									>
 										{confirmLabel}
 									</Button>
 									<Button
+										sx={{ marginLeft: 1 }}
 										variant="outlined"
 										onClick={togglePopup}
 									>

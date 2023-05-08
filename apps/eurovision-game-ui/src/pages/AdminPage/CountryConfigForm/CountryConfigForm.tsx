@@ -291,6 +291,7 @@ const CountryConfigForm: React.FC<ICountryConfigFormProps> = ({
 									variant="outlined"
 									color="secondary"
 									sx={{ margin: 1 }}
+									onClick={toggleAddCountryPopup}
 								>
 									Cancel
 								</Button>
