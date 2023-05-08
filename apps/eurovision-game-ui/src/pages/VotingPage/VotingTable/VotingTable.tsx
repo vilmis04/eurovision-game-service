@@ -2,7 +2,11 @@ import { Box, CircularProgress, Grid, Typography } from "@mui/material";
 import { styles } from "./VotingTable.styles";
 import CountryCard from "./CountryCard/CountryCard";
 import { Form, Formik } from "formik";
-import { GameTypes, IVotes } from "@eurovision-game-monorepo/core";
+import {
+	GameTypes,
+	IAdminFormData,
+	IVotes,
+} from "@eurovision-game-monorepo/core";
 import {
 	useUpdateVotesMutation,
 	useGetVotesQuery,
@@ -10,9 +14,15 @@ import {
 import { useGetCountryListQuery } from "../../@modules/country.api";
 import { TVoteFormData } from "./VotingTable.types";
 
-interface IVotingTableProps extends Pick<IVotes, "year" | "type"> {}
+interface IVotingTableProps
+	extends Pick<IVotes, "year" | "type">,
+		Pick<IAdminFormData, "isVotingDisabled"> {}
 
-const VotingTable: React.FC<IVotingTableProps> = ({ type, year }) => {
+const VotingTable: React.FC<IVotingTableProps> = ({
+	type,
+	year,
+	isVotingDisabled,
+}) => {
 	// TODO: add and combine isFetching for all queries
 	const { data: votes, isFetching } = useGetVotesQuery({ type, year });
 	const { data: countryList } = useGetCountryListQuery({ type, year });
@@ -72,6 +82,9 @@ const VotingTable: React.FC<IVotingTableProps> = ({ type, year }) => {
 													artist={artist}
 													song={song}
 													isFinal={isFinal}
+													isVotingDisabled={
+														isVotingDisabled
+													}
 												/>
 											</Grid>
 										);

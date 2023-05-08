@@ -51,7 +51,7 @@ const ScoreTable: React.FC<IScoreTableProps> = ({
 
 	const getIcon = (score: number) => {
 		const sorted = [...Object.values(totalScores)].sort((a, b) => b - a);
-		const top3 = [...new Set(sorted)].slice(0, 2);
+		const top3 = [...new Set(sorted)];
 
 		const position = top3.indexOf(score) + 1;
 
@@ -85,6 +85,19 @@ const ScoreTable: React.FC<IScoreTableProps> = ({
 					}}
 				/>
 			);
+
+		return (
+			<Box
+				sx={{
+					fontSize: "12px",
+					fontStyle: "italic",
+					display: "inline",
+					paddingRight: 0.5,
+				}}
+			>
+				{position}
+			</Box>
+		);
 	};
 
 	const getSemiScore = ({
@@ -245,16 +258,7 @@ const ScoreTable: React.FC<IScoreTableProps> = ({
 							<Grid item xs={2}>
 								{finalsScore}
 							</Grid>
-							<Grid
-								item
-								xs={2}
-								// onChange={() =>
-								// 	setTotalScores((totals) => ({
-								// 		...totals,
-								// 		[member]: total,
-								// 	}))
-								// }
-							>
+							<Grid item xs={2}>
 								{total}
 							</Grid>
 						</Grid>

@@ -90,6 +90,15 @@ export class AuthService {
 		username: string,
 		enteredPassword: string
 	): Promise<ILoginResponse> {
+		const isUsernameTaken = Boolean(
+			await this.repoClient.getUserByUsername(username)
+		);
+
+		if (isUsernameTaken) {
+			res.status(400).send();
+			throw new Error("Username already exists");
+		}
+
 		const salt = bcrypt.genSaltSync(10);
 		const hash = bcrypt.hashSync(enteredPassword, salt);
 
@@ -113,6 +122,8 @@ export class AuthService {
 			user.username,
 			enteredPassword
 		);
+
+		await this.groupService.joinGroup(request, res);
 
 		return loggedinUser;
 	}

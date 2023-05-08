@@ -1,13 +1,12 @@
-import { UpdateResult } from "mongodb";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { SerializedError } from "@reduxjs/toolkit";
 
-export type TSuccessResponse = {
-	data: UpdateResult;
+export type TSuccessResponse<T> = {
+	data: T;
 };
 
 export type TErrorResponse = {
 	error: FetchBaseQueryError | SerializedError;
 };
 
-export type TResponse = TSuccessResponse | TErrorResponse;
+export type TResponse<T> = TSuccessResponse<T> | TErrorResponse;

@@ -7,13 +7,12 @@ import {
 	Delete,
 	Req,
 	Put,
-	Res,
 	Patch,
 } from "@nestjs/common";
 import { GroupService } from "./group.service";
 import { UpdateGroupRequestDto } from "./dto/update-group.request.dto";
 import { CreateGroupRequestDto } from "./dto/create-group.request.dto";
-import { Request, Response } from "express";
+import { Request } from "express";
 import { RootPaths } from "../../types/paths";
 import { Group } from "./entities/group.entity";
 import { WithId } from "mongodb";
@@ -56,14 +55,6 @@ export class GroupController {
 	@Post("invitation-link/:groupId")
 	generateInvitationLink(@Param("groupId") id: string) {
 		return this.groupService.generateInvitationLink(id);
-	}
-
-	@Post("join-group")
-	joinGroup(
-		@Req() request: Request,
-		@Res({ passthrough: true }) response: Response
-	) {
-		return this.groupService.joinGroup(request, response);
 	}
 
 	@Patch("leave/:id")

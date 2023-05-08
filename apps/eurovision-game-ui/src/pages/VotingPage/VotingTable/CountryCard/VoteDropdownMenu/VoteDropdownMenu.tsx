@@ -1,6 +1,7 @@
-import { VoteTypes } from "@eurovision-game-monorepo/core";
+import { IAdminFormData, VoteTypes } from "@eurovision-game-monorepo/core";
 import {
 	FormControl,
+	FormHelperText,
 	InputLabel,
 	MenuItem,
 	Select,
@@ -9,6 +10,7 @@ import {
 import { useField, useFormikContext } from "formik";
 import { ICountryCardProps } from "../CountryCard";
 import { TVoteFormData } from "../../VotingTable.types";
+import { useState } from "react";
 
 // TODO: move to a constants file
 const LIMITS: { [k in VoteTypes]: number } = {
@@ -20,11 +22,17 @@ const LIMITS: { [k in VoteTypes]: number } = {
 	[VoteTypes.P21_25]: 5,
 };
 
-interface IVoteDropdownMenuProps extends Pick<ICountryCardProps, "country"> {}
+interface IVoteDropdownMenuProps
+	extends Pick<ICountryCardProps, "country">,
+		Pick<IAdminFormData, "isVotingDisabled"> {}
 
-const VoteDropdownMenu: React.FC<IVoteDropdownMenuProps> = ({ country }) => {
+const VoteDropdownMenu: React.FC<IVoteDropdownMenuProps> = ({
+	country,
+	isVotingDisabled,
+}) => {
 	const { submitForm, values } = useFormikContext<TVoteFormData>();
 	const [field, _meta, { setValue }] = useField(country);
+	const [shouldShowHelperText, setShouldShowHelperText] = useState(false);
 
 	const handleChange = (event: SelectChangeEvent): void => {
 		setValue(event.target.value);
@@ -41,6 +49,12 @@ const VoteDropdownMenu: React.FC<IVoteDropdownMenuProps> = ({ country }) => {
 
 	const color = field.value ? "success" : "error";
 
+	const handleClick = () => {
+		if (isVotingDisabled) toggleHelperText();
+	};
+
+	const toggleHelperText = () => setShouldShowHelperText((s) => !s);
+
 	return (
 		<FormControl fullWidth>
 			<InputLabel id="voting-select-label">Vote</InputLabel>
@@ -52,6 +66,8 @@ const VoteDropdownMenu: React.FC<IVoteDropdownMenuProps> = ({ country }) => {
 				labelId="voting-select-label"
 				error={!field.value}
 				color={color}
+				disabled={isVotingDisabled}
+				onClick={handleClick}
 			>
 				<MenuItem value="">Vote</MenuItem>
 				{Object.values(VoteTypes).map((item) => (
@@ -64,6 +80,12 @@ const VoteDropdownMenu: React.FC<IVoteDropdownMenuProps> = ({ country }) => {
 					</MenuItem>
 				))}
 			</Select>
+			{isVotingDisabled && shouldShowHelperText && (
+				// TODO: move sx to a different file
+				<FormHelperText error sx={{ paddingX: 1 }}>
+					Voting is closed!
+				</FormHelperText>
+			)}
 		</FormControl>
 	);
 };

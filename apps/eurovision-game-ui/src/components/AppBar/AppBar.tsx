@@ -104,8 +104,15 @@ const AppBar: React.FC = () => {
 								paddingBottom: 3,
 							}}
 						>
-							<Box sx={{ display: "flex", alignItems: "center" }}>
-								<Typography>{username}</Typography>
+							<Box
+								sx={{
+									display: "flex",
+									alignItems: "center",
+								}}
+							>
+								<Typography>
+									{username ?? "Please login or signup!"}
+								</Typography>
 							</Box>
 							<IconButton
 								aria-label="Close menu"
@@ -114,21 +121,33 @@ const AppBar: React.FC = () => {
 								<CloseIcon />
 							</IconButton>
 						</Box>
-						<Button onClick={() => navigateTo(paths.home)}>
-							Vote
-						</Button>
-						<Button onClick={() => navigateTo(`/${paths.groups}`)}>
-							Groups
-						</Button>
-						{isAdmin && (
-							<Button
-								onClick={() => navigateTo(`/${paths.admin}`)}
-							>
-								Admin
-							</Button>
+						{username && (
+							<>
+								<Button onClick={() => navigateTo(paths.home)}>
+									Vote
+								</Button>
+								<Button
+									onClick={() =>
+										navigateTo(`/${paths.groups}`)
+									}
+								>
+									Groups
+								</Button>
+								{isAdmin && (
+									<Button
+										onClick={() =>
+											navigateTo(`/${paths.admin}`)
+										}
+									>
+										Admin
+									</Button>
+								)}
+							</>
 						)}
 					</Box>
-					<Button onClick={handleLogout}>Log out</Button>
+					{username && (
+						<Button onClick={handleLogout}>Log out</Button>
+					)}
 				</Box>
 			</Drawer>
 		</>

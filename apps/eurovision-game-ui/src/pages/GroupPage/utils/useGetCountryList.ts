@@ -60,11 +60,20 @@ export const useGetCountryList = (
 				pollingInterval: type === GameTypes.SEMI_2 ? 30000 : 0,
 			}
 		);
-	const { data: finalData, isFetching: isFetchingFinalList } =
-		useGetCountryListQuery({
-			type: GameTypes.FINAL,
-			year,
-		});
+	const {
+		data: finalData,
+		isFetching: isFetchingFinalList,
+		refetch,
+	} = useGetCountryListQuery({
+		type: GameTypes.FINAL,
+		year,
+	});
+
+	const refetchFinals = refetch as () => Promise<void>;
+
+	useEffect(() => {
+		if (calculateFinalsScore) refetchFinals();
+	}, [calculateFinalsScore]);
 
 	const isFetching =
 		isFetchingSemi1 || isFetchingSemi2 || isFetchingFinalList;

@@ -85,7 +85,7 @@ export const groupApi = createApi({
 
 		joinGroup: builder.mutation<void, void>({
 			query: () => ({
-				url: "groups/join-group",
+				url: "auth/join-group",
 				method: HttpMethods.POST,
 				credentials: "include",
 			}),

@@ -8,15 +8,20 @@ import {
 import { useField, useFormikContext } from "formik";
 import { TVoteFormData } from "../../VotingTable.types";
 import { useState } from "react";
+import { IAdminFormData } from "@eurovision-game-monorepo/core";
 
 // TODO: move to a constants file
 const SPOTS_IN_FINAL = 10;
 
-interface IVoteSemiCheckboxProps {
+interface IVoteSemiCheckboxProps
+	extends Pick<IAdminFormData, "isVotingDisabled"> {
 	country: string;
 }
 
-const VoteSemiCheckbox: React.FC<IVoteSemiCheckboxProps> = ({ country }) => {
+const VoteSemiCheckbox: React.FC<IVoteSemiCheckboxProps> = ({
+	country,
+	isVotingDisabled,
+}) => {
 	const [field, _, { setValue }] = useField(country);
 	const { submitForm, values } = useFormikContext<TVoteFormData>();
 	const [shouldShowHelperText, setShouldShowHelperText] = useState(false);
@@ -34,7 +39,8 @@ const VoteSemiCheckbox: React.FC<IVoteSemiCheckboxProps> = ({ country }) => {
 		return !isChecked && !(selected < SPOTS_IN_FINAL);
 	};
 
-	const isDisabled = checkFinalSpotLimits(Boolean(field.value));
+	const isDisabled =
+		isVotingDisabled || checkFinalSpotLimits(Boolean(field.value));
 	const isHelperTextVisible = isDisabled && shouldShowHelperText;
 
 	const handleClick = () => {
@@ -63,7 +69,9 @@ const VoteSemiCheckbox: React.FC<IVoteSemiCheckboxProps> = ({ country }) => {
 			{isHelperTextVisible && (
 				// TODO: move sx to a different file
 				<FormHelperText error sx={{ paddingX: 1 }}>
-					{`All of the final spots are taken. Remove existing vote to select ${country}`}
+					{isVotingDisabled
+						? "Voting is closed!"
+						: `All of the final spots are taken. Remove existing vote to select ${country}`}
 				</FormHelperText>
 			)}
 		</Box>

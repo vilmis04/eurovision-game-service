@@ -2,8 +2,10 @@ import { Card, Grid, Typography } from "@mui/material";
 import VoteDropdownMenu from "./VoteDropdownMenu/VoteDropdownMenu";
 import { styles } from "./CountryCard.styles";
 import VoteSemiCheckbox from "./VoteSemiCheckbox/VoteSemiCheckbox";
+import { IAdminFormData } from "@eurovision-game-monorepo/core";
 
-export interface ICountryCardProps {
+export interface ICountryCardProps
+	extends Pick<IAdminFormData, "isVotingDisabled"> {
 	country: string;
 	artist: string;
 	song: string;
@@ -15,6 +17,7 @@ const CountryCard: React.FC<ICountryCardProps> = ({
 	artist,
 	song,
 	isFinal,
+	isVotingDisabled,
 }) => {
 	return (
 		<Card variant="outlined" sx={styles.card}>
@@ -35,9 +38,15 @@ const CountryCard: React.FC<ICountryCardProps> = ({
 				{/* TODO: fix sx syntax to accept more than one class */}
 				<Grid item sx={isFinal ? styles.button : {}}>
 					{isFinal ? (
-						<VoteDropdownMenu country={country} />
+						<VoteDropdownMenu
+							country={country}
+							isVotingDisabled={isVotingDisabled}
+						/>
 					) : (
-						<VoteSemiCheckbox country={country} />
+						<VoteSemiCheckbox
+							country={country}
+							isVotingDisabled={isVotingDisabled}
+						/>
 					)}
 				</Grid>
 			</Grid>

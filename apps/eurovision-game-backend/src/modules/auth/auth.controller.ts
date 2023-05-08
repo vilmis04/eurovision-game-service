@@ -62,4 +62,12 @@ export class AuthController {
 
 		return { success: true };
 	}
+
+	@Post("join-group")
+	joinGroup(
+		@Req() request: Request,
+		@Res({ passthrough: true }) response: Response
+	) {
+		return this.groupService.joinGroup(request, response);
+	}
 }
