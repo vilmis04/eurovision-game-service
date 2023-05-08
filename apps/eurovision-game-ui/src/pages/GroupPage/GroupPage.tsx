@@ -114,7 +114,7 @@ const GroupPage: React.FC = () => {
 		if (submitType === SubmitTypes.UPDATE)
 			updateGroup({ id: `${_id}`, body: { name } });
 		if (submitType === SubmitTypes.INVITE) {
-			navigator.clipboard.writeText(link);
+			await navigator.clipboard.writeText(link);
 			toggleLinkCopiedSnackbar();
 		}
 		if (submitType === SubmitTypes.LEAVE) leaveGroup({ id: `${_id}` });
