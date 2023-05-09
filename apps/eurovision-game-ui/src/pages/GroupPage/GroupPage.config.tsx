@@ -38,8 +38,7 @@ export const getPopupConfig = ({
 		cancelLabel: "Cancel",
 		component: (
 			<FormControlLabel
-				sx={{ width: "100%", marginX: 1 }}
-				control={<FormField name="name" sx={{ width: "100%" }} />}
+				control={<FormField name="name" />}
 				label={
 					<Typography
 						variant="body1"

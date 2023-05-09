@@ -5,7 +5,7 @@ import { paths } from "../../paths";
 
 // for local dev:
 // export const BASE_URL = "http://localhost:4200/api/";
-export const BASE_URL = "http://134.122.81.2/api/";
+export const BASE_URL = "https://voteforthewinners.eu/api/";
 
 export enum Tags {
 	ADMIN = "admin",
