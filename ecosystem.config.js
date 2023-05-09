@@ -10,7 +10,7 @@ module.exports = {
 				PORT: "",
 				MONGO_URI: "",
 				SECRET_KEY: "",
-				BASE_URL: "http://134.122.81.2",
+				BASE_URL: "",
 			},
 		},
 	],
