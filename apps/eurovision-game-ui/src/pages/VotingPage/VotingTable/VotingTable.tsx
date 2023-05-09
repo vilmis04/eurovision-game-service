@@ -13,6 +13,7 @@ import {
 } from "../../@modules/votes.api";
 import { useGetCountryListQuery } from "../../@modules/country.api";
 import { TVoteFormData } from "./VotingTable.types";
+import { useEffect } from "react";
 
 interface IVotingTableProps
 	extends Pick<IVotes, "year" | "type">,
@@ -24,7 +25,11 @@ const VotingTable: React.FC<IVotingTableProps> = ({
 	isVotingDisabled,
 }) => {
 	// TODO: add and combine isFetching for all queries
-	const { data: votes, isFetching } = useGetVotesQuery({ type, year });
+	const {
+		data: votes,
+		isFetching,
+		refetch,
+	} = useGetVotesQuery({ type, year });
 	const { data: countryList } = useGetCountryListQuery({ type, year });
 	const initialValues =
 		votes &&
@@ -46,6 +51,12 @@ const VotingTable: React.FC<IVotingTableProps> = ({
 	};
 
 	const [updateVotes] = useUpdateVotesMutation();
+
+	const refetchVotes = refetch as () => Promise<void>;
+
+	useEffect(() => {
+		refetchVotes();
+	}, []);
 
 	const onSubmit = (values: TVoteFormData): void => {
 		updateVotes({ type, year, votes: values });
