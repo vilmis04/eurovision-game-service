@@ -37,7 +37,11 @@ import CenterSpinner from "../../components/CenterSpinner/CenterSpinner";
 const GroupPage: React.FC = () => {
 	const { data: adminConfig } = useGetAdminConfigQuery();
 	const { semiWinnersList1, semiWinnersList2, finalsList } =
-		useGetCountryList(adminConfig?.type, adminConfig?.year);
+		useGetCountryList(
+			adminConfig?.type,
+			adminConfig?.year,
+			adminConfig?.calculateFinalsScore
+		);
 	const {
 		data: groups,
 		isFetching: isFetchingGroups,
