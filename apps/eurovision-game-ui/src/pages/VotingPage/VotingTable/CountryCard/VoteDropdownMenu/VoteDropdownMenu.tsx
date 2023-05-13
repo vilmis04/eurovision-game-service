@@ -19,7 +19,7 @@ const LIMITS: { [k in VoteTypes]: number } = {
 	[VoteTypes.P6_10]: 5,
 	[VoteTypes.P11_15]: 5,
 	[VoteTypes.P16_20]: 5,
-	[VoteTypes.P21_25]: 5,
+	[VoteTypes.P21_25]: 6,
 };
 
 interface IVoteDropdownMenuProps
