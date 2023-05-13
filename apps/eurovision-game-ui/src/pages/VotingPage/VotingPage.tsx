@@ -5,7 +5,7 @@ import VotingTable from "./VotingTable/VotingTable";
 const VotingPage: React.FC = () => {
 	const { data: adminConfig } = useGetAdminConfigQuery(undefined, {
 		// 10 min polling interval (calculation is ~15 min)
-		pollingInterval: 600000,
+		pollingInterval: 60000,
 	});
 	if (!adminConfig) return <Box />;
 
