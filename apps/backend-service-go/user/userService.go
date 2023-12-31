@@ -1,32 +1,30 @@
-package userService
+package user
 
 import (
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-
-	u "github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/user/userModel"
 )
 
 type UserService struct{}
 
 // Create a new userModel object
-func New() *UserService {
+func NewService() *UserService {
 	return &UserService{}
 }
 
 // TODO: get user from storage
-func (s *UserService) User(id string) (*u.User, error) {
+func (s *UserService) User(id string) (*User, error) {
 
 	fmt.Printf("getting data for user %v\n", id)
 	var err error = nil
 
-	return &u.User{}, err
+	return &User{}, err
 }
 
 // TODO: update user in storage
-func (s *UserService) UpdateUser(id string, user u.User) error {
+func (s *UserService) UpdateUser(id string, user User) error {
 
 	fmt.Printf("updating data for user %v\n", user)
 	var err error = nil
@@ -40,7 +38,7 @@ func (s *UserService) NewUser(request *http.Request) (string, error) {
 	type response struct {
 		Roles []string
 	}
-	newUser := u.User{ID: "123"}
+	newUser := User{ID: "123"}
 	var body response
 	err := json.NewDecoder(request.Body).Decode(&body)
 	if err != nil {

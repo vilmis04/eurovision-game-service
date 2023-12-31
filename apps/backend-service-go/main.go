@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/user/userController"
+	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/user"
 )
 
 func loadEnvVars() {
@@ -21,7 +21,7 @@ func main() {
 	apiRoutes := app.Group("api")
 	userRoutes := app.Group("api/user")
 
-	userController := userController.New()
+	userController := user.NewController()
 
 	apiRoutes.GET("health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"health": "OK"})
