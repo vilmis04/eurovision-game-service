@@ -13,3 +13,11 @@ const (
 	GameTypeSemi2 GameType = "semi2"
 	GameTypeFinal GameType = "final"
 )
+
+type CountryDetails struct {
+	Country   string
+	Year      uint16
+	GameType  GameType
+	Score     uint16
+	IsInFinal bool
+}

@@ -51,27 +51,27 @@ func main() {
 	// admin routes
 
 	adminRoutes.GET("/", func(c *gin.Context) {
-		adminController.GetCofig()
+		adminController.GetConfig(c)
 	})
 
 	adminRoutes.PATCH("/", func(c *gin.Context) {
-		adminController.UpdateConfig()
+		adminController.UpdateConfig(c)
 	})
 
 	adminRoutes.GET("country/:id", func(c *gin.Context) {
-		adminController.GetCountryDetails()
+		adminController.GetCountryDetails(c)
 	})
 
 	adminRoutes.PUT("country/:id", func(c *gin.Context) {
-		adminController.UpdateCountryDetails()
+		adminController.UpdateCountryDetails(c)
 	})
 
 	adminRoutes.POST("country/:id", func(c *gin.Context) {
-		adminController.CreateCountryDetails()
+		adminController.CreateCountryDetails(c)
 	})
 
 	adminRoutes.DELETE("country/:id", func(c *gin.Context) {
-		adminController.DeleteCountry()
+		adminController.DeleteCountry(c)
 	})
 
 	app.Run()
