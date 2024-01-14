@@ -1,9 +1,9 @@
 package admin
 
 type AdminConfig struct {
-	Year           uint16
-	GameType       GameType
-	IsVotingAcitve bool
+	Year           uint16   `json:"year"`
+	GameType       GameType `json:"gameType"`
+	IsVotingAcitve bool     `json:"isVotingActive"`
 }
 
 type GameType string
@@ -15,9 +15,9 @@ const (
 )
 
 type CountryDetails struct {
-	Country   string
-	Year      uint16
-	GameType  GameType
-	Score     uint16
-	IsInFinal bool
+	Country   string   `json:"country"`
+	Year      uint16   `json:"year"`
+	GameType  GameType `json:"gameType"`
+	Score     uint16   `json:"score"`
+	IsInFinal bool     `json:"isInFinal"`
 }

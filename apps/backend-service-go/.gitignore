@@ -1,1 +1,5 @@
 .env
+
+# build file
+backend-service-go
+setupHints.sql
