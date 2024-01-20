@@ -18,7 +18,6 @@ func (ctrl *UserController) GetUser(c *gin.Context) {
 }
 
 func (ctrl *UserController) NewUser(c *gin.Context) {
-
 	ctrl.service.NewUser(c.Request)
 }
 

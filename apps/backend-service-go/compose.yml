@@ -1,0 +1,32 @@
+services:
+  go-service:
+    container_name: go-service
+    # build: .
+    image: golang:1.21.5-alpine
+    tty: true
+    working_dir: /code
+    restart: always
+    ports:
+      - "4200:4200"
+    env_file:
+      - .env
+    volumes:
+      - .:/code
+
+  db:
+    container_name: postgres
+    image: postgres:16-alpine
+    restart: always
+    env_file:
+      - .env
+    volumes:
+       - ./data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  admin:
+    container_name: admin
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
