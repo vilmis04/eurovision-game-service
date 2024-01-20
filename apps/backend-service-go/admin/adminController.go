@@ -20,17 +20,12 @@ func NewController() *adminController {
 }
 
 func (ctrl *adminController) GetConfig(c *gin.Context) {
-	config, err := ctrl.service.GetConfig()
+	encodedConfig, err := ctrl.service.GetConfig()
 	if err != nil {
 		utils.HandleServerError(err, c)
 		return
 	}
-	encodedConfig, err := json.Marshal(config)
-	if err != nil {
-		utils.HandleServerError(err, c)
-		return
-	}
-	c.Writer.Write(encodedConfig)
+	c.Writer.Write(*encodedConfig)
 }
 
 func (ctrl *adminController) UpdateConfig(c *gin.Context) {

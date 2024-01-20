@@ -21,3 +21,9 @@ type CountryDetails struct {
 	Score     uint16   `json:"score"`
 	IsInFinal bool     `json:"isInFinal"`
 }
+
+type adminConfigRequestBody struct {
+	Year           *uint16   `json:"year"`
+	GameType       *GameType `json:"gameType"`
+	IsVotingAcitve *bool     `json:"isVotingActive"`
+}

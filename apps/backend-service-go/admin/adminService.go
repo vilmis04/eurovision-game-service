@@ -2,6 +2,7 @@ package admin
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -26,7 +27,6 @@ func NewService() *adminService {
 }
 
 func (s *adminService) connectToDB() (*sql.DB, error) {
-	fmt.Println(s.connStr)
 	db, err := sql.Open("postgres", s.connStr)
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func (s *adminService) connectToDB() (*sql.DB, error) {
 	return db, nil
 }
 
-func (s *adminService) GetConfig() (*AdminConfig, error) {
+func (s *adminService) GetConfig() (*[]byte, error) {
 	db, err := s.connectToDB()
 	if err != nil {
 		return nil, err
@@ -51,39 +51,51 @@ func (s *adminService) GetConfig() (*AdminConfig, error) {
 		return nil, err
 	}
 
-	return &config, nil
+	encodedConfig, err := json.Marshal(&config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &encodedConfig, nil
 }
 
-type requestBody struct {
-	Year           *uint16   `json:"year"`
-	GameType       *GameType `json:"gameType"`
-	IsVotingAcitve *bool     `json:"isVotingActive"`
+func formatConfigUpdateQuery(property string) string {
+	return fmt.Sprintf("UPDATE admin_config SET %v=$1 WHERE id=1", property)
 }
 
 func (s *adminService) UpdateConfig(req *http.Request) error {
-	config, err := s.GetConfig()
-	if err != nil {
-		return err
-	}
-	var body requestBody
+	var body adminConfigRequestBody
 
-	err = utils.DecodeJson(req, &body)
+	err := utils.DecodeRequestJson(req, &body)
 	if err != nil {
 		return err
 	}
+
+	db, err := s.connectToDB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
 
 	if body.GameType != nil {
-		config.GameType = *body.GameType
+		_, err = db.Exec(formatConfigUpdateQuery("gameType"), *body.GameType)
+		if err != nil {
+			return err
+		}
 	}
 	if body.Year != nil {
-		config.Year = *body.Year
+		_, err = db.Exec(formatConfigUpdateQuery("year"), *body.Year)
+		if err != nil {
+			return err
+		}
 	}
 	if body.IsVotingAcitve != nil {
-		config.IsVotingAcitve = *body.IsVotingAcitve
+		_, err = db.Exec(formatConfigUpdateQuery("isVotingActive"), *body.IsVotingAcitve)
+		if err != nil {
+			return err
+		}
 	}
 
-	// TODO: update database
-	fmt.Printf("Updated config: %v\n", config)
 	return nil
 }
 

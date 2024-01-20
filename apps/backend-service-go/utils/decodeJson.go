@@ -5,6 +5,6 @@ import (
 	"net/http"
 )
 
-func DecodeJson(req *http.Request, body interface{}) error {
+func DecodeRequestJson(req *http.Request, body interface{}) error {
 	return json.NewDecoder(req.Body).Decode(body)
 }
