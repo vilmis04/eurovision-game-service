@@ -2,7 +2,7 @@ package country
 
 import (
 	"encoding/json"
-	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/utils"
@@ -10,46 +10,72 @@ import (
 
 type countryController struct {
 	service *countryService
+	router  *gin.RouterGroup
 }
 
-func NewController() *countryController {
+func NewController(app *gin.Engine) *countryController {
 	return &countryController{
 		service: NewService(),
+		router:  app.Group("api/country"),
 	}
 }
 
-func (ctrl *countryController) GetCountry(c *gin.Context) {
-	config, err := ctrl.service.GetCountry()
-	if err != nil {
-		utils.HandleServerError(err, c)
-		return
-	}
-	encodedConfig, err := json.Marshal(config)
-	if err != nil {
-		utils.HandleServerError(err, c)
-		return
-	}
-	c.Writer.Write(encodedConfig)
+func (ctrl *countryController) Use() {
+	ctrl.router.GET("/", func(c *gin.Context) {
+		config, err := ctrl.service.GetAllCountries()
+		if err != nil {
+			utils.HandleServerError(err, c)
+			return
+		}
+		encodedConfig, err := json.Marshal(config)
+		if err != nil {
+			utils.HandleServerError(err, c)
+			return
+		}
+		c.Writer.Write(encodedConfig)
+	})
 
-}
+	ctrl.router.GET(":id", func(c *gin.Context) {
+		config, err := ctrl.service.GetCountry()
+		if err != nil {
+			utils.HandleServerError(err, c)
+			return
+		}
+		encodedConfig, err := json.Marshal(config)
+		if err != nil {
+			utils.HandleServerError(err, c)
+			return
+		}
+		c.Writer.Write(encodedConfig)
+	})
 
-func (ctrl *countryController) UpdateCountry(c *gin.Context) error {
-	// TODO: Take an object, update accordingly and return error
-	fmt.Println("Update country details")
+	ctrl.router.PUT(":id", func(c *gin.Context) {
+		err := ctrl.service.UpdateCountry()
+		if err != nil {
+			utils.HandleServerError(err, c)
+			return
+		}
 
-	return nil
-}
+		c.Writer.WriteHeader(http.StatusOK)
+	})
 
-func (ctrl *countryController) CreateCountry(c *gin.Context) error {
-	// TODO: Take an object, create and return error
-	fmt.Println("Create details for new country")
+	ctrl.router.POST(":id", func(c *gin.Context) {
+		err := ctrl.service.CreateCountry()
+		if err != nil {
+			utils.HandleServerError(err, c)
+			return
+		}
 
-	return nil
-}
+		c.Writer.WriteHeader(http.StatusOK)
+	})
 
-func (ctrl *countryController) DeleteCountry(c *gin.Context) error {
-	// TODO: Take an object, create and return error
-	fmt.Println("Delete by country details by id")
+	ctrl.router.DELETE(":id", func(c *gin.Context) {
+		err := ctrl.service.DeleteCountry()
+		if err != nil {
+			utils.HandleServerError(err, c)
+			return
+		}
 
-	return nil
+		c.Writer.WriteHeader(http.StatusOK)
+	})
 }

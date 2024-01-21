@@ -8,6 +8,13 @@ func NewService() *countryService {
 	return &countryService{}
 }
 
+func (s *countryService) GetAllCountries() (*[]Country, error) {
+	// TODO: add get country details
+	fmt.Println("Get country details")
+
+	return &[]Country{}, nil
+}
+
 func (s *countryService) GetCountry() (*Country, error) {
 	// TODO: add get country details
 	fmt.Println("Get country details")

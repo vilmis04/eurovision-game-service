@@ -35,9 +35,9 @@ func main() {
 		c.JSON(200, gin.H{"health": "OK"})
 	})
 
-	user.NewRouter(app)
-	admin.NewRouter(app)
-	country.NewRouter(app)
+	user.NewController(app).Use()
+	admin.NewController(app).Use()
+	country.NewController(app).Use()
 
 	app.Run()
 }

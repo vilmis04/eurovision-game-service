@@ -9,29 +9,34 @@ import (
 
 type adminController struct {
 	service *adminService
+	router  *gin.RouterGroup
 }
 
-func NewController() *adminController {
+func NewController(app *gin.Engine) *adminController {
 	return &adminController{
 		service: NewService(),
+		router:  app.Group("api/admin"),
 	}
 }
 
-func (ctrl *adminController) GetConfig(c *gin.Context) {
-	encodedConfig, err := ctrl.service.GetConfig()
-	if err != nil {
-		utils.HandleServerError(err, c)
-		return
-	}
-	c.Writer.Write(*encodedConfig)
-}
+func (ctrl *adminController) Use() {
+	ctrl.router.GET("/", func(c *gin.Context) {
+		encodedConfig, err := ctrl.service.GetConfig()
+		if err != nil {
+			utils.HandleServerError(err, c)
+			return
+		}
+		c.Writer.Write(*encodedConfig)
+	})
 
-func (ctrl *adminController) UpdateConfig(c *gin.Context) {
-	err := ctrl.service.UpdateConfig(c.Request)
-	if err != nil {
-		utils.HandleServerError(err, c)
+	ctrl.router.PATCH("/", func(c *gin.Context) {
+		err := ctrl.service.UpdateConfig(c.Request)
+		if err != nil {
+			utils.HandleServerError(err, c)
 
-		return
-	}
-	c.Writer.WriteHeader(http.StatusOK)
+			return
+		}
+		c.Writer.WriteHeader(http.StatusOK)
+
+	})
 }

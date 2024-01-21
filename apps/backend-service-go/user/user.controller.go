@@ -4,27 +4,32 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type UserController struct {
+type userController struct {
 	service *UserService
+	router  *gin.RouterGroup
 }
 
-func NewController() *UserController {
-
-	return &UserController{service: NewService()}
+func NewController(app *gin.Engine) *userController {
+	return &userController{
+		service: NewService(),
+		router:  app.Group("api/user"),
+	}
 }
 
-func (ctrl *UserController) GetUser(c *gin.Context) {
-	ctrl.service.User(c.Param("id"))
-}
+func (ctrl *userController) Use() {
+	ctrl.router.GET(":id", func(c *gin.Context) {
+		ctrl.service.User(c.Param("id"))
+	})
 
-func (ctrl *UserController) NewUser(c *gin.Context) {
-	ctrl.service.NewUser(c.Request)
-}
+	ctrl.router.POST("/", func(c *gin.Context) {
+		ctrl.service.NewUser(c.Request)
+	})
 
-func (ctrl *UserController) UpdateUser(c *gin.Context) {
-	ctrl.service.UpdateUser(c.Param("id"), User{Roles: []string{"admin"}})
-}
+	ctrl.router.PATCH(":id", func(c *gin.Context) {
+		ctrl.service.UpdateUser(c.Param("id"), User{Roles: []string{"admin"}})
+	})
 
-func (ctrl *UserController) DeleteUser(c *gin.Context) {
-	ctrl.service.DeleteUser(c.Param("id"))
+	ctrl.router.DELETE(":id", func(c *gin.Context) {
+		ctrl.service.DeleteUser(c.Param("id"))
+	})
 }
