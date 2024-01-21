@@ -98,31 +98,3 @@ func (s *adminService) UpdateConfig(req *http.Request) error {
 
 	return nil
 }
-
-func (s *adminService) GetCountryDetails() (*CountryDetails, error) {
-	// TODO: add get country details
-	fmt.Println("Get country details")
-
-	return &CountryDetails{}, nil
-}
-
-func (s *adminService) UpdateCountryDetails() error {
-	// TODO: Take an object, update accordingly and return error
-	fmt.Println("Update country details")
-
-	return nil
-}
-
-func (s *adminService) CreateCountryDetails() error {
-	// TODO: Take an object, create and return error
-	fmt.Println("Create details for new country")
-
-	return nil
-}
-
-func (s *adminService) DeleteCountry() error {
-	// TODO: Take an object, create and return error
-	fmt.Println("Delete by country details by id")
-
-	return nil
-}

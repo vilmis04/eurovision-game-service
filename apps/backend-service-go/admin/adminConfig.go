@@ -14,14 +14,6 @@ const (
 	GameTypeFinal GameType = "final"
 )
 
-type CountryDetails struct {
-	Country   string   `json:"country"`
-	Year      uint16   `json:"year"`
-	GameType  GameType `json:"gameType"`
-	Score     uint16   `json:"score"`
-	IsInFinal bool     `json:"isInFinal"`
-}
-
 type adminConfigRequestBody struct {
 	Year           *uint16   `json:"year"`
 	GameType       *GameType `json:"gameType"`
