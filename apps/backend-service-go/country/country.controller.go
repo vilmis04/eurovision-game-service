@@ -9,7 +9,7 @@ import (
 )
 
 type countryController struct {
-	service *countryService
+	service *CountryService
 	router  *gin.RouterGroup
 }
 
@@ -21,6 +21,18 @@ func NewController(app *gin.Engine) *countryController {
 }
 
 func (ctrl *countryController) Use() {
+	ctrl.router.POST("/", func(c *gin.Context) {
+		id, err := ctrl.service.CreateCountry(c.Request)
+		if err != nil {
+			utils.HandleServerError(err, c)
+			return
+		}
+
+		c.Writer.WriteHeader(http.StatusCreated)
+		c.Writer.Header().Set("Content-Type", "application/json")
+		c.Writer.Write(*id)
+	})
+
 	ctrl.router.GET("/", func(c *gin.Context) {
 		config, err := ctrl.service.GetAllCountries()
 		if err != nil {
@@ -51,16 +63,6 @@ func (ctrl *countryController) Use() {
 
 	ctrl.router.PUT(":id", func(c *gin.Context) {
 		err := ctrl.service.UpdateCountry()
-		if err != nil {
-			utils.HandleServerError(err, c)
-			return
-		}
-
-		c.Writer.WriteHeader(http.StatusOK)
-	})
-
-	ctrl.router.POST(":id", func(c *gin.Context) {
-		err := ctrl.service.CreateCountry()
 		if err != nil {
 			utils.HandleServerError(err, c)
 			return

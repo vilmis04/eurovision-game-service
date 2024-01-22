@@ -1,6 +1,6 @@
 package admin
 
-type AdminConfig struct {
+type Admin struct {
 	Year           uint16   `json:"year"`
 	GameType       GameType `json:"gameType"`
 	IsVotingAcitve bool     `json:"isVotingActive"`

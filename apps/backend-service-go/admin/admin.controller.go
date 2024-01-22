@@ -8,7 +8,7 @@ import (
 )
 
 type adminController struct {
-	service *adminService
+	service *AdminService
 	router  *gin.RouterGroup
 }
 
