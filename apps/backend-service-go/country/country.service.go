@@ -62,11 +62,42 @@ func (s *CountryService) CreateCountry(request *http.Request) (*[]byte, error) {
 	return &encodedId, nil
 }
 
-func (s *CountryService) GetAllCountries() (*[]Country, error) {
-	// TODO: add get country details
-	fmt.Println("Get country details")
+func (s *CountryService) GetCountries(request *http.Request) (*[]byte, error) {
+	var requestBody GetCountriesRequest
+	var config *admin.Admin
 
-	return &[]Country{}, nil
+	err := utils.DecodeRequestJson(request, &requestBody)
+	if err != nil {
+		return nil, err
+	}
+
+	encodedConfig, err := s.adminService.GetConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(*encodedConfig, &config)
+	if err != nil {
+		return nil, err
+	}
+
+	var year uint16
+	if requestBody.year == nil {
+		year = config.Year
+	} else {
+		year = *requestBody.year
+	}
+
+	countries, err := s.storage.GetAll(year, requestBody.gameType)
+	if err != nil {
+		return nil, err
+	}
+
+	encodedCountries, err := json.Marshal(countries)
+	if err != nil {
+		return nil, err
+	}
+	return &encodedCountries, nil
 }
 
 func (s *CountryService) GetCountry() (*Country, error) {

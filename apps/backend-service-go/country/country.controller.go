@@ -34,17 +34,14 @@ func (ctrl *countryController) Use() {
 	})
 
 	ctrl.router.GET("/", func(c *gin.Context) {
-		config, err := ctrl.service.GetAllCountries()
+		countries, err := ctrl.service.GetCountries(c.Request)
 		if err != nil {
 			utils.HandleServerError(err, c)
 			return
 		}
-		encodedConfig, err := json.Marshal(config)
-		if err != nil {
-			utils.HandleServerError(err, c)
-			return
-		}
-		c.Writer.Write(encodedConfig)
+
+		c.Writer.Header().Set("Content-Type", "application/json")
+		c.Writer.Write(*countries)
 	})
 
 	ctrl.router.GET(":id", func(c *gin.Context) {

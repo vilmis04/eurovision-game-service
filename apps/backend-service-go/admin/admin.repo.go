@@ -24,7 +24,7 @@ func (r *AdminRepo) GetConfig() (*Admin, error) {
 	defer db.Close()
 
 	var config Admin
-	var id uint8
+	var id uint16
 
 	row := db.QueryRow(fmt.Sprintf("SELECT * FROM %v WHERE id=1", r.storage.Table))
 	err = row.Scan(&id, &config.Year, &config.GameType, &config.IsVotingAcitve)

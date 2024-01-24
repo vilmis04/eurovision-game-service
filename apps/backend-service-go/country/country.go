@@ -18,3 +18,8 @@ type CreateCountryRequest struct {
 	Artist   *string         `json:"artist"`
 	Song     *string         `json:"Song"`
 }
+
+type GetCountriesRequest struct {
+	year     *uint16
+	gameType *admin.GameType
+}
