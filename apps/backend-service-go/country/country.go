@@ -19,7 +19,7 @@ type CreateCountryRequest struct {
 	Song     *string         `json:"Song"`
 }
 
-type GetCountriesRequest struct {
-	year     *uint16
-	gameType *admin.GameType
+type UpdateCountryRequest struct {
+	Score     *uint16
+	IsInFinal *bool
 }

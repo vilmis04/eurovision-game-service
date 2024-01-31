@@ -62,33 +62,12 @@ func (s *CountryService) CreateCountry(request *http.Request) (*[]byte, error) {
 	return &encodedId, nil
 }
 
-func (s *CountryService) GetCountries(request *http.Request) (*[]byte, error) {
-	var requestBody GetCountriesRequest
-	var config *admin.Admin
+func (s *CountryService) GetCountryList(year string, request *http.Request) (*[]byte, error) {
+	queryParams := request.URL.Query()
+	gameType := queryParams.Get("gameType")
+	name := queryParams.Get("name")
 
-	err := utils.DecodeRequestJson(request, &requestBody)
-	if err != nil {
-		return nil, err
-	}
-
-	encodedConfig, err := s.adminService.GetConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal(*encodedConfig, &config)
-	if err != nil {
-		return nil, err
-	}
-
-	var year uint16
-	if requestBody.year == nil {
-		year = config.Year
-	} else {
-		year = *requestBody.year
-	}
-
-	countries, err := s.storage.GetAll(year, requestBody.gameType)
+	countries, err := s.storage.GetCountryList(year, gameType, name)
 	if err != nil {
 		return nil, err
 	}
@@ -100,18 +79,25 @@ func (s *CountryService) GetCountries(request *http.Request) (*[]byte, error) {
 	return &encodedCountries, nil
 }
 
-func (s *CountryService) GetCountry() (*Country, error) {
-	// TODO: add get country details
-	fmt.Println("Get country details")
+func (s *CountryService) UpdateCountry(params map[string]string, request *http.Request) error {
+	var requestBody UpdateCountryRequest
+	err := utils.DecodeRequestJson(request, requestBody)
+	if err != nil {
+		return err
+	}
 
-	return &Country{}, nil
-}
+	countryList, err := s.storage.GetCountryList(params["year"], "", params["name"])
+	if err != nil {
+		return err
+	}
+	if len(*countryList) > 1 {
+		return fmt.Errorf("query returned multiple countries: %v", http.StatusBadRequest)
+	}
+	if len(*countryList) == 0 {
+		return fmt.Errorf("country not found: %v", http.StatusNotFound)
+	}
 
-func (s *CountryService) UpdateCountry() error {
-	// TODO: Take an object, update accordingly and return error
-	fmt.Println("Update country details")
-
-	return nil
+	return s.storage.UpdateCountry(&requestBody, &params)
 }
 
 func (s *CountryService) DeleteCountry() error {

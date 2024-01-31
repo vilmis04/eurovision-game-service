@@ -40,12 +40,14 @@ func (r *CountryRepo) Create(country *Country) (*int64, error) {
 }
 
 // Specify game type for countries in that game type.
-// Nothing specified will return all countries in the year
-func (r *CountryRepo) GetAll(year uint16, gameType *admin.GameType) (*[]Country, error) {
+// Nothing specified will return all countries in the year.
+// Specify name to get the specific country in that year
+func (r *CountryRepo) GetCountryList(year string, gameType string, name string) (*[]Country, error) {
 	var query string = ""
 	var rows *sql.Rows
 	var id int
 	var countries []Country = []Country{}
+	baseQuery := fmt.Sprintf("SELECT * FROM %v WHERE year=$1", r.storage.Table)
 
 	db, err := r.storage.ConnectToDB()
 	if err != nil {
@@ -53,11 +55,11 @@ func (r *CountryRepo) GetAll(year uint16, gameType *admin.GameType) (*[]Country,
 	}
 	defer db.Close()
 
-	if gameType == nil {
-		query = fmt.Sprintf("SELECT * FROM %v WHERE year=$1", r.storage.Table)
+	if gameType == "" {
+		query = baseQuery
 	}
-	if gameType != nil && *gameType == admin.GameTypeFinal {
-		query = fmt.Sprintf("SELECT * FROM %v WHERE year=$1 AND isInFinal=true", r.storage.Table)
+	if gameType != "" && admin.GameType(gameType) == admin.GameTypeFinal {
+		query = fmt.Sprintf("%v AND isInFinal=true", baseQuery)
 	}
 	if query != "" {
 		rows, err = db.Query(query, year)
@@ -65,8 +67,15 @@ func (r *CountryRepo) GetAll(year uint16, gameType *admin.GameType) (*[]Country,
 			return nil, err
 		}
 	} else {
-		query = fmt.Sprintf("SELECT * FROM %v WHERE year=$1 AND gameType=$2", r.storage.Table)
-		rows, err = db.Query(query, year, *gameType)
+		var queryParam string
+		if name != "" {
+			queryParam = name
+			query = fmt.Sprintf("%v AND name=$2", baseQuery)
+		} else {
+			queryParam = gameType
+			query = fmt.Sprintf("%v AND gameType=$2", baseQuery)
+		}
+		rows, err = db.Query(query, year, queryParam)
 		if err != nil {
 			return nil, err
 		}
@@ -89,4 +98,32 @@ func (r *CountryRepo) GetAll(year uint16, gameType *admin.GameType) (*[]Country,
 	}
 
 	return &countries, nil
+}
+
+func (r *CountryRepo) UpdateCountry(req *UpdateCountryRequest, params *map[string]string) error {
+	db, err := r.storage.ConnectToDB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	var formatQuery = func(queryParam string) string {
+		return fmt.Sprintf("UPDATE %v SET %v=$1 WHERE year=%v AND name=%v", r.storage.Table, queryParam, (*params)["year"], (*params)["name"])
+	}
+
+	if req.IsInFinal != nil {
+		_, err := db.Exec(formatQuery("isInFinal"), *req.IsInFinal)
+		if err != nil {
+			return err
+		}
+	}
+
+	if req.Score != nil {
+		_, err := db.Exec(formatQuery("Score"), *req.Score)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

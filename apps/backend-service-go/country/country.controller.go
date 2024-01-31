@@ -1,10 +1,10 @@
 package country
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/types"
 	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/utils"
 )
 
@@ -29,37 +29,28 @@ func (ctrl *countryController) Use() {
 		}
 
 		c.Writer.WriteHeader(http.StatusCreated)
-		c.Writer.Header().Set("Content-Type", "application/json")
+		c.Writer.Header().Set(types.HeaderContentType, types.HeaderApplicationJson)
 		c.Writer.Write(*id)
 	})
 
-	ctrl.router.GET("/", func(c *gin.Context) {
-		countries, err := ctrl.service.GetCountries(c.Request)
+	ctrl.router.GET("/:year", func(c *gin.Context) {
+		countries, err := ctrl.service.GetCountryList(c.Param("year"), c.Request)
 		if err != nil {
 			utils.HandleServerError(err, c)
 			return
 		}
 
-		c.Writer.Header().Set("Content-Type", "application/json")
+		c.Writer.Header().Set(types.HeaderContentType, types.HeaderApplicationJson)
 		c.Writer.Write(*countries)
 	})
 
-	ctrl.router.GET(":id", func(c *gin.Context) {
-		config, err := ctrl.service.GetCountry()
-		if err != nil {
-			utils.HandleServerError(err, c)
-			return
+	ctrl.router.PATCH(":year/:name", func(c *gin.Context) {
+		params := map[string]string{
+			"year": c.Param("year"),
+			"name": c.Param("name"),
 		}
-		encodedConfig, err := json.Marshal(config)
-		if err != nil {
-			utils.HandleServerError(err, c)
-			return
-		}
-		c.Writer.Write(encodedConfig)
-	})
 
-	ctrl.router.PUT(":id", func(c *gin.Context) {
-		err := ctrl.service.UpdateCountry()
+		err := ctrl.service.UpdateCountry(params, c.Request)
 		if err != nil {
 			utils.HandleServerError(err, c)
 			return
@@ -68,7 +59,7 @@ func (ctrl *countryController) Use() {
 		c.Writer.WriteHeader(http.StatusOK)
 	})
 
-	ctrl.router.DELETE(":id", func(c *gin.Context) {
+	ctrl.router.DELETE(":year/:gameType/:name", func(c *gin.Context) {
 		err := ctrl.service.DeleteCountry()
 		if err != nil {
 			utils.HandleServerError(err, c)
