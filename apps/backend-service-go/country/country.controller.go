@@ -59,8 +59,13 @@ func (ctrl *countryController) Use() {
 		c.Writer.WriteHeader(http.StatusOK)
 	})
 
-	ctrl.router.DELETE(":year/:gameType/:name", func(c *gin.Context) {
-		err := ctrl.service.DeleteCountry()
+	ctrl.router.DELETE(":year/:name", func(c *gin.Context) {
+		params := map[string]string{
+			"year": c.Param("year"),
+			"name": c.Param("name"),
+		}
+
+		err := ctrl.service.DeleteCountry(&params)
 		if err != nil {
 			utils.HandleServerError(err, c)
 			return

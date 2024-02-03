@@ -127,3 +127,40 @@ func (r *CountryRepo) UpdateCountry(req *UpdateCountryRequest, params *map[strin
 
 	return nil
 }
+
+func (r *CountryRepo) DeleteCountry(year string, name string) error {
+	db, err := r.storage.ConnectToDB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() error {
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+		return nil
+	}()
+
+	res, err := tx.Exec(fmt.Sprintf(`
+		DELETE %v
+		WHERE year=$1 AND name=$2`, r.storage.Table), year, name)
+
+	rowsAffected, _ := res.RowsAffected()
+	if rowsAffected != 1 {
+		tx.Rollback()
+		return fmt.Errorf("multiple or none rows affected")
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -100,9 +100,6 @@ func (s *CountryService) UpdateCountry(params map[string]string, request *http.R
 	return s.storage.UpdateCountry(&requestBody, &params)
 }
 
-func (s *CountryService) DeleteCountry() error {
-	// TODO: Take an object, create and return error
-	fmt.Println("Delete by country details by id")
-
-	return nil
+func (s *CountryService) DeleteCountry(params *map[string]string) error {
+	return s.storage.DeleteCountry((*params)["year"], (*params)["name"])
 }
