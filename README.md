@@ -1,23 +1,17 @@
-## Be deployment
+# Eurovision guessing game BE service built with Go
 
-For BE deployment, create `ecosystem.config.js`file in the root directory with the following contents:
+## Local setup
 
-```
-module.exports = {
-	apps: [
-		{
-			name: "ev-game-be",
-			script: "./dist/apps/eurovision-game-backend/main.js",
-			instances: 1,
-			exec_mode: "cluster",
-			env: {
-				NODE_ENV: "production",
-				PORT: "",
-				MONGO_URI: "",
-				SECRET_KEY: "",
-				BASE_URL: "",
-			},
-		},
-	],
-};
-```
+### Without database
+
+To run locally just the service: `go run .`
+
+To build an executable: `go build .`
+
+### In docker with db and db adminer tool
+
+To start virtual environment: `make start`
+
+To stop virtual environment: `make stop`
+
+To attach to go-service when container is running: `make attach`
