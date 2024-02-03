@@ -6,3 +6,6 @@ stop:
 
 attach:
 		docker exec -it go-service sh
+
+remove:
+		docker compose down
