@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	_ "github.com/lib/pq"
-	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/utils"
+	"github.com/vilmis04/eurovision-game-service/internal/utils"
 )
 
 type AdminService struct {

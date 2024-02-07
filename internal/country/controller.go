@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/types"
-	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/utils"
+	"github.com/vilmis04/eurovision-game-service/internal/types"
+	"github.com/vilmis04/eurovision-game-service/internal/utils"
 )
 
 type countryController struct {

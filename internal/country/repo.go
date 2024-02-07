@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/admin"
-	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/storage"
+	"github.com/vilmis04/eurovision-game-service/internal/admin"
+	"github.com/vilmis04/eurovision-game-service/internal/storage"
 )
 
 type CountryRepo struct {

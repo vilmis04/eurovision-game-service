@@ -7,9 +7,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/admin"
-	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/country"
-	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/user"
+	"github.com/vilmis04/eurovision-game-service/internal/admin"
+	"github.com/vilmis04/eurovision-game-service/internal/country"
+	"github.com/vilmis04/eurovision-game-service/internal/user"
 )
 
 func loadEnvVars() {
