@@ -6,3 +6,7 @@ type Group struct {
 	Owner       string   `json:"owner"`
 	DateCreated string   `json:"dateCreated"`
 }
+
+type CreateGroupRequestBody struct {
+	Name *string `json:"name"`
+}

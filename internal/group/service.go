@@ -2,7 +2,11 @@ package group
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"time"
+
+	"github.com/vilmis04/eurovision-game-service/internal/utils"
 )
 
 type Service struct {
@@ -28,4 +32,41 @@ func (s *Service) GetGroups(owner string, request *http.Request) (*[]byte, error
 	}
 
 	return &encodedGroups, nil
+}
+
+func (s *Service) CreateGroup(owner string, request *http.Request) (*[]byte, error) {
+	var requestBody CreateGroupRequestBody
+	err := utils.DecodeRequestJson(request, requestBody)
+	if err != nil {
+		return nil, err
+	}
+
+	name := *requestBody.Name
+	usedNames, err := s.storage.GetGroupNames(owner)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, ok := (*usedNames)[name]; !ok {
+		return nil, fmt.Errorf("group %v already exists", name)
+	}
+
+	group := Group{
+		Name:        name,
+		Owner:       owner,
+		DateCreated: time.Now().String(),
+		Members:     []string{owner},
+	}
+
+	id, err := s.storage.CreateGroup(&group)
+	if err != nil {
+		return nil, err
+	}
+
+	encodedId, err := json.Marshal(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &encodedId, nil
 }

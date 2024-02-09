@@ -85,7 +85,6 @@ func (r *Repo) GetCountryList(year string, gameType string, name string) (*[]Cou
 
 	for rows.Next() {
 		country := Country{}
-
 		err = rows.Scan(&id, &country.Name, &country.Year, &country.GameType, &country.Score, &country.IsInFinal, &country.Artist, &country.Song)
 		if err != nil {
 			return nil, err
@@ -93,7 +92,8 @@ func (r *Repo) GetCountryList(year string, gameType string, name string) (*[]Cou
 
 		countries = append(countries, country)
 	}
-	if rows.Err() != nil {
+	err = rows.Err()
+	if err != nil {
 		return nil, err
 	}
 
