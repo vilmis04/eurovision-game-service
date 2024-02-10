@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/vilmis04/eurovision-game-service/internal/utils"
@@ -47,7 +48,7 @@ func (s *Service) CreateGroup(owner string, request *http.Request) (*[]byte, err
 		return nil, err
 	}
 
-	if _, ok := (*usedNames)[name]; !ok {
+	if slices.Contains(*usedNames, name) {
 		return nil, fmt.Errorf("group %v already exists", name)
 	}
 

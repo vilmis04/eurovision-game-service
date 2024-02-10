@@ -77,14 +77,14 @@ func (r *Repo) CreateGroup(group *Group) (*int64, error) {
 	return &id, nil
 }
 
-func (r *Repo) GetGroupNames(owner string) (*(map[string]string), error) {
+func (r *Repo) GetGroupNames(owner string) (*([]string), error) {
 	db, err := r.storage.ConnectToDB()
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
 
-	names := map[string]string{}
+	names := []string{}
 	query := fmt.Sprintf("SELECT name FROM %v WHERE owner=$1", r.storage.Table)
 	rows, err := db.Query(query, owner)
 	if err != nil {
@@ -99,7 +99,7 @@ func (r *Repo) GetGroupNames(owner string) (*(map[string]string), error) {
 			return nil, err
 		}
 
-		names[name] = name
+		names = append(names, name)
 	}
 	err = rows.Err()
 	if err != nil {
