@@ -1,0 +1,159 @@
+package group
+
+import (
+	"fmt"
+
+	"github.com/vilmis04/eurovision-game-service/internal/storage"
+)
+
+type Repo struct {
+	storage *storage.Storage
+}
+
+func NewRepo() *Repo {
+	return &Repo{
+		storage: storage.New("group"),
+	}
+}
+
+func (r *Repo) GetGroupList(owner string, groupName string) (*[]Group, error) {
+	db, err := r.storage.ConnectToDB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	query := "SELECT * FROM group WHERE owner=$1"
+	if groupName != "" {
+		query = fmt.Sprintf("%v AND name=$2", query)
+	}
+
+	rows, err := db.Query(query, owner, groupName)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var groups []Group
+	var id int
+	for rows.Next() {
+		group := Group{}
+
+		err := rows.Scan(&id, &group.Name, &group.Members, &group.Owner, &group.DateCreated)
+		if err != nil {
+			return nil, err
+		}
+
+		groups = append(groups, group)
+	}
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return &groups, nil
+}
+
+func (r *Repo) CreateGroup(group *Group) (*int64, error) {
+	db, err := r.storage.ConnectToDB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	query := fmt.Sprintf(`
+	INSERT INTO %v (name, owner, members, dateCreated)
+	VALUES ($1, $2, $3, $4)
+	`, r.storage.Table)
+	result, err := db.Exec(query, group.Name, group.Owner, group.Members, group.DateCreated)
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	return &id, nil
+}
+
+func (r *Repo) GetGroupNames(owner string) (*([]string), error) {
+	db, err := r.storage.ConnectToDB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	names := []string{}
+	query := fmt.Sprintf("SELECT name FROM %v WHERE owner=$1", r.storage.Table)
+	rows, err := db.Query(query, owner)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var name string
+		err := rows.Scan(&name)
+		if err != nil {
+			return nil, err
+		}
+
+		names = append(names, name)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return &names, nil
+}
+
+func (r *Repo) UpdateGroup(owner string, body *UpdateGroupRequestBody, group *Group) error {
+	db, err := r.storage.ConnectToDB()
+	if err != nil {
+		return nil
+	}
+	defer db.Close()
+
+	baseQuery := fmt.Sprintf("UPDATE %v SET", r.storage.Table)
+	query := ""
+
+	endQuery := fmt.Sprintf("WHERE owner=%v AND name=%v", owner, group.Name)
+
+	name := group.Name
+	members := group.Members
+	if body.Name != nil {
+		query = " name=$1"
+	}
+	if body.Members != nil {
+		comma := ""
+		if query != "" {
+			comma = ","
+		}
+		query = fmt.Sprintf("%v%v%v", query, comma, " members=$2")
+		members = *body.Members
+	}
+	_, err = db.Exec(fmt.Sprintf("%v%v%v", baseQuery, query, endQuery), name, members)
+	if err != nil {
+		return nil
+	}
+
+	return nil
+}
+
+func (r *Repo) DeleteGroup(owner string, name string) error {
+	db, err := r.storage.ConnectToDB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := fmt.Sprintf("DELETE FROM %v WHERE owner=$1 AND name=$2", r.storage.Table)
+	_, err = db.Exec(query, owner, name)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

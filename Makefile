@@ -9,3 +9,9 @@ attach:
 
 remove:
 		docker compose down
+
+build:
+		go build ./cmd/app -o /bin
+
+run:
+		go run ./cmd/app

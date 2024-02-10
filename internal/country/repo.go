@@ -4,21 +4,21 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/admin"
-	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/storage"
+	"github.com/vilmis04/eurovision-game-service/internal/admin"
+	"github.com/vilmis04/eurovision-game-service/internal/storage"
 )
 
-type CountryRepo struct {
+type Repo struct {
 	storage *storage.Storage
 }
 
-func NewRepo() *CountryRepo {
-	return &CountryRepo{
+func NewRepo() *Repo {
+	return &Repo{
 		storage: storage.New("country"),
 	}
 }
 
-func (r *CountryRepo) Create(country *Country) (*int64, error) {
+func (r *Repo) Create(country *Country) (*int64, error) {
 	db, err := r.storage.ConnectToDB()
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (r *CountryRepo) Create(country *Country) (*int64, error) {
 // Specify game type for countries in that game type.
 // Nothing specified will return all countries in the year.
 // Specify name to get the specific country in that year
-func (r *CountryRepo) GetCountryList(year string, gameType string, name string) (*[]Country, error) {
+func (r *Repo) GetCountryList(year string, gameType string, name string) (*[]Country, error) {
 	var query string = ""
 	var rows *sql.Rows
 	var id int
@@ -85,7 +85,6 @@ func (r *CountryRepo) GetCountryList(year string, gameType string, name string) 
 
 	for rows.Next() {
 		country := Country{}
-
 		err = rows.Scan(&id, &country.Name, &country.Year, &country.GameType, &country.Score, &country.IsInFinal, &country.Artist, &country.Song)
 		if err != nil {
 			return nil, err
@@ -93,14 +92,15 @@ func (r *CountryRepo) GetCountryList(year string, gameType string, name string) 
 
 		countries = append(countries, country)
 	}
-	if rows.Err() != nil {
+	err = rows.Err()
+	if err != nil {
 		return nil, err
 	}
 
 	return &countries, nil
 }
 
-func (r *CountryRepo) UpdateCountry(req *UpdateCountryRequest, params *map[string]string) error {
+func (r *Repo) UpdateCountry(req *UpdateCountryRequest, params *map[string]string) error {
 	db, err := r.storage.ConnectToDB()
 	if err != nil {
 		return err
@@ -128,7 +128,7 @@ func (r *CountryRepo) UpdateCountry(req *UpdateCountryRequest, params *map[strin
 	return nil
 }
 
-func (r *CountryRepo) DeleteCountry(year string, name string) error {
+func (r *Repo) DeleteCountry(year string, name string) error {
 	db, err := r.storage.ConnectToDB()
 	if err != nil {
 		return err

@@ -4,23 +4,23 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/types"
-	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/utils"
+	"github.com/vilmis04/eurovision-game-service/internal/types"
+	"github.com/vilmis04/eurovision-game-service/internal/utils"
 )
 
-type countryController struct {
-	service *CountryService
+type controller struct {
+	service *Service
 	router  *gin.RouterGroup
 }
 
-func NewController(app *gin.Engine) *countryController {
-	return &countryController{
+func NewController(app *gin.Engine) *controller {
+	return &controller{
 		service: NewService(),
 		router:  app.Group("api/country"),
 	}
 }
 
-func (ctrl *countryController) Use() {
+func (ctrl *controller) Use() {
 	ctrl.router.POST("/", func(c *gin.Context) {
 		id, err := ctrl.service.CreateCountry(c.Request)
 		if err != nil {

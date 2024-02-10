@@ -1,6 +1,6 @@
 package country
 
-import "github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/admin"
+import "github.com/vilmis04/eurovision-game-service/internal/admin"
 
 type Country struct {
 	Name      string

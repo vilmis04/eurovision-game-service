@@ -1,4 +1,5 @@
 .env
+/bin
 
 # build file
 backend-service-go

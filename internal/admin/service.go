@@ -5,20 +5,20 @@ import (
 	"net/http"
 
 	_ "github.com/lib/pq"
-	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/utils"
+	"github.com/vilmis04/eurovision-game-service/internal/utils"
 )
 
-type AdminService struct {
-	storage *AdminRepo
+type Service struct {
+	storage *Repo
 }
 
-func NewService() *AdminService {
-	return &AdminService{
+func NewService() *Service {
+	return &Service{
 		storage: NewRepo(),
 	}
 }
 
-func (s *AdminService) GetConfig() (*[]byte, error) {
+func (s *Service) GetConfig() (*[]byte, error) {
 
 	config, err := s.storage.GetConfig()
 	if err != nil {
@@ -33,7 +33,7 @@ func (s *AdminService) GetConfig() (*[]byte, error) {
 	return &encodedConfig, nil
 }
 
-func (s *AdminService) UpdateConfig(req *http.Request) error {
+func (s *Service) UpdateConfig(req *http.Request) error {
 	var body adminConfigRequestBody
 
 	err := utils.DecodeRequestJson(req, &body)

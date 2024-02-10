@@ -4,22 +4,22 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/utils"
+	"github.com/vilmis04/eurovision-game-service/internal/utils"
 )
 
-type adminController struct {
-	service *AdminService
+type controller struct {
+	service *Service
 	router  *gin.RouterGroup
 }
 
-func NewController(app *gin.Engine) *adminController {
-	return &adminController{
+func NewController(app *gin.Engine) *controller {
+	return &controller{
 		service: NewService(),
 		router:  app.Group("api/admin"),
 	}
 }
 
-func (ctrl *adminController) Use() {
+func (ctrl *controller) Use() {
 	ctrl.router.GET("/", func(c *gin.Context) {
 		encodedConfig, err := ctrl.service.GetConfig()
 		if err != nil {

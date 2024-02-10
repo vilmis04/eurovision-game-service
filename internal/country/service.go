@@ -5,23 +5,23 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/admin"
-	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/utils"
+	"github.com/vilmis04/eurovision-game-service/internal/admin"
+	"github.com/vilmis04/eurovision-game-service/internal/utils"
 )
 
-type CountryService struct {
-	storage      *CountryRepo
-	adminService *admin.AdminService
+type Service struct {
+	storage      *Repo
+	adminService *admin.Service
 }
 
-func NewService() *CountryService {
-	return &CountryService{
+func NewService() *Service {
+	return &Service{
 		storage:      NewRepo(),
 		adminService: admin.NewService(),
 	}
 }
 
-func (s *CountryService) CreateCountry(request *http.Request) (*[]byte, error) {
+func (s *Service) CreateCountry(request *http.Request) (*[]byte, error) {
 	var requestBody CreateCountryRequest
 	err := utils.DecodeRequestJson(request, &requestBody)
 	if err != nil {
@@ -62,7 +62,7 @@ func (s *CountryService) CreateCountry(request *http.Request) (*[]byte, error) {
 	return &encodedId, nil
 }
 
-func (s *CountryService) GetCountryList(year string, request *http.Request) (*[]byte, error) {
+func (s *Service) GetCountryList(year string, request *http.Request) (*[]byte, error) {
 	queryParams := request.URL.Query()
 	gameType := queryParams.Get("gameType")
 	name := queryParams.Get("name")
@@ -79,7 +79,7 @@ func (s *CountryService) GetCountryList(year string, request *http.Request) (*[]
 	return &encodedCountries, nil
 }
 
-func (s *CountryService) UpdateCountry(params map[string]string, request *http.Request) error {
+func (s *Service) UpdateCountry(params map[string]string, request *http.Request) error {
 	var requestBody UpdateCountryRequest
 	err := utils.DecodeRequestJson(request, requestBody)
 	if err != nil {
@@ -100,6 +100,6 @@ func (s *CountryService) UpdateCountry(params map[string]string, request *http.R
 	return s.storage.UpdateCountry(&requestBody, &params)
 }
 
-func (s *CountryService) DeleteCountry(params *map[string]string) error {
+func (s *Service) DeleteCountry(params *map[string]string) error {
 	return s.storage.DeleteCountry((*params)["year"], (*params)["name"])
 }

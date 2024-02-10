@@ -3,20 +3,20 @@ package admin
 import (
 	"fmt"
 
-	"github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go/storage"
+	"github.com/vilmis04/eurovision-game-service/internal/storage"
 )
 
-type AdminRepo struct {
+type Repo struct {
 	storage *storage.Storage
 }
 
-func NewRepo() *AdminRepo {
-	return &AdminRepo{
+func NewRepo() *Repo {
+	return &Repo{
 		storage: storage.New("admin_config"),
 	}
 }
 
-func (r *AdminRepo) GetConfig() (*Admin, error) {
+func (r *Repo) GetConfig() (*Admin, error) {
 	db, err := r.storage.ConnectToDB()
 	if err != nil {
 		return nil, err
@@ -35,11 +35,11 @@ func (r *AdminRepo) GetConfig() (*Admin, error) {
 	return &config, nil
 }
 
-func (r *AdminRepo) formatConfigUpdateQuery(property string) string {
+func (r *Repo) formatConfigUpdateQuery(property string) string {
 	return fmt.Sprintf("UPDATE %v SET %v=$1 WHERE id=1", r.storage.Table, property)
 }
 
-func (r *AdminRepo) UpdateConfig(body *adminConfigRequestBody) error {
+func (r *Repo) UpdateConfig(body *adminConfigRequestBody) error {
 	db, err := r.storage.ConnectToDB()
 	if err != nil {
 		return err

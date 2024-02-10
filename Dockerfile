@@ -4,14 +4,14 @@ WORKDIR /app
 
 COPY . .
 
-RUN go build .
+RUN go build -o /bin/eurovision-game-service ./cmd/app
 
 FROM alpine:latest
 
 WORKDIR /app
 
-COPY --from=builder app/backend-service-go .
+COPY --from=builder app/bin/eurovision-game-service .
 
-CMD [ "./backend-service-go" ]
+CMD [ "./eurovision-game-service" ]
 
 

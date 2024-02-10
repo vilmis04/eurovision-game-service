@@ -1,4 +1,4 @@
-module github.com/vilmis04/eurovision-game-monorepo/tree/main/apps/backend-service-go
+module github.com/vilmis04/eurovision-game-service
 
 go 1.21.5
 
