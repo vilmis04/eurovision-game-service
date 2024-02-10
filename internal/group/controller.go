@@ -44,4 +44,26 @@ func (ctrl *controller) Use() {
 		c.Writer.WriteHeader(http.StatusCreated)
 		c.Writer.Write(*id)
 	})
+
+	ctrl.router.PATCH(":owner", func(c *gin.Context) {
+		// TODO: owner should come from cookie (in service maybe?), not from param
+		err := ctrl.service.UpdateMembers(c.Param("owner"), c.Request)
+		if err != nil {
+			utils.HandleServerError(err, c)
+			return
+		}
+
+		c.Writer.WriteHeader(http.StatusOK)
+	})
+
+	ctrl.router.DELETE(":owner/:name", func(c *gin.Context) {
+		// TODO: owner should come from cookie (in service maybe?), not from param
+		err := ctrl.service.DeleteGroup(c.Param("owner"), c.Param("name"))
+		if err != nil {
+			utils.HandleServerError(err, c)
+			return
+		}
+
+		c.Writer.WriteHeader(http.StatusOK)
+	})
 }

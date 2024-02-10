@@ -10,3 +10,8 @@ type Group struct {
 type CreateGroupRequestBody struct {
 	Name *string `json:"name"`
 }
+
+type UpdateGroupRequestBody struct {
+	Name    *string   `json:"name"`
+	Members *[]string `json:"members"`
+}

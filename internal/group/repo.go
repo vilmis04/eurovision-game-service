@@ -108,3 +108,52 @@ func (r *Repo) GetGroupNames(owner string) (*([]string), error) {
 
 	return &names, nil
 }
+
+func (r *Repo) UpdateGroup(owner string, body *UpdateGroupRequestBody, group *Group) error {
+	db, err := r.storage.ConnectToDB()
+	if err != nil {
+		return nil
+	}
+	defer db.Close()
+
+	baseQuery := fmt.Sprintf("UPDATE %v SET", r.storage.Table)
+	query := ""
+
+	endQuery := fmt.Sprintf("WHERE owner=%v AND name=%v", owner, group.Name)
+
+	name := group.Name
+	members := group.Members
+	if body.Name != nil {
+		query = " name=$1"
+	}
+	if body.Members != nil {
+		comma := ""
+		if query != "" {
+			comma = ","
+		}
+		query = fmt.Sprintf("%v%v%v", query, comma, " members=$2")
+		members = *body.Members
+	}
+	_, err = db.Exec(fmt.Sprintf("%v%v%v", baseQuery, query, endQuery), name, members)
+	if err != nil {
+		return nil
+	}
+
+	return nil
+}
+
+func (r *Repo) DeleteGroup(owner string, name string) error {
+	db, err := r.storage.ConnectToDB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := fmt.Sprintf("DELETE FROM %v WHERE owner=$1 AND name=$2", r.storage.Table)
+	_, err = db.Exec(query, owner, name)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
