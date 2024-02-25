@@ -14,7 +14,7 @@ INSERT INTO admin_config (year, gameType, isVotingActive) VALUES
 
 
 -- ------------------------------------------------------------
-
+-- auth initial data for testing
 
 CREATE DATABASE IF NOT EXISTS ev_game;
 
