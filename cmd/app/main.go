@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/vilmis04/eurovision-game-service/internal/admin"
@@ -29,6 +30,7 @@ func init() {
 
 func main() {
 	app := gin.Default()
+	app.Use(cors.Default())
 	apiRoutes := app.Group("api")
 
 	apiRoutes.GET("health", func(c *gin.Context) {
