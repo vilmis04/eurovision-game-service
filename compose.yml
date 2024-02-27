@@ -2,7 +2,7 @@ services:
   go-service:
     container_name: go-service
     # build: .
-    image: golang:1.21.5-alpine
+    image: golang:1.22.0-alpine
     tty: true
     working_dir: /code
     restart: always
@@ -12,6 +12,17 @@ services:
       - .env
     volumes:
       - .:/code
+
+  auth-proxy:
+    container_name: auth-proxy
+    # image: auth-proxy-img
+    build: ../auth-proxy
+    tty: true
+    restart: always
+    ports:
+      - "4300:4300"
+    env_file:
+      - .env.auth
 
   db:
     container_name: postgres
