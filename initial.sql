@@ -16,12 +16,13 @@ INSERT INTO admin_config (year, gameType, isVotingActive) VALUES
 -- ------------------------------------------------------------
 -- auth initial data for testing
 
-CREATE DATABASE IF NOT EXISTS ev_game;
+CREATE DATABASE auth;
 
-CREATE TABLE IF NOT EXISTS auth (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(255) NOT NULL,
-    password VARCHAR(255) NOT NULL,
+CREATE TABLE "auth" (
+  "id" serial NOT NULL,
+  PRIMARY KEY ("id"),
+  "username" character varying NOT NULL,
+  "password" character varying NOT NULL
 );
 
 -- Insert default values into auth
