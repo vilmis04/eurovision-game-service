@@ -21,8 +21,8 @@ CREATE DATABASE auth;
 CREATE TABLE "auth" (
   "id" serial NOT NULL,
   PRIMARY KEY ("id"),
-  "username" character varying NOT NULL,
-  "password" character varying NOT NULL
+  "username" VARCHAR(50) UNIQUE NOT NULL,
+  "password" TEXT NOT NULL
 );
 
 -- Insert default values into auth
