@@ -33,10 +33,8 @@ func (ctrl *controller) Use() {
 		err := ctrl.service.UpdateConfig(c.Request)
 		if err != nil {
 			utils.HandleServerError(err, c)
-
 			return
 		}
 		c.Writer.WriteHeader(http.StatusOK)
-
 	})
 }
