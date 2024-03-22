@@ -5,11 +5,11 @@ import (
 	"log"
 	"os"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/vilmis04/eurovision-game-service/internal/admin"
 	"github.com/vilmis04/eurovision-game-service/internal/country"
+	"github.com/vilmis04/eurovision-game-service/internal/group"
 	"github.com/vilmis04/eurovision-game-service/internal/user"
 )
 
@@ -30,7 +30,6 @@ func init() {
 
 func main() {
 	app := gin.Default()
-	app.Use(cors.Default())
 	apiRoutes := app.Group("api")
 
 	apiRoutes.GET("health", func(c *gin.Context) {
@@ -40,6 +39,7 @@ func main() {
 	user.NewController(app).Use()
 	admin.NewController(app).Use()
 	country.NewController(app).Use()
+	group.NewController(app).Use()
 
 	app.Run()
 }

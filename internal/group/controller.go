@@ -21,9 +21,8 @@ func NewController(app *gin.Engine) *controller {
 }
 
 func (ctrl *controller) Use() {
-	ctrl.router.GET(":owner", func(c *gin.Context) {
-		// TODO: owner should come from cookie (in service maybe?), not from param
-		groups, err := ctrl.service.GetGroups(c.Param("owner"), c.Request)
+	ctrl.router.GET("/", func(c *gin.Context) {
+		groups, err := ctrl.service.GetGroups(c.GetHeader("user"), c.Request)
 		if err != nil {
 			utils.HandleServerError(err, c)
 			return
@@ -33,9 +32,8 @@ func (ctrl *controller) Use() {
 		c.Writer.Write(*groups)
 	})
 
-	ctrl.router.POST(":owner", func(c *gin.Context) {
-		// TODO: owner should come from cookie (in service maybe?), not from param
-		id, err := ctrl.service.CreateGroup(c.Param("owner"), c.Request)
+	ctrl.router.POST("/", func(c *gin.Context) {
+		id, err := ctrl.service.CreateGroup(c.GetHeader("user"), c.Request)
 		if err != nil {
 			utils.HandleServerError(err, c)
 			return
@@ -45,9 +43,8 @@ func (ctrl *controller) Use() {
 		c.Writer.Write(*id)
 	})
 
-	ctrl.router.PATCH(":owner", func(c *gin.Context) {
-		// TODO: owner should come from cookie (in service maybe?), not from param
-		err := ctrl.service.UpdateMembers(c.Param("owner"), c.Request)
+	ctrl.router.PATCH("/", func(c *gin.Context) {
+		err := ctrl.service.UpdateMembers(c.GetHeader("user"), c.Request)
 		if err != nil {
 			utils.HandleServerError(err, c)
 			return
@@ -56,9 +53,8 @@ func (ctrl *controller) Use() {
 		c.Writer.WriteHeader(http.StatusOK)
 	})
 
-	ctrl.router.DELETE(":owner/:name", func(c *gin.Context) {
-		// TODO: owner should come from cookie (in service maybe?), not from param
-		err := ctrl.service.DeleteGroup(c.Param("owner"), c.Param("name"))
+	ctrl.router.DELETE(":name", func(c *gin.Context) {
+		err := ctrl.service.DeleteGroup(c.GetHeader("user"), c.Param("name"))
 		if err != nil {
 			utils.HandleServerError(err, c)
 			return
