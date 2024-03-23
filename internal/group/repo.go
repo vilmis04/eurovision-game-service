@@ -7,30 +7,32 @@ import (
 )
 
 type Repo struct {
-	storage *storage.Storage
+	storage.Storage
 }
 
 func NewRepo() *Repo {
 	return &Repo{
-		storage: storage.New("group"),
+		Storage: *storage.New("group"),
 	}
 }
 
 func (r *Repo) GetGroupList(owner string, groupName string) (*[]Group, error) {
-	db, err := r.storage.ConnectToDB()
+	db, err := r.ConnectToDB()
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
 
-	query := "SELECT * FROM group WHERE owner=$1"
+	query := fmt.Sprintf(`
+		SELECT * FROM "%v" 
+		WHERE owner=$1`, r.Table)
 	if groupName != "" {
 		query = fmt.Sprintf("%v AND name=$2", query)
 	}
 
 	rows, err := db.Query(query, owner, groupName)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("group query error for %s: %v", owner, err)
 	}
 	defer rows.Close()
 
@@ -41,20 +43,20 @@ func (r *Repo) GetGroupList(owner string, groupName string) (*[]Group, error) {
 
 		err := rows.Scan(&id, &group.Name, &group.Members, &group.Owner, &group.DateCreated)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("group row scan err: %v", err)
 		}
 
 		groups = append(groups, group)
 	}
 	if rows.Err() != nil {
-		return nil, err
+		return nil, fmt.Errorf("group row err: %v", err)
 	}
 
 	return &groups, nil
 }
 
 func (r *Repo) CreateGroup(group *Group) (*int64, error) {
-	db, err := r.storage.ConnectToDB()
+	db, err := r.ConnectToDB()
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +65,7 @@ func (r *Repo) CreateGroup(group *Group) (*int64, error) {
 	query := fmt.Sprintf(`
 	INSERT INTO %v (name, owner, members, dateCreated)
 	VALUES ($1, $2, $3, $4)
-	`, r.storage.Table)
+	`, r.Table)
 	result, err := db.Exec(query, group.Name, group.Owner, group.Members, group.DateCreated)
 	if err != nil {
 		return nil, err
@@ -78,14 +80,14 @@ func (r *Repo) CreateGroup(group *Group) (*int64, error) {
 }
 
 func (r *Repo) GetGroupNames(owner string) (*([]string), error) {
-	db, err := r.storage.ConnectToDB()
+	db, err := r.ConnectToDB()
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
 
 	names := []string{}
-	query := fmt.Sprintf("SELECT name FROM %v WHERE owner=$1", r.storage.Table)
+	query := fmt.Sprintf("SELECT name FROM %v WHERE owner=$1", r.Table)
 	rows, err := db.Query(query, owner)
 	if err != nil {
 		return nil, err
@@ -110,13 +112,13 @@ func (r *Repo) GetGroupNames(owner string) (*([]string), error) {
 }
 
 func (r *Repo) UpdateGroup(owner string, body *UpdateGroupRequestBody, group *Group) error {
-	db, err := r.storage.ConnectToDB()
+	db, err := r.ConnectToDB()
 	if err != nil {
 		return nil
 	}
 	defer db.Close()
 
-	baseQuery := fmt.Sprintf("UPDATE %v SET", r.storage.Table)
+	baseQuery := fmt.Sprintf("UPDATE %v SET", r.Table)
 	query := ""
 
 	endQuery := fmt.Sprintf("WHERE owner=%v AND name=%v", owner, group.Name)
@@ -143,13 +145,13 @@ func (r *Repo) UpdateGroup(owner string, body *UpdateGroupRequestBody, group *Gr
 }
 
 func (r *Repo) DeleteGroup(owner string, name string) error {
-	db, err := r.storage.ConnectToDB()
+	db, err := r.ConnectToDB()
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 
-	query := fmt.Sprintf("DELETE FROM %v WHERE owner=$1 AND name=$2", r.storage.Table)
+	query := fmt.Sprintf("DELETE FROM %v WHERE owner=$1 AND name=$2", r.Table)
 	_, err = db.Exec(query, owner, name)
 	if err != nil {
 		return err

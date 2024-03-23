@@ -7,13 +7,13 @@ import (
 )
 
 type Storage struct {
-	connString string
+	ConnString string
 	Table      string
 }
 
 func New(table string) *Storage {
 	return &Storage{
-		connString: fmt.Sprintf("host=%v port=%v user=%v password=%v dbname=%v sslmode=disable",
+		ConnString: fmt.Sprintf("host=%v port=%v user=%v password=%v dbname=%v sslmode=disable",
 			os.Getenv("POSTGRES_HOST"),
 			os.Getenv("POSTGRES_PORT"),
 			os.Getenv("POSTGRES_USER"),
@@ -24,7 +24,7 @@ func New(table string) *Storage {
 }
 
 func (s *Storage) ConnectToDB() (*sql.DB, error) {
-	db, err := sql.Open("postgres", s.connString)
+	db, err := sql.Open("postgres", s.ConnString)
 	if err != nil {
 		return nil, err
 	}
