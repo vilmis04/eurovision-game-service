@@ -1,6 +1,7 @@
 package group
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/vilmis04/eurovision-game-service/internal/storage"
@@ -23,14 +24,16 @@ func (r *Repo) GetGroupList(owner string, groupName string) (*[]Group, error) {
 	}
 	defer db.Close()
 
+	var rows *sql.Rows
 	query := fmt.Sprintf(`
 		SELECT * FROM "%v" 
 		WHERE owner=$1`, r.Table)
 	if groupName != "" {
 		query = fmt.Sprintf("%v AND name=$2", query)
+		rows, err = db.Query(query, owner, groupName)
+	} else {
+		rows, err = db.Query(query, owner)
 	}
-
-	rows, err := db.Query(query, owner, groupName)
 	if err != nil {
 		return nil, fmt.Errorf("group query error for %s: %v", owner, err)
 	}
