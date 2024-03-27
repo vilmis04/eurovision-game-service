@@ -69,13 +69,11 @@ func (r *Repo) CreateGroup(group *Group) (*int64, error) {
 	query := fmt.Sprintf(`
 	INSERT INTO "%v" (name, owner, members, dateCreated)
 	VALUES ($1, $2, $3, $4)
+	RETURNING id
 	`, r.Table)
-	result, err := db.Exec(query, group.Name, group.Owner, pq.Array(group.Members), group.DateCreated)
-	if err != nil {
-		return nil, err
-	}
 
-	id, err := result.LastInsertId()
+	var id int64
+	err = db.QueryRow(query, group.Name, group.Owner, pq.Array(group.Members), group.DateCreated).Scan(&id)
 	if err != nil {
 		return nil, err
 	}
