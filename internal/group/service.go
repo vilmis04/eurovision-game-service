@@ -6,23 +6,21 @@ import (
 	"net/http"
 	"slices"
 	"time"
-
-	"github.com/vilmis04/eurovision-game-service/internal/utils"
 )
 
 type Service struct {
-	storage *Repo
+	Repo
 }
 
 func NewService() *Service {
 	return &Service{
-		storage: NewRepo(),
+		Repo: *NewRepo(),
 	}
 }
 
 func (s *Service) GetGroups(owner string, request *http.Request) (*[]byte, error) {
 	groupName := request.URL.Query().Get("name")
-	groups, err := s.storage.GetGroupList(owner, groupName)
+	groups, err := s.Repo.GetGroupList(owner, groupName)
 	if err != nil {
 		return nil, err
 	}
@@ -37,13 +35,13 @@ func (s *Service) GetGroups(owner string, request *http.Request) (*[]byte, error
 
 func (s *Service) CreateGroup(owner string, request *http.Request) (*[]byte, error) {
 	var requestBody CreateGroupRequestBody
-	err := utils.DecodeRequestJson(request, requestBody)
+	err := json.NewDecoder(request.Body).Decode(&requestBody)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("service: %v", err)
 	}
 
-	name := *requestBody.Name
-	usedNames, err := s.storage.GetGroupNames(owner)
+	name := requestBody.Name
+	usedNames, err := s.Repo.GetGroupNames(owner)
 	if err != nil {
 		return nil, err
 	}
@@ -55,11 +53,11 @@ func (s *Service) CreateGroup(owner string, request *http.Request) (*[]byte, err
 	group := Group{
 		Name:        name,
 		Owner:       owner,
-		DateCreated: time.Now().String(),
+		DateCreated: time.Now(),
 		Members:     []string{owner},
 	}
 
-	id, err := s.storage.CreateGroup(&group)
+	id, err := s.Repo.CreateGroup(&group)
 	if err != nil {
 		return nil, err
 	}
@@ -74,12 +72,12 @@ func (s *Service) CreateGroup(owner string, request *http.Request) (*[]byte, err
 
 func (s *Service) UpdateMembers(owner string, request *http.Request) error {
 	var requestBody UpdateGroupRequestBody
-	err := utils.DecodeRequestJson(request, requestBody)
+	err := json.NewDecoder(request.Body).Decode(&requestBody)
 	if err != nil {
 		return err
 	}
 
-	groupList, err := s.storage.GetGroupList(owner, *requestBody.Name)
+	groupList, err := s.Repo.GetGroupList(owner, *requestBody.Name)
 	if err != nil {
 		return err
 	}
@@ -93,11 +91,11 @@ func (s *Service) UpdateMembers(owner string, request *http.Request) error {
 	}
 	group := (*groupList)[0]
 
-	return s.storage.UpdateGroup(owner, &requestBody, &group)
+	return s.Repo.UpdateGroup(owner, &requestBody, &group)
 }
 
 func (s *Service) DeleteGroup(owner string, name string) error {
-	err := s.storage.DeleteGroup(owner, name)
+	err := s.Repo.DeleteGroup(owner, name)
 	if err != nil {
 		return err
 	}

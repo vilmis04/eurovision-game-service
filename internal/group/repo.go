@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/lib/pq"
 	"github.com/vilmis04/eurovision-game-service/internal/storage"
 )
 
@@ -66,10 +67,10 @@ func (r *Repo) CreateGroup(group *Group) (*int64, error) {
 	defer db.Close()
 
 	query := fmt.Sprintf(`
-	INSERT INTO %v (name, owner, members, dateCreated)
+	INSERT INTO "%v" (name, owner, members, dateCreated)
 	VALUES ($1, $2, $3, $4)
 	`, r.Table)
-	result, err := db.Exec(query, group.Name, group.Owner, group.Members, group.DateCreated)
+	result, err := db.Exec(query, group.Name, group.Owner, pq.Array(group.Members), group.DateCreated)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +91,7 @@ func (r *Repo) GetGroupNames(owner string) (*([]string), error) {
 	defer db.Close()
 
 	names := []string{}
-	query := fmt.Sprintf("SELECT name FROM %v WHERE owner=$1", r.Table)
+	query := fmt.Sprintf(`SELECT name FROM "%v" WHERE owner=$1`, r.Table)
 	rows, err := db.Query(query, owner)
 	if err != nil {
 		return nil, err
@@ -121,7 +122,7 @@ func (r *Repo) UpdateGroup(owner string, body *UpdateGroupRequestBody, group *Gr
 	}
 	defer db.Close()
 
-	baseQuery := fmt.Sprintf("UPDATE %v SET", r.Table)
+	baseQuery := fmt.Sprintf(`UPDATE "%v" SET`, r.Table)
 	query := ""
 
 	endQuery := fmt.Sprintf("WHERE owner=%v AND name=%v", owner, group.Name)
@@ -154,7 +155,7 @@ func (r *Repo) DeleteGroup(owner string, name string) error {
 	}
 	defer db.Close()
 
-	query := fmt.Sprintf("DELETE FROM %v WHERE owner=$1 AND name=$2", r.Table)
+	query := fmt.Sprintf(`DELETE FROM "%v" WHERE owner=$1 AND name=$2`, r.Table)
 	_, err = db.Exec(query, owner, name)
 	if err != nil {
 		return err
