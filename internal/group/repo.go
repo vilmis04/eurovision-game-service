@@ -3,6 +3,7 @@ package group
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/lib/pq"
 	"github.com/vilmis04/eurovision-game-service/internal/storage"
@@ -44,11 +45,14 @@ func (r *Repo) GetGroupList(owner string, groupName string) (*[]Group, error) {
 	var id int
 	for rows.Next() {
 		group := Group{}
+		var membersResponse string
 
-		err := rows.Scan(&id, &group.Name, &group.Members, &group.Owner, &group.DateCreated)
+		err := rows.Scan(&id, &group.Name, &membersResponse, &group.Owner, &group.DateCreated)
 		if err != nil {
 			return nil, fmt.Errorf("group row scan err: %v", err)
 		}
+
+		group.Members = strings.Split(membersResponse, ",")
 
 		groups = append(groups, group)
 	}
