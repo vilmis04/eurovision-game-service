@@ -62,4 +62,13 @@ func (ctrl *controller) Use() {
 
 		c.Writer.WriteHeader(http.StatusOK)
 	})
+
+	ctrl.router.POST(":name/generate-invite", func(c *gin.Context) {
+		inviteCode, err := ctrl.service.GenerateInvite(c.Param("name"))
+		if err != nil {
+			utils.HandleServerError(err, c)
+		}
+
+		c.Writer.Write(*inviteCode)
+	})
 }

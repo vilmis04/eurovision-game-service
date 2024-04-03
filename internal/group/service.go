@@ -102,3 +102,17 @@ func (s *Service) DeleteGroup(owner string, name string) error {
 
 	return nil
 }
+
+func (s *Service) GenerateInvite(name string) (*[]byte, error) {
+	id, err := s.Repo.CreateInviteLink(name)
+	if err != nil {
+		return nil, err
+	}
+
+	encodedId, err := json.Marshal(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &encodedId, nil
+}

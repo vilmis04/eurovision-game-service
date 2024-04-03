@@ -165,3 +165,8 @@ func (r *Repo) DeleteGroup(owner string, name string) error {
 
 	return nil
 }
+
+func (r *Repo) CreateInviteLink(name string) (*string, error) {
+
+	return nil, nil
+}
