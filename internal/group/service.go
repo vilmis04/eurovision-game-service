@@ -1,6 +1,7 @@
 package group
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -33,6 +34,7 @@ func (s *Service) GetGroups(owner string, request *http.Request) (*[]byte, error
 	return &encodedGroups, nil
 }
 
+// TODO: add check that only one group with the same name exists per user (owner)
 func (s *Service) CreateGroup(owner string, request *http.Request) (*[]byte, error) {
 	var requestBody CreateGroupRequestBody
 	err := json.NewDecoder(request.Body).Decode(&requestBody)
@@ -103,16 +105,10 @@ func (s *Service) DeleteGroup(owner string, name string) error {
 	return nil
 }
 
-func (s *Service) GenerateInvite(name string) (*[]byte, error) {
-	id, err := s.Repo.CreateInviteLink(name)
-	if err != nil {
-		return nil, err
-	}
+func (s *Service) GenerateInvite(name string, user string) (string, error) {
+	date := time.Now().Format("2006-01-02") // 2006-01-02 directs the format in Go for YYYY-DD-MM
+	message := fmt.Sprintf("%v:%v:%v", name, user, date)
+	link := base64.RawStdEncoding.EncodeToString([]byte(message))
 
-	encodedId, err := json.Marshal(id)
-	if err != nil {
-		return nil, err
-	}
-
-	return &encodedId, nil
+	return link, nil
 }
