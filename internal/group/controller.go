@@ -72,4 +72,13 @@ func (ctrl *controller) Use() {
 		c.Writer.Header().Set("Content-Type", "text/plain")
 		c.String(http.StatusCreated, inviteCode)
 	})
+
+	ctrl.router.POST("join", func(c *gin.Context) {
+		err := ctrl.service.JoinGroup(c.GetHeader("user"), c.Request)
+		if err != nil {
+			utils.HandleServerError(err, c)
+		}
+
+		c.Writer.WriteHeader(http.StatusOK)
+	})
 }

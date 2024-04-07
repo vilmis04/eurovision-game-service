@@ -19,6 +19,7 @@ func NewRepo() *Repo {
 	}
 }
 
+// To get all groups of the user, provide "" (empty string) as groupName
 func (r *Repo) GetGroupList(owner string, groupName string) (*[]Group, error) {
 	db, err := r.ConnectToDB()
 	if err != nil {
@@ -26,6 +27,7 @@ func (r *Repo) GetGroupList(owner string, groupName string) (*[]Group, error) {
 	}
 	defer db.Close()
 
+	// TODO: update this method (or add a new one) to get all the groups of a member (not owner)
 	var rows *sql.Rows
 	query := fmt.Sprintf(`
 		SELECT * FROM "%v" 
@@ -127,6 +129,7 @@ func (r *Repo) UpdateGroup(owner string, body *UpdateGroupRequestBody, group *Gr
 	baseQuery := fmt.Sprintf(`UPDATE "%v" SET`, r.Table)
 	query := ""
 
+	// TODO: check if quotes around the %v are needed - could it break if owner or group.Name is 'group' (for example)
 	endQuery := fmt.Sprintf("WHERE owner=%v AND name=%v", owner, group.Name)
 
 	name := group.Name

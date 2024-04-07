@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
+	"strings"
 	"time"
 )
 
@@ -111,4 +112,39 @@ func (s *Service) GenerateInvite(name string, user string) (string, error) {
 	link := base64.RawStdEncoding.EncodeToString([]byte(message))
 
 	return link, nil
+}
+
+func (s *Service) JoinGroup(user string, request *http.Request) error {
+	var requestBody JoinGroupRequestBody
+	err := json.NewDecoder(request.Body).Decode(&requestBody)
+	if err != nil {
+		return fmt.Errorf("service: %v", err)
+	}
+
+	link, err := base64.RawStdEncoding.DecodeString(requestBody.InviteCode)
+	if err != nil {
+		return fmt.Errorf("service: %v", err)
+	}
+
+	inviteInfo := strings.Split(string(link), ":")
+	groupName := inviteInfo[0]
+	groupOwner := inviteInfo[1]
+
+	groupList, err := s.Repo.GetGroupList(groupOwner, groupName)
+	if err != nil {
+		return err
+	}
+	group := (*groupList)[0]
+	group.Members = append(group.Members, user)
+
+	updateRequest := UpdateGroupRequestBody{
+		Members: &group.Members,
+	}
+
+	err = s.Repo.UpdateGroup(groupOwner, &updateRequest, &group)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
