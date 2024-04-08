@@ -21,36 +21,34 @@ func NewRepo() *Repo {
 }
 
 // To get all groups of the user, provide "" (empty string) as groupName
-func (r *Repo) GetGroupList(owner string, groupName string) (*[]Group, error) {
+func (r *Repo) GetGroupList(user string, groupId string) (*[]Group, error) {
 	db, err := r.ConnectToDB()
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
 
-	// TODO: update this method (or add a new one) to get all the groups of a member (not owner)
 	var rows *sql.Rows
 	query := fmt.Sprintf(`
 		SELECT * FROM "%v" 
-		WHERE owner=$1`, r.Table)
-	if groupName != "" {
-		query = fmt.Sprintf("%v AND name=$2", query)
-		rows, err = db.Query(query, owner, groupName)
+		WHERE $1 = ANY(members)`, r.Table)
+	if groupId != "" {
+		query = fmt.Sprintf("%v AND id=$2", query)
+		rows, err = db.Query(query, user, groupId)
 	} else {
-		rows, err = db.Query(query, owner)
+		rows, err = db.Query(query, user)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("group query error for %s: %v", owner, err)
+		return nil, fmt.Errorf("group query error for %s: %v", user, err)
 	}
 	defer rows.Close()
 
 	var groups []Group
-	var id int
 	for rows.Next() {
 		group := Group{}
 		var membersResponse string
 
-		err := rows.Scan(&id, &group.Name, &group.Owner, &membersResponse, &group.DateCreated)
+		err := rows.Scan(&group.Id, &group.Name, &group.Owner, &membersResponse, &group.DateCreated)
 		if err != nil {
 			return nil, fmt.Errorf("group row scan err: %v", err)
 		}
@@ -136,7 +134,6 @@ func (r *Repo) UpdateMembers(owner string, name string, groupMembers []string) e
 		WHERE owner='%v' AND name='%v'
 	`, r.Table, html.EscapeString(owner), html.EscapeString(name))
 
-	fmt.Println(query)
 	_, err = db.Exec(query, pq.Array(groupMembers))
 	if err != nil {
 		return fmt.Errorf("query err: %v", err)

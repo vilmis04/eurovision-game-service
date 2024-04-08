@@ -20,9 +20,9 @@ func NewService() *Service {
 	}
 }
 
-func (s *Service) GetGroups(owner string, request *http.Request) (*[]byte, error) {
-	groupName := request.URL.Query().Get("name")
-	groups, err := s.Repo.GetGroupList(owner, groupName)
+func (s *Service) GetGroups(user string, request *http.Request) (*[]byte, error) {
+	groupId := request.URL.Query().Get("id")
+	groups, err := s.Repo.GetGroupList(user, groupId)
 	if err != nil {
 		return nil, err
 	}
@@ -111,9 +111,15 @@ func (s *Service) DeleteGroup(owner string, name string) error {
 	return nil
 }
 
-func (s *Service) GenerateInvite(name string, user string) (string, error) {
+func (s *Service) GenerateInvite(id string, user string) (string, error) {
+	groupList, err := s.GetGroupList(user, id)
+	if err != nil {
+		return "", err
+	}
+	name := (*groupList)[0].Name
+
 	date := time.Now().Format("2006-01-02") // 2006-01-02 directs the format in Go for YYYY-DD-MM
-	message := fmt.Sprintf("%v:%v:%v", name, user, date)
+	message := fmt.Sprintf("%v:%v:%v:%v", name, user, id, date)
 	link := base64.RawStdEncoding.EncodeToString([]byte(message))
 
 	return link, nil
@@ -134,8 +140,9 @@ func (s *Service) JoinGroup(user string, request *http.Request) error {
 	inviteInfo := strings.Split(string(link), ":")
 	groupName := inviteInfo[0]
 	groupOwner := inviteInfo[1]
+	groupId := inviteInfo[2]
 
-	groupList, err := s.Repo.GetGroupList(groupOwner, groupName)
+	groupList, err := s.Repo.GetGroupList(groupOwner, groupId)
 	if err != nil {
 		return err
 	}

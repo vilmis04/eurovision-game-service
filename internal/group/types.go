@@ -3,6 +3,7 @@ package group
 import "time"
 
 type Group struct {
+	Id          int64     `json:"id"`
 	Name        string    `json:"name"`
 	Members     []string  `json:"members"`
 	Owner       string    `json:"owner"`
