@@ -1,6 +1,7 @@
 package group
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -43,9 +44,13 @@ func (ctrl *controller) Use() {
 		c.Writer.Write(*id)
 	})
 
-	ctrl.router.PATCH("/", func(c *gin.Context) {
-		err := ctrl.service.UpdateMembers(c.GetHeader("user"), c.Request)
+	ctrl.router.PATCH(":owner/:name", func(c *gin.Context) {
+		err := ctrl.service.UpdateMembers(c.Param("owner"), c.Param("name"), c.Request)
 		if err != nil {
+			if err.Error() == fmt.Sprint(http.StatusBadRequest) {
+				utils.HandleClientError(err, c)
+				return
+			}
 			utils.HandleServerError(err, c)
 			return
 		}

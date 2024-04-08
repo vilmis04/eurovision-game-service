@@ -3,6 +3,7 @@ package group
 import (
 	"database/sql"
 	"fmt"
+	"html"
 	"strings"
 
 	"github.com/lib/pq"
@@ -49,11 +50,13 @@ func (r *Repo) GetGroupList(owner string, groupName string) (*[]Group, error) {
 		group := Group{}
 		var membersResponse string
 
-		err := rows.Scan(&id, &group.Name, &membersResponse, &group.Owner, &group.DateCreated)
+		err := rows.Scan(&id, &group.Name, &group.Owner, &membersResponse, &group.DateCreated)
 		if err != nil {
 			return nil, fmt.Errorf("group row scan err: %v", err)
 		}
 
+		membersResponse, _ = strings.CutPrefix(membersResponse, "{")
+		membersResponse, _ = strings.CutSuffix(membersResponse, "}")
 		group.Members = strings.Split(membersResponse, ",")
 
 		groups = append(groups, group)
@@ -119,35 +122,24 @@ func (r *Repo) GetGroupNames(owner string) (*([]string), error) {
 	return &names, nil
 }
 
-func (r *Repo) UpdateGroup(owner string, body *UpdateGroupRequestBody, group *Group) error {
+func (r *Repo) UpdateMembers(owner string, name string, groupMembers []string) error {
 	db, err := r.ConnectToDB()
 	if err != nil {
-		return nil
+		return fmt.Errorf("conn error: %v", err)
 	}
 	defer db.Close()
 
-	baseQuery := fmt.Sprintf(`UPDATE "%v" SET`, r.Table)
-	query := ""
-
 	// TODO: check if quotes around the %v are needed - could it break if owner or group.Name is 'group' (for example)
-	endQuery := fmt.Sprintf("WHERE owner=%v AND name=%v", owner, group.Name)
+	query := fmt.Sprintf(`
+		UPDATE "%v" 
+		SET members=$1 
+		WHERE owner='%v' AND name='%v'
+	`, r.Table, html.EscapeString(owner), html.EscapeString(name))
 
-	name := group.Name
-	members := group.Members
-	if body.Name != nil {
-		query = " name=$1"
-	}
-	if body.Members != nil {
-		comma := ""
-		if query != "" {
-			comma = ","
-		}
-		query = fmt.Sprintf("%v%v%v", query, comma, " members=$2")
-		members = *body.Members
-	}
-	_, err = db.Exec(fmt.Sprintf("%v%v%v", baseQuery, query, endQuery), name, members)
+	fmt.Println(query)
+	_, err = db.Exec(query, pq.Array(groupMembers))
 	if err != nil {
-		return nil
+		return fmt.Errorf("query err: %v", err)
 	}
 
 	return nil

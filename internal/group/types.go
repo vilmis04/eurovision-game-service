@@ -14,10 +14,9 @@ type CreateGroupRequestBody struct {
 }
 
 type UpdateGroupRequestBody struct {
-	Name    *string   `json:"name"`
-	Members *[]string `json:"members"`
+	Members []string `json:"members"`
 }
 
 type JoinGroupRequestBody struct {
-	InviteCode string
+	InviteCode string `json:"inviteCode"`
 }

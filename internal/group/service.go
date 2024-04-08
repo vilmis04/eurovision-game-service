@@ -73,28 +73,33 @@ func (s *Service) CreateGroup(owner string, request *http.Request) (*[]byte, err
 	return &encodedId, nil
 }
 
-func (s *Service) UpdateMembers(owner string, request *http.Request) error {
+func (s *Service) UpdateMembers(owner string, name string, request *http.Request) error {
+	if owner == "" || name == "" {
+		return fmt.Errorf("%v", http.StatusBadRequest)
+	}
 	var requestBody UpdateGroupRequestBody
 	err := json.NewDecoder(request.Body).Decode(&requestBody)
 	if err != nil {
 		return err
 	}
 
-	groupList, err := s.Repo.GetGroupList(owner, *requestBody.Name)
+	groupList, err := s.Repo.GetGroupList(owner, name)
 	if err != nil {
 		return err
 	}
 
 	numberOfGroups := len(*groupList)
 	if numberOfGroups == 0 {
-		return fmt.Errorf("no group named %v found", requestBody.Name)
+		return fmt.Errorf("no group named %v found", name)
 	}
 	if numberOfGroups > 1 {
-		return fmt.Errorf("multiple groups named %v found", requestBody.Name)
+		return fmt.Errorf("multiple groups named %v found", name)
 	}
 	group := (*groupList)[0]
 
-	return s.Repo.UpdateGroup(owner, &requestBody, &group)
+	updatedMemberList := append(group.Members, requestBody.Members...)
+
+	return s.Repo.UpdateMembers(owner, name, updatedMemberList)
 }
 
 func (s *Service) DeleteGroup(owner string, name string) error {
@@ -135,13 +140,9 @@ func (s *Service) JoinGroup(user string, request *http.Request) error {
 		return err
 	}
 	group := (*groupList)[0]
-	group.Members = append(group.Members, user)
+	updatedMemberList := append(group.Members, user)
 
-	updateRequest := UpdateGroupRequestBody{
-		Members: &group.Members,
-	}
-
-	err = s.Repo.UpdateGroup(groupOwner, &updateRequest, &group)
+	err = s.Repo.UpdateMembers(groupOwner, groupName, updatedMemberList)
 	if err != nil {
 		return err
 	}
