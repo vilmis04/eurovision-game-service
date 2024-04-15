@@ -27,7 +27,7 @@ func (r *Repo) GetConfig() (*Admin, error) {
 	var id uint16
 
 	row := db.QueryRow(fmt.Sprintf("SELECT * FROM %v WHERE id=1", r.storage.Table))
-	err = row.Scan(&id, &config.Year, &config.GameType, &config.IsVotingAcitve)
+	err = row.Scan(&id, &config.Year, &config.GameType, &config.IsVotingAcitve, &config.VotingEnd)
 	if err != nil {
 		return nil, err
 	}

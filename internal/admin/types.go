@@ -1,9 +1,12 @@
 package admin
 
+import "time"
+
 type Admin struct {
-	Year           uint16   `json:"year"`
-	GameType       GameType `json:"gameType"`
-	IsVotingAcitve bool     `json:"isVotingActive"`
+	Year           uint16     `json:"year"`
+	GameType       GameType   `json:"gameType"`
+	IsVotingAcitve bool       `json:"isVotingActive"`
+	VotingEnd      *time.Time `json:"votingEnd"`
 }
 
 type GameType string
