@@ -125,7 +125,7 @@ INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song,
 VALUES ('Norway', 'no', 2024, 'semi2', 0, false, 'Gåte', 'Ulveham', 15, 0);
 
 INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
-VALUES ('Netherlands', 'bq', 2024, 'semi2', 0, false, 'Joost Klein', 'Europapa', 16, 0);
+VALUES ('Netherlands', 'nl', 2024, 'semi2', 0, false, 'Joost Klein', 'Europapa', 16, 0);
 
 
 -- Insert default values into admin_config
