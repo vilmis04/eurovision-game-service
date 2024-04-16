@@ -25,8 +25,11 @@ func (r *Repo) Create(country *Country) (*int64, error) {
 	}
 	defer db.Close()
 
-	query := fmt.Sprintf("INSERT INTO %v (name, gameType, year, score, isInFinal) VALUES ($1, $2, $3, $4, $5)", r.storage.Table)
-	result, err := db.Exec(query, country.Name, country.GameType, country.Year, country.Score, country.IsInFinal)
+	query := fmt.Sprintf(`
+		INSERT INTO %v (name, code, gameType, year, score, isInFinal, orderSemi, orderFinal) 
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, r.storage.Table)
+	result, err := db.Exec(query, country.Name, country.Code, country.GameType, country.Year, country.Score, country.IsInFinal, country.OrderSemi, country.OrderFinal)
+
 	if err != nil {
 		return nil, err
 	}

@@ -40,13 +40,16 @@ func (s *Service) CreateCountry(request *http.Request) (*[]byte, error) {
 	}
 
 	country := Country{
-		Year:      config.Year,
-		IsInFinal: false,
-		Score:     0,
-		Name:      *requestBody.Name,
-		GameType:  *requestBody.GameType,
-		Artist:    *requestBody.Artist,
-		Song:      *requestBody.Song,
+		Year:       config.Year,
+		IsInFinal:  false,
+		Score:      0,
+		Name:       *requestBody.Name,
+		Code:       *requestBody.Code,
+		GameType:   *requestBody.GameType,
+		Artist:     *requestBody.Artist,
+		Song:       *requestBody.Song,
+		OrderSemi:  *requestBody.OrderSemi,
+		OrderFinal: 0,
 	}
 
 	id, err := s.storage.Create(&country)
