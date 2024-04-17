@@ -3,6 +3,7 @@ package country
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/vilmis04/eurovision-game-service/internal/admin"
 	"github.com/vilmis04/eurovision-game-service/internal/storage"
@@ -51,6 +52,18 @@ func (r *Repo) GetCountryList(year string, gameType string, name string) (*[]Cou
 	var id int
 	var countries []Country = []Country{}
 	baseQuery := fmt.Sprintf("SELECT * FROM %v WHERE year=$1", r.storage.Table)
+	var orderBy string
+	queryEnd := ""
+	if gameType == "final" {
+		orderBy = "orderFinal"
+	}
+	if strings.Contains(gameType, "semi") {
+		orderBy = "orderSemi"
+	}
+	if orderBy != "" {
+		queryEnd = fmt.Sprintf(`
+			ORDER BY %v ASC`, orderBy)
+	}
 
 	db, err := r.storage.ConnectToDB()
 	if err != nil {
@@ -73,10 +86,10 @@ func (r *Repo) GetCountryList(year string, gameType string, name string) (*[]Cou
 		var queryParam string
 		if name != "" {
 			queryParam = name
-			query = fmt.Sprintf("%v AND name=$2", baseQuery)
+			query = fmt.Sprintf("%v AND name=$2 %v", baseQuery, queryEnd)
 		} else {
 			queryParam = gameType
-			query = fmt.Sprintf("%v AND gameType=$2", baseQuery)
+			query = fmt.Sprintf("%v AND gameType=$2 %v", baseQuery, queryEnd)
 		}
 		rows, err = db.Query(query, year, queryParam)
 		if err != nil {
@@ -88,7 +101,7 @@ func (r *Repo) GetCountryList(year string, gameType string, name string) (*[]Cou
 
 	for rows.Next() {
 		country := Country{}
-		err = rows.Scan(&id, &country.Name, &country.Year, &country.GameType, &country.Score, &country.IsInFinal, &country.Artist, &country.Song)
+		err = rows.Scan(&id, &country.Name, &country.Code, &country.Year, &country.GameType, &country.Score, &country.IsInFinal, &country.Artist, &country.Song, &country.OrderSemi, &country.OrderFinal)
 		if err != nil {
 			return nil, err
 		}
