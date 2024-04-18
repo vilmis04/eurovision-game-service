@@ -10,6 +10,7 @@ import (
 	"github.com/vilmis04/eurovision-game-service/internal/admin"
 	"github.com/vilmis04/eurovision-game-service/internal/country"
 	"github.com/vilmis04/eurovision-game-service/internal/group"
+	"github.com/vilmis04/eurovision-game-service/internal/score"
 	"github.com/vilmis04/eurovision-game-service/internal/user"
 )
 
@@ -40,6 +41,7 @@ func main() {
 	admin.NewController(app).Use()
 	country.NewController(app).Use()
 	group.NewController(app).Use()
+	score.NewController(app).Use()
 
 	app.Run()
 }

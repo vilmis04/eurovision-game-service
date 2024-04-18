@@ -28,8 +28,18 @@ CREATE TABLE "country" (
 	"artist"      VARCHAR(255) NOT NULL,
 	"song"        VARCHAR(255) NOT NULL,
 	"ordersemi"   INT NOT NULL,
-	"orderfinal"  INT NOT NULL,
-)
+	"orderfinal"  INT NOT NULL
+);
+
+CREATE TABLE score (
+  "id"       SERIAL PRIMARY KEY,
+	"country"  VARCHAR(255) NOT NULL,
+	"year"     VARCHAR(255) NOT NULL,
+	"gameType" VARCHAR(255) NOT NULL,
+	"user"     VARCHAR(255) NOT NULL,         
+	"inFinal"  BOOLEAN NOT NULL,           
+	"points"   INT NOT NULL         
+);
 
 -- Insert countries into table country
 INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
