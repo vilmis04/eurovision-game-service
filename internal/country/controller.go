@@ -34,7 +34,11 @@ func (ctrl *controller) Use() {
 	})
 
 	ctrl.router.GET("/:year", func(c *gin.Context) {
-		countries, err := ctrl.service.GetCountryList(c.Param("year"), c.Request)
+		queryParams := c.Request.URL.Query()
+		gameType := queryParams.Get("gameType")
+		name := queryParams.Get("name")
+
+		countries, err := ctrl.service.GetCountryList(c.Param("year"), gameType, name)
 		if err != nil {
 			utils.HandleServerError(err, c)
 			return

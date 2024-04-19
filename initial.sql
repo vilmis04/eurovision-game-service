@@ -35,9 +35,9 @@ CREATE TABLE score (
   "id"       SERIAL PRIMARY KEY,
 	"country"  VARCHAR(255) NOT NULL,
 	"year"     VARCHAR(255) NOT NULL,
-	"gameType" VARCHAR(255) NOT NULL,
+	"gametype" VARCHAR(255) NOT NULL,
 	"user"     VARCHAR(255) NOT NULL,         
-	"inFinal"  BOOLEAN NOT NULL,           
+	"infinal"  BOOLEAN NOT NULL,           
 	"points"   INT NOT NULL         
 );
 
@@ -148,7 +148,7 @@ INSERT INTO admin_config (year, gameType, isVotingActive, votingEnd) VALUES
 
 CREATE DATABASE auth;
 
-CREATE TABLE "auth" (
+CREATE TABLE "ev_game_auth" (
   "id" serial NOT NULL,
   PRIMARY KEY ("id"),
   "username" VARCHAR(50) UNIQUE NOT NULL,
@@ -156,5 +156,5 @@ CREATE TABLE "auth" (
 );
 
 -- Insert default values into auth
-INSERT INTO auth (username, password) VALUES
+INSERT INTO ev_game_auth (username, password) VALUES
     ("test", "test");

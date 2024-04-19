@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/vilmis04/eurovision-game-service/internal/types"
 	"github.com/vilmis04/eurovision-game-service/internal/utils"
 )
 
@@ -31,6 +32,19 @@ func (ctrl *controller) Use() {
 		}
 
 		c.Writer.WriteHeader(http.StatusOK)
+	})
+
+	ctrl.router.GET("/", func(c *gin.Context) {
+		user := c.GetHeader("user")
+
+		scores, err := ctrl.service.GetAllScores(user)
+		if err != nil {
+			utils.HandleServerError(err, c)
+			return
+		}
+
+		c.Writer.Header().Set(types.HeaderContentType, types.HeaderApplicationJson)
+		c.Writer.Write(*scores)
 	})
 
 }

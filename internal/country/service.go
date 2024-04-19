@@ -65,11 +65,7 @@ func (s *Service) CreateCountry(request *http.Request) (*[]byte, error) {
 	return &encodedId, nil
 }
 
-func (s *Service) GetCountryList(year string, request *http.Request) (*[]byte, error) {
-	queryParams := request.URL.Query()
-	gameType := queryParams.Get("gameType")
-	name := queryParams.Get("name")
-
+func (s *Service) GetCountryList(year string, gameType string, name string) (*[]byte, error) {
 	countries, err := s.storage.GetCountryList(year, gameType, name)
 	if err != nil {
 		return nil, err
