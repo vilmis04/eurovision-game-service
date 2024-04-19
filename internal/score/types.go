@@ -11,11 +11,6 @@ type Score struct {
 	Points   uint16         `json:"points"`
 }
 
-type UpadateScoreRequestBody struct {
-	InFinal *bool   `json:"inFinal"`
-	Points  *uint16 `json:"points"`
-}
-
 type ScoreResponse struct {
 	Country string `json:"country"`
 	InFinal bool   `json:"inFinal"`

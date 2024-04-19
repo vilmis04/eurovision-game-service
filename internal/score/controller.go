@@ -21,11 +21,10 @@ func NewController(app *gin.Engine) *controller {
 }
 
 func (ctrl *controller) Use() {
-	ctrl.router.PUT(":country", func(c *gin.Context) {
-		country := c.Param("country")
+	ctrl.router.PUT("/", func(c *gin.Context) {
 		user := c.GetHeader("user")
 
-		err := ctrl.service.UpdateScore(country, user, c.Request)
+		err := ctrl.service.UpdateScore(user, c.Request)
 		if err != nil {
 			utils.HandleServerError(err, c)
 			return

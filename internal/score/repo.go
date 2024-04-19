@@ -106,3 +106,19 @@ func (r *Repo) InitializeScores(user string, year uint16, gameType admin.GameTyp
 
 	return scores, nil
 }
+
+func (r *Repo) UpdateScore(user string, score *Score) error {
+	db, err := r.storage.ConnectToDB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `UPDATE score SET infinal=$1, points=$2 WHERE ("user"=$3 AND country=$4 AND year=$5)`
+	_, err = db.Exec(query, score.InFinal, score.Points, score.User, score.Country, score.Year)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

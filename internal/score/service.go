@@ -42,7 +42,7 @@ func (s *Service) InitializeScores(user string, year uint16, gameType admin.Game
 	return scores, nil
 }
 
-func (s *Service) UpdateScore(country string, user string, request *http.Request) error {
+func (s *Service) UpdateScore(user string, request *http.Request) error {
 	encodedConfig, err := s.adminService.GetConfig()
 	if err != nil {
 		return err
@@ -53,9 +53,34 @@ func (s *Service) UpdateScore(country string, user string, request *http.Request
 		return err
 	}
 
-	// TODO: add update logic
+	var body ScoreResponse
+	err = json.NewDecoder(request.Body).Decode(&body)
+	if err != nil {
+		return fmt.Errorf("service: %v", err)
+	}
+
+	score, err := s.GetScore(user, body.Country, config.Year)
+	if err != nil {
+		return err
+	}
+	score.InFinal = body.InFinal
+	score.Points = body.Points
+
+	err = s.storage.UpdateScore(user, score)
+	if err != nil {
+		return err
+	}
 
 	return nil
+}
+
+func (s *Service) GetScore(user string, country string, year uint16) (*Score, error) {
+	score, err := s.storage.GetScore(user, country, year)
+	if err != nil {
+		return nil, err
+	}
+
+	return score, nil
 }
 
 func (s *Service) GetAllScores(user string) (*[]byte, error) {
