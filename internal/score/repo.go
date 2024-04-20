@@ -31,7 +31,7 @@ func (r *Repo) GetScore(user string, country string, year uint16) (*Score, error
 	row := db.QueryRow(query, user, country, year)
 
 	var id int64
-	err = row.Scan(id, score.Country, score.Year, score.User, score.InFinal, score.Points)
+	err = row.Scan(id, score.Country, score.Year, score.User, score.InFinal, score.Position)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			log.Printf("no rows found for %v of %v in %v\n", user, country, year)
@@ -52,7 +52,7 @@ func (r *Repo) GetAllScores(user string, gameType admin.GameType, year uint16) (
 	defer db.Close()
 
 	scores := []ScoreResponse{}
-	query := `SELECT country, infinal, points FROM score WHERE ("user"=$1 AND "year"=$2 AND "gametype"=$3)`
+	query := `SELECT country, infinal, position FROM score WHERE ("user"=$1 AND "year"=$2 AND "gametype"=$3)`
 	rows, err := db.Query(query, user, year, gameType)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func (r *Repo) GetAllScores(user string, gameType admin.GameType, year uint16) (
 
 	for rows.Next() {
 		score := ScoreResponse{}
-		err = rows.Scan(&score.Country, &score.InFinal, &score.Points)
+		err = rows.Scan(&score.Country, &score.InFinal, &score.Position)
 		if err != nil {
 			return nil, err
 		}
@@ -88,19 +88,19 @@ func (r *Repo) InitializeScores(user string, year uint16, gameType admin.GameTyp
 			User:     user,
 			GameType: gameType,
 			InFinal:  false,
-			Points:   0,
+			Position: 0,
 		}
 
-		query := `INSERT INTO score ("user", country, year, gametype, inFinal, points) VALUES ($1, $2, $3, $4, $5, $6)`
-		_, err = db.Exec(query, score.User, score.Country, score.Year, score.GameType, score.InFinal, score.Points)
+		query := `INSERT INTO score ("user", country, year, gametype, inFinal, position) VALUES ($1, $2, $3, $4, $5, $6)`
+		_, err = db.Exec(query, score.User, score.Country, score.Year, score.GameType, score.InFinal, score.Position)
 		if err != nil {
 			return nil, err
 		}
 
 		scores = append(scores, ScoreResponse{
-			Country: score.Country,
-			InFinal: score.InFinal,
-			Points:  score.Points,
+			Country:  score.Country,
+			InFinal:  score.InFinal,
+			Position: score.Position,
 		})
 	}
 
@@ -114,8 +114,8 @@ func (r *Repo) UpdateScore(user string, score *Score) error {
 	}
 	defer db.Close()
 
-	query := `UPDATE score SET infinal=$1, points=$2 WHERE ("user"=$3 AND country=$4 AND year=$5)`
-	_, err = db.Exec(query, score.InFinal, score.Points, score.User, score.Country, score.Year)
+	query := `UPDATE score SET infinal=$1, position=$2 WHERE ("user"=$3 AND country=$4 AND year=$5)`
+	_, err = db.Exec(query, score.InFinal, score.Position, score.User, score.Country, score.Year)
 	if err != nil {
 		return err
 	}

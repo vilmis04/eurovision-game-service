@@ -38,7 +38,7 @@ CREATE TABLE score (
 	"gametype" VARCHAR(255) NOT NULL,
 	"user"     VARCHAR(255) NOT NULL,         
 	"infinal"  BOOLEAN NOT NULL,           
-	"points"   INT NOT NULL         
+	"position"   INT NOT NULL         
 );
 
 -- Insert countries into table country

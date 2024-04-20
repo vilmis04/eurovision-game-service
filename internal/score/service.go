@@ -64,7 +64,7 @@ func (s *Service) UpdateScore(user string, request *http.Request) error {
 		return err
 	}
 	score.InFinal = body.InFinal
-	score.Points = body.Points
+	score.Position = body.Position
 
 	err = s.storage.UpdateScore(user, score)
 	if err != nil {
