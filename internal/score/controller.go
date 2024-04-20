@@ -21,7 +21,7 @@ func NewController(app *gin.Engine) *controller {
 }
 
 func (ctrl *controller) Use() {
-	ctrl.router.PUT("/", func(c *gin.Context) {
+	ctrl.router.PATCH("/", func(c *gin.Context) {
 		user := c.GetHeader("user")
 
 		err := ctrl.service.UpdateScore(user, c.Request)
