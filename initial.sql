@@ -34,7 +34,7 @@ CREATE TABLE "country" (
 CREATE TABLE score (
   "id"       SERIAL PRIMARY KEY,
 	"country"  VARCHAR(255) NOT NULL,
-	"year"     VARCHAR(255) NOT NULL,
+	"year"     INT NOT NULL,
 	"gametype" VARCHAR(255) NOT NULL,
 	"user"     VARCHAR(255) NOT NULL,         
 	"infinal"  BOOLEAN NOT NULL,           

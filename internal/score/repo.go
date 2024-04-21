@@ -1,7 +1,7 @@
 package score
 
 import (
-	"database/sql"
+	"fmt"
 	"log"
 
 	"github.com/vilmis04/eurovision-game-service/internal/admin"
@@ -27,16 +27,12 @@ func (r *Repo) GetScore(user string, country string, year uint16) (*Score, error
 	defer db.Close()
 
 	score := Score{}
-	query := "SELECT * FROM score WHERE (user=$1 AND country=$2 AND year=$3)"
+	query := `SELECT * FROM score WHERE ("user"=$1 AND "country"=$2 AND "year"=$3)`
 	row := db.QueryRow(query, user, country, year)
 
 	var id int64
-	err = row.Scan(id, score.Country, score.Year, score.User, score.InFinal, score.Position)
+	err = row.Scan(&id, &score.Country, &score.Year, &score.GameType, &score.User, &score.InFinal, &score.Position)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			log.Printf("no rows found for %v of %v in %v\n", user, country, year)
-			return nil, nil
-		}
 		return nil, err
 	}
 
@@ -114,10 +110,19 @@ func (r *Repo) UpdateScore(user string, score *Score) error {
 	}
 	defer db.Close()
 
-	query := `UPDATE score SET infinal=$1, position=$2 WHERE ("user"=$3 AND country=$4 AND year=$5)`
-	_, err = db.Exec(query, score.InFinal, score.Position, score.User, score.Country, score.Year)
+	query := `UPDATE score
+			  SET infinal=$1, position=$2
+			  WHERE ("user"=$3 AND country=$4 AND year=$5)`
+	result, err := db.Exec(query, score.InFinal, score.Position, score.User, score.Country, score.Year)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to update score for %v of %v in %v: %v", user, score.Country, score.Year, err)
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error checking rows affected: %v", err)
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("no rows were updated (user: %s, country: %s, year: %d)", score.User, score.Country, score.Year)
 	}
 
 	return nil
