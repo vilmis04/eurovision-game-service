@@ -138,6 +138,26 @@ INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song,
 VALUES ('Netherlands', 'nl', 2024, 'semi2', 0, false, 'Joost Klein', 'Europapa', 16, 0);
 
 
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Germany', 'de', 2024, 'final', 0, true, 'ISAAK', 'Always On The Run', 0, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('United Kingdom', 'gb', 2024, 'final', 0, true, 'Olly Alexander', 'Dizzy', 0, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('France', 'fr', 2024, 'final', 0, true, 'Slimane', 'Mon amour', 0, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Italy', 'it', 2024, 'final', 0, true, 'Angelina Mango', 'La noia', 0, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Spain', 'es', 2024, 'final', 0, true, 'Nebulossa', 'ZORRA', 0, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Sweden', 'se', 2024, 'final', 0, true, 'Marcus & Martinus', 'Unforgettable', 0, 1);
+
+
 -- Insert default values into admin_config
 INSERT INTO admin_config (year, gameType, isVotingActive, votingEnd) VALUES
     (2024, 'semi1', false, NULL);
@@ -146,9 +166,7 @@ INSERT INTO admin_config (year, gameType, isVotingActive, votingEnd) VALUES
 -- ------------------------------------------------------------
 -- auth initial data for testing
 
-CREATE DATABASE auth;
-
-CREATE TABLE "ev_game_auth" (
+CREATE TABLE "auth" (
   "id" serial NOT NULL,
   PRIMARY KEY ("id"),
   "username" VARCHAR(50) UNIQUE NOT NULL,
@@ -156,5 +174,5 @@ CREATE TABLE "ev_game_auth" (
 );
 
 -- Insert default values into auth
-INSERT INTO ev_game_auth (username, password) VALUES
+INSERT INTO auth (username, password) VALUES
     ("test", "test");
