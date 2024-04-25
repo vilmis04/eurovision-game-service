@@ -18,7 +18,7 @@ services:
   auth-proxy:
     container_name: auth-proxy
     # image: auth-proxy-img
-    build: ../auth-proxy
+    build: ../../auth-proxy/main-tree
     tty: true
     restart: always
     ports:
