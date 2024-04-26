@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS "group" (
   "name" VARCHAR(20) NOT NULL,
   "owner" VARCHAR(50) NOT NULL,
   "members" text ARRAY NOT NULL,
-  "dateCreated" timestamp NOT NULL
+  "datecreated" timestamp NOT NULL
 );
 
 CREATE TABLE "country" (
