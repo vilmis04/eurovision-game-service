@@ -172,7 +172,3 @@ CREATE TABLE "auth" (
   "username" VARCHAR(50) UNIQUE NOT NULL,
   "password" TEXT NOT NULL
 );
-
--- Insert default values into auth
-INSERT INTO auth (username, password) VALUES
-    ("test", "test");
