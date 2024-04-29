@@ -1,9 +1,12 @@
 package score
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
+	"slices"
 
 	"github.com/vilmis04/eurovision-game-service/internal/admin"
 	"github.com/vilmis04/eurovision-game-service/internal/country"
@@ -111,4 +114,64 @@ func (s *Service) GetAllScores(user string) (*[]byte, error) {
 	}
 
 	return &encodedScores, nil
+}
+
+func (s *Service) SortCountryList(countries []country.Country) ([]string, map[string]CountryResult) {
+	var finalistCountryResult = []CountryResult{}
+	var finalCountryList = make(map[string]CountryResult)
+	var finalists []string
+	for _, country := range countries {
+		if country.IsInFinal {
+			finalists = append(finalists, country.Name)
+			finalistCountryResult = append(finalistCountryResult, CountryResult{
+				Name:  country.Name,
+				Score: country.Score,
+			})
+		}
+	}
+	slices.SortStableFunc(finalistCountryResult, func(a, b CountryResult) int {
+		return cmp.Compare(a.Score, b.Score)
+	})
+	for index, country := range finalistCountryResult {
+		finalCountryList[country.Name] = CountryResult{
+			Name:     country.Name,
+			Score:    country.Score,
+			Position: uint8(index + 1),
+		}
+	}
+	return finalists, finalCountryList
+}
+
+func (s *Service) CalcultateSemiScore(finalists []string, scores []Score) uint16 {
+	var scoredPoints uint16 = 0
+	for _, score := range scores {
+		if !score.InFinal {
+			continue
+		}
+		if slices.Contains(finalists, score.Country) {
+			scoredPoints = scoredPoints + Points["semi"]
+		}
+	}
+	return scoredPoints
+}
+
+func (s *Service) CalculateFinalScore(finalCountryList map[string]CountryResult, scores []Score) uint16 {
+	var finalScore uint16 = 0
+	for _, score := range scores {
+		diff := finalCountryList[score.Country].Position - score.Position
+		absDiff := math.Abs(float64(diff))
+		if absDiff > 5 {
+			continue
+		}
+		finalScore = finalScore + Points[fmt.Sprint(absDiff)]
+	}
+	return finalScore
+}
+
+func (s *Service) CalcultateTotalScore(countries []country.Country, scores []Score) uint16 {
+	finalists, finalCountryList := s.SortCountryList(countries)
+	semiScore := s.CalcultateSemiScore(finalists, scores)
+	finalScore := s.CalculateFinalScore(finalCountryList, scores)
+
+	return finalScore + semiScore
 }

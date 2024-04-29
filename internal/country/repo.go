@@ -55,6 +55,7 @@ func (r *Repo) GetCountryList(year string, gameType string, name string) (*[]Cou
 	var orderBy string
 	queryEnd := ""
 	if gameType == "final" {
+		baseQuery = fmt.Sprintf("%v AND isInFinal=true", baseQuery)
 		orderBy = "orderFinal"
 	}
 	if strings.Contains(gameType, "semi") {

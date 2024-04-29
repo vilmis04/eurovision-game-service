@@ -15,3 +15,9 @@ To start virtual environment: `make start`
 To stop virtual environment: `make stop`
 
 To attach to go-service when container is running: `make attach`
+
+## Roadmap
+
+- [ ] proxy for permission checking
+- [ ] env var to define admin list
+- [x] score calculation
