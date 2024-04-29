@@ -116,39 +116,40 @@ func (s *Service) GetAllScores(user string) (*[]byte, error) {
 	return &encodedScores, nil
 }
 
-func (s *Service) SortCountryList(countries []country.Country) ([]string, map[string]CountryResult) {
+func (s *Service) SortCountryList(countries []country.Country) (semiWinners []string, finalCountryList map[string]CountryResult) {
 	var finalistCountryResult = []CountryResult{}
-	var finalCountryList = make(map[string]CountryResult)
-	var finalists []string
+	finalCountryList = make(map[string]CountryResult)
 	for _, country := range countries {
-		if country.IsInFinal {
-			finalists = append(finalists, country.Name)
+		if country.IsInFinal || country.GameType == admin.GameTypeFinal {
 			finalistCountryResult = append(finalistCountryResult, CountryResult{
 				Name:  country.Name,
 				Score: country.Score,
 			})
 		}
+		if country.IsInFinal {
+			semiWinners = append(semiWinners, country.Name)
+		}
 	}
 	slices.SortStableFunc(finalistCountryResult, func(a, b CountryResult) int {
-		return cmp.Compare(a.Score, b.Score)
+		return cmp.Compare(b.Score, a.Score)
 	})
 	for index, country := range finalistCountryResult {
 		finalCountryList[country.Name] = CountryResult{
 			Name:     country.Name,
 			Score:    country.Score,
-			Position: uint8(index + 1),
+			Position: int8(index + 1),
 		}
 	}
-	return finalists, finalCountryList
+	return semiWinners, finalCountryList
 }
 
-func (s *Service) CalcultateSemiScore(finalists []string, scores []Score) uint16 {
+func (s *Service) CalculateSemiScore(semiWinners []string, scores []Score) uint16 {
 	var scoredPoints uint16 = 0
 	for _, score := range scores {
 		if !score.InFinal {
 			continue
 		}
-		if slices.Contains(finalists, score.Country) {
+		if slices.Contains(semiWinners, score.Country) {
 			scoredPoints = scoredPoints + Points["semi"]
 		}
 	}
@@ -158,9 +159,15 @@ func (s *Service) CalcultateSemiScore(finalists []string, scores []Score) uint16
 func (s *Service) CalculateFinalScore(finalCountryList map[string]CountryResult, scores []Score) uint16 {
 	var finalScore uint16 = 0
 	for _, score := range scores {
-		diff := finalCountryList[score.Country].Position - score.Position
+		finalPosition := finalCountryList[score.Country].Position
+		diff := finalPosition - score.Position
 		absDiff := math.Abs(float64(diff))
+		fmt.Printf("pos: %v, guessed: %v, country: %s, diff: %v, absDiff: %v\n", finalPosition, score.Position, score.Country, diff, absDiff)
 		if absDiff > 5 {
+			continue
+		}
+		if absDiff == 0 && finalPosition == 1 {
+			finalScore = finalScore + Points["winner"]
 			continue
 		}
 		finalScore = finalScore + Points[fmt.Sprint(absDiff)]
@@ -168,9 +175,9 @@ func (s *Service) CalculateFinalScore(finalCountryList map[string]CountryResult,
 	return finalScore
 }
 
-func (s *Service) CalcultateTotalScore(countries []country.Country, scores []Score) uint16 {
-	finalists, finalCountryList := s.SortCountryList(countries)
-	semiScore := s.CalcultateSemiScore(finalists, scores)
+func (s *Service) CalculateTotalScore(countries []country.Country, scores []Score) uint16 {
+	semiWinners, finalCountryList := s.SortCountryList(countries)
+	semiScore := s.CalculateSemiScore(semiWinners, scores)
 	finalScore := s.CalculateFinalScore(finalCountryList, scores)
 
 	return finalScore + semiScore
