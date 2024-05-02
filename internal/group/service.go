@@ -40,7 +40,6 @@ func (s *Service) GetGroups(user string, request *http.Request) (*[]byte, error)
 	return &encodedGroups, nil
 }
 
-// TODO: add check that only one group with the same name exists per user (owner)
 func (s *Service) CreateGroup(owner string, request *http.Request) (*[]byte, error) {
 	var requestBody CreateGroupRequestBody
 	err := json.NewDecoder(request.Body).Decode(&requestBody)
