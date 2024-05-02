@@ -38,7 +38,7 @@ func (ctrl *controller) Use() {
 		gameType := queryParams.Get("gameType")
 		name := queryParams.Get("name")
 
-		countries, err := ctrl.service.GetCountryList(c.Param("year"), gameType, name)
+		countries, err := ctrl.service.GetCountrySummary(c.Param("year"), gameType, name)
 		if err != nil {
 			utils.HandleServerError(err, c)
 			return

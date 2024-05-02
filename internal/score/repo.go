@@ -1,6 +1,7 @@
 package score
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 
@@ -40,7 +41,6 @@ func (r *Repo) GetScore(user string, country string, year uint16) (*Score, error
 }
 
 func (r *Repo) GetAllScores(user string, gameType admin.GameType, year uint16) ([]ScoreResponse, error) {
-
 	db, err := r.storage.ConnectToDB()
 	if err != nil {
 		return nil, err
@@ -48,8 +48,17 @@ func (r *Repo) GetAllScores(user string, gameType admin.GameType, year uint16) (
 	defer db.Close()
 
 	scores := []ScoreResponse{}
-	query := `SELECT country, infinal, position FROM score WHERE ("user"=$1 AND "year"=$2 AND "gametype"=$3)`
-	rows, err := db.Query(query, user, year, gameType)
+	queryEnd := ""
+	if gameType != "" {
+		queryEnd = `AND "gametype"=$3`
+	}
+	query := fmt.Sprintf(`SELECT country, infinal, position FROM score WHERE ("user"=$1 AND "year"=$2 %v)`, queryEnd)
+	var rows *sql.Rows
+	if gameType == "" {
+		rows, err = db.Query(query, user, year)
+	} else {
+		rows, err = db.Query(query, user, year, gameType)
+	}
 	if err != nil {
 		return nil, err
 	}

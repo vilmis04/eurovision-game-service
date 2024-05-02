@@ -43,15 +43,7 @@ func (r *Repo) Create(country *Country) (*int64, error) {
 	return &id, nil
 }
 
-// Specify game type for countries in that game type.
-// Nothing specified will return all countries in the year.
-// Specify name to get the specific country in that year
-func (r *Repo) GetCountryList(year string, gameType string, name string) (*[]Country, error) {
-	var query string = ""
-	var rows *sql.Rows
-	var id int
-	var countries []Country = []Country{}
-	baseQuery := fmt.Sprintf("SELECT * FROM %v WHERE year=$1", r.storage.Table)
+func (r *Repo) queryCountries(gameType string, baseQuery string, name string, year string, db *sql.DB) (*sql.Rows, error) {
 	var orderBy string
 	queryEnd := ""
 	if gameType == "final" {
@@ -66,18 +58,16 @@ func (r *Repo) GetCountryList(year string, gameType string, name string) (*[]Cou
 			ORDER BY %v ASC`, orderBy)
 	}
 
-	db, err := r.storage.ConnectToDB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
+	var query string = ""
 	if gameType == "" {
 		query = baseQuery
 	}
 	if gameType != "" && admin.GameType(gameType) == admin.GameTypeFinal {
 		query = fmt.Sprintf("%v AND isInFinal=true", baseQuery)
 	}
+
+	var rows *sql.Rows
+	var err error
 	if query != "" {
 		rows, err = db.Query(query, year)
 		if err != nil {
@@ -96,13 +86,69 @@ func (r *Repo) GetCountryList(year string, gameType string, name string) (*[]Cou
 		if err != nil {
 			return nil, err
 		}
+	}
 
+	return rows, nil
+}
+
+// Specify game type for countries in that game type.
+// Nothing specified will return all countries in the year.
+// Specify name to get the specific country in that year
+func (r *Repo) GetCountryList(year string, gameType string, name string) (*[]Country, error) {
+	db, err := r.storage.ConnectToDB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	var id int
+	var countries []Country = []Country{}
+
+	baseQuery := fmt.Sprintf("SELECT * FROM %v WHERE year=$1", r.storage.Table)
+	rows, err := r.queryCountries(gameType, baseQuery, name, year, db)
+	if err != nil {
+		return nil, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		country := Country{}
 		err = rows.Scan(&id, &country.Name, &country.Code, &country.Year, &country.GameType, &country.Score, &country.IsInFinal, &country.Artist, &country.Song, &country.OrderSemi, &country.OrderFinal)
+		if err != nil {
+			return nil, err
+		}
+
+		countries = append(countries, country)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return &countries, nil
+}
+
+// Specify game type for countries in that game type.
+// Nothing specified will return all countries in the year.
+// Specify name to get the specific country in that year
+func (r *Repo) GetCountrySummary(year string, gameType string, name string) (*[]CountrySummary, error) {
+	db, err := r.storage.ConnectToDB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	countries := []CountrySummary{}
+	baseQuery := fmt.Sprintf("SELECT name, code, artist, song, orderSemi, orderFinal FROM %v WHERE year=$1", r.storage.Table)
+	rows, err := r.queryCountries(gameType, baseQuery, name, year, db)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		country := CountrySummary{}
+		err = rows.Scan(&country.Name, &country.Code, &country.Artist, &country.Song, &country.OrderSemi, &country.OrderFinal)
 		if err != nil {
 			return nil, err
 		}

@@ -8,18 +8,18 @@ type Score struct {
 	User     string         `json:"user"`
 	GameType admin.GameType `json:"gameType"`
 	InFinal  bool           `json:"inFinal"`
-	Position int8           `json:"position"`
+	Position int            `json:"position"`
 }
 
 type ScoreResponse struct {
 	Country  string `json:"country"`
 	InFinal  bool   `json:"inFinal"`
-	Position int8   `json:"position"`
+	Position int    `json:"position"`
 }
 
 type CountryResult struct {
 	Name     string
-	Position int8
+	Position int
 	Score    uint16
 }
 

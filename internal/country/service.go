@@ -65,6 +65,19 @@ func (s *Service) CreateCountry(request *http.Request) (*[]byte, error) {
 	return &encodedId, nil
 }
 
+func (s *Service) GetCountrySummary(year string, gameType string, name string) (*[]byte, error) {
+	countries, err := s.storage.GetCountrySummary(year, gameType, name)
+	if err != nil {
+		return nil, err
+	}
+
+	encodedCountries, err := json.Marshal(countries)
+	if err != nil {
+		return nil, err
+	}
+	return &encodedCountries, nil
+}
+
 func (s *Service) GetCountryList(year string, gameType string, name string) (*[]byte, error) {
 	countries, err := s.storage.GetCountryList(year, gameType, name)
 	if err != nil {

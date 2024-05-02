@@ -86,7 +86,7 @@ func (s *Service) GetScore(user string, country string, year uint16) (*Score, er
 	return score, nil
 }
 
-func (s *Service) GetAllScores(user string) (*[]byte, error) {
+func (s *Service) GetAllScores(user string, allGameTypes bool) (*[]byte, error) {
 	encodedConfig, err := s.adminService.GetConfig()
 	if err != nil {
 		return nil, err
@@ -97,7 +97,11 @@ func (s *Service) GetAllScores(user string) (*[]byte, error) {
 		return nil, err
 	}
 
-	scores, err := s.storage.GetAllScores(user, config.GameType, config.Year)
+	var gameType admin.GameType = ""
+	if !allGameTypes {
+		gameType = config.GameType
+	}
+	scores, err := s.storage.GetAllScores(user, gameType, config.Year)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get scores for user %s: %v", user, err)
 	}
@@ -116,7 +120,42 @@ func (s *Service) GetAllScores(user string) (*[]byte, error) {
 	return &encodedScores, nil
 }
 
-func (s *Service) SortCountryList(countries []country.Country) (semiWinners []string, finalCountryList map[string]CountryResult) {
+func (s *Service) GetUserScore(user string) (uint16, error) {
+	adminConfigResponse, err := s.adminService.GetConfig()
+	if err != nil {
+		return 0, err
+	}
+	var adminConfig admin.Admin
+	err = json.Unmarshal(*adminConfigResponse, &adminConfig)
+	if err != nil {
+		return 0, err
+	}
+
+	countryResponse, err := s.countryService.GetCountryList(fmt.Sprint(adminConfig.Year), "", "")
+	if err != nil {
+		return 0, err
+	}
+	var countries []country.Country
+	err = json.Unmarshal(*countryResponse, &countries)
+	if err != nil {
+		return 0, err
+	}
+
+	scoresResponse, err := s.GetAllScores(user, true)
+	if err != nil {
+		return 0, err
+	}
+
+	var scores []Score
+	err = json.Unmarshal(*scoresResponse, &scores)
+	if err != nil {
+		return 0, err
+	}
+
+	return s.CalculateTotalScore(countries, scores), nil
+}
+
+func (s *Service) sortCountryList(countries []country.Country) (semiWinners []string, finalCountryList map[string]CountryResult) {
 	var finalistCountryResult = []CountryResult{}
 	finalCountryList = make(map[string]CountryResult)
 	for _, country := range countries {
@@ -137,13 +176,13 @@ func (s *Service) SortCountryList(countries []country.Country) (semiWinners []st
 		finalCountryList[country.Name] = CountryResult{
 			Name:     country.Name,
 			Score:    country.Score,
-			Position: int8(index + 1),
+			Position: index + 1,
 		}
 	}
 	return semiWinners, finalCountryList
 }
 
-func (s *Service) CalculateSemiScore(semiWinners []string, scores []Score) uint16 {
+func (s *Service) calculateSemiScore(semiWinners []string, scores []Score) uint16 {
 	var scoredPoints uint16 = 0
 	for _, score := range scores {
 		if !score.InFinal {
@@ -156,13 +195,15 @@ func (s *Service) CalculateSemiScore(semiWinners []string, scores []Score) uint1
 	return scoredPoints
 }
 
-func (s *Service) CalculateFinalScore(finalCountryList map[string]CountryResult, scores []Score) uint16 {
+func (s *Service) calculateFinalScore(finalCountryList map[string]CountryResult, scores []Score) uint16 {
 	var finalScore uint16 = 0
 	for _, score := range scores {
 		finalPosition := finalCountryList[score.Country].Position
+		if score.Position == 0 {
+			continue
+		}
 		diff := finalPosition - score.Position
 		absDiff := math.Abs(float64(diff))
-		fmt.Printf("pos: %v, guessed: %v, country: %s, diff: %v, absDiff: %v\n", finalPosition, score.Position, score.Country, diff, absDiff)
 		if absDiff > 5 {
 			continue
 		}
@@ -176,9 +217,9 @@ func (s *Service) CalculateFinalScore(finalCountryList map[string]CountryResult,
 }
 
 func (s *Service) CalculateTotalScore(countries []country.Country, scores []Score) uint16 {
-	semiWinners, finalCountryList := s.SortCountryList(countries)
-	semiScore := s.CalculateSemiScore(semiWinners, scores)
-	finalScore := s.CalculateFinalScore(finalCountryList, scores)
+	semiWinners, finalCountryList := s.sortCountryList(countries)
+	semiScore := s.calculateSemiScore(semiWinners, scores)
+	finalScore := s.calculateFinalScore(finalCountryList, scores)
 
 	return finalScore + semiScore
 }

@@ -36,7 +36,7 @@ func (ctrl *controller) Use() {
 	ctrl.router.GET("/", func(c *gin.Context) {
 		user := c.GetHeader("user")
 
-		scores, err := ctrl.service.GetAllScores(user)
+		scores, err := ctrl.service.GetAllScores(user, false)
 		if err != nil {
 			utils.HandleServerError(err, c)
 			return

@@ -21,3 +21,14 @@ type UpdateGroupRequestBody struct {
 type JoinGroupRequestBody struct {
 	InviteCode string `json:"inviteCode"`
 }
+
+type Member struct {
+	Name     string `json:"name"`
+	Score    uint16 `json:"score"`
+	Position int    `json:"position"`
+}
+
+type Leaderboard struct {
+	Groups     map[int64]string `json:"groups"`
+	PlayerList []Member         `json:"playerList"`
+}

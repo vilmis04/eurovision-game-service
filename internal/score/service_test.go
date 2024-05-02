@@ -215,7 +215,7 @@ var scores = []Score{
 var service = NewService()
 
 func TestSortCountryList(t *testing.T) {
-	semiWinners, finalCountryList := service.SortCountryList(countries)
+	semiWinners, finalCountryList := service.sortCountryList(countries)
 	if len(semiWinners) != 5 {
 		t.Errorf("finalists should be 5, but got %v", len(semiWinners))
 	}
@@ -226,16 +226,16 @@ func TestSortCountryList(t *testing.T) {
 }
 
 func TestCalculateSemiScore(t *testing.T) {
-	semiWinners, _ := service.SortCountryList(countries)
-	semiScore := service.CalculateSemiScore(semiWinners, scores)
+	semiWinners, _ := service.sortCountryList(countries)
+	semiScore := service.calculateSemiScore(semiWinners, scores)
 	if semiScore != 15 {
 		t.Errorf("semiScore should be 15, but got %v", semiScore)
 	}
 }
 
 func TestCalculateFinalScore(t *testing.T) {
-	_, finalCountryList := service.SortCountryList(countries)
-	finalScore := service.CalculateFinalScore(finalCountryList, scores)
+	_, finalCountryList := service.sortCountryList(countries)
+	finalScore := service.calculateFinalScore(finalCountryList, scores)
 	if finalScore != 71 {
 		t.Errorf("finalScore should be 71, but got %v", finalScore)
 	}

@@ -1,6 +1,7 @@
 package group
 
 import (
+	"cmp"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -8,15 +9,19 @@ import (
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/vilmis04/eurovision-game-service/internal/score"
 )
 
 type Service struct {
 	Repo
+	scoreService score.Service
 }
 
 func NewService() *Service {
 	return &Service{
-		Repo: *NewRepo(),
+		Repo:         *NewRepo(),
+		scoreService: *score.NewService(),
 	}
 }
 
@@ -155,4 +160,101 @@ func (s *Service) JoinGroup(user string, request *http.Request) error {
 	}
 
 	return nil
+}
+
+func (s *Service) getGroupList(user string, groupId string) (map[int64]string, *[]Group, error) {
+
+	allGroupList := make(map[int64]string)
+	allGroups, err := s.GetGroupList(user, "")
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, group := range *allGroups {
+		allGroupList[group.Id] = group.Name
+	}
+
+	groupList, err := s.GetGroupList(user, groupId)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return allGroupList, groupList, nil
+}
+
+func (s *Service) getPlayerResults(groupList *[]Group) (map[string]Member, error) {
+	memberMap := make(map[string]Member)
+	for _, group := range *groupList {
+		for _, member := range group.Members {
+			_, ok := memberMap[member]
+			if !ok {
+				points, err := s.scoreService.GetUserScore(member)
+				if err != nil {
+					return nil, err
+				}
+				memberMap[member] = Member{
+					Name:  member,
+					Score: points,
+				}
+			}
+		}
+	}
+
+	return memberMap, nil
+}
+
+func (s *Service) getSortedPoints(memberMap map[string]Member) []uint16 {
+	pointList := []uint16{}
+	for _, member := range memberMap {
+		if slices.Contains(pointList, member.Score) {
+			continue
+		}
+		pointList = append(pointList, member.Score)
+	}
+	slices.SortStableFunc(pointList, func(a, b uint16) int { return cmp.Compare(b, a) })
+
+	return pointList
+}
+
+func (s *Service) getSortedPlayerResults(groupList *[]Group) ([]Member, error) {
+	memberMap, err := s.getPlayerResults(groupList)
+	if err != nil {
+		return nil, err
+	}
+
+	pointList := s.getSortedPoints(memberMap)
+
+	memberList := []Member{}
+	for _, member := range memberMap {
+		memberList = append(memberList, Member{
+			Name:     member.Name,
+			Score:    member.Score,
+			Position: slices.Index(pointList, member.Score) + 1,
+		})
+	}
+	slices.SortStableFunc(memberList, func(a, b Member) int { return cmp.Compare(a.Position, b.Position) })
+
+	return memberList, nil
+}
+
+func (s *Service) GetLeaderboard(user string, groupId string) (*[]byte, error) {
+	allGroupList, groupList, err := s.getGroupList(user, groupId)
+	if err != nil {
+		return nil, err
+	}
+
+	memberList, err := s.getSortedPlayerResults(groupList)
+	if err != nil {
+		return nil, err
+	}
+
+	leaderboard := Leaderboard{
+		Groups:     allGroupList,
+		PlayerList: memberList,
+	}
+	response, err := json.Marshal(leaderboard)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response, nil
 }

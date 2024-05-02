@@ -74,7 +74,7 @@ func (ctrl *controller) Use() {
 			utils.HandleServerError(err, c)
 		}
 
-		c.Writer.Header().Set("Content-Type", "text/plain")
+		c.Writer.Header().Set(types.HeaderContentType, "text/plain")
 		c.String(http.StatusCreated, inviteCode)
 	})
 
@@ -85,5 +85,16 @@ func (ctrl *controller) Use() {
 		}
 
 		c.Writer.WriteHeader(http.StatusOK)
+	})
+
+	ctrl.router.GET("leaderboard", func(c *gin.Context) {
+		leaderboard, err := ctrl.service.GetLeaderboard(c.GetHeader("user"), c.Query("id"))
+		if err != nil {
+			utils.HandleServerError(err, c)
+			return
+		}
+
+		c.Writer.Header().Set(types.HeaderContentType, types.HeaderApplicationJson)
+		c.Writer.Write(*leaderboard)
 	})
 }

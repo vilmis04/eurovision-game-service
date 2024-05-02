@@ -30,3 +30,12 @@ type UpdateCountryRequest struct {
 	OrderSemi  *uint8  `json:"orderSemi"`
 	OrderFinal *uint8  `json:"orderFinal"`
 }
+
+type CountrySummary struct {
+	Name       string `json:"name"`
+	Code       string `json:"code"`
+	Artist     string `json:"artist"`
+	Song       string `json:"song"`
+	OrderSemi  uint8  `json:"orderSemi"`
+	OrderFinal uint8  `json:"orderFinal"`
+}
