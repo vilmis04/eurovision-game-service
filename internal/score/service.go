@@ -56,6 +56,10 @@ func (s *Service) UpdateScore(user string, request *http.Request) error {
 		return err
 	}
 
+	if !config.IsVotingAcitve {
+		return fmt.Errorf("voting is not active")
+	}
+
 	var body ScoreResponse
 	err = json.NewDecoder(request.Body).Decode(&body)
 	if err != nil {
