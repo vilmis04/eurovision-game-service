@@ -58,8 +58,8 @@ func (ctrl *controller) Use() {
 		c.Writer.WriteHeader(http.StatusOK)
 	})
 
-	ctrl.router.DELETE(":name", func(c *gin.Context) {
-		err := ctrl.service.DeleteGroup(c.GetHeader("user"), c.Param("name"))
+	ctrl.router.DELETE(":id", func(c *gin.Context) {
+		err := ctrl.service.DeleteGroup(c.GetHeader("user"), c.Param("id"))
 		if err != nil {
 			utils.HandleServerError(err, c)
 			return
