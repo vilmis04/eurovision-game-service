@@ -106,8 +106,8 @@ func (s *Service) UpdateMembers(owner string, name string, request *http.Request
 	return s.Repo.UpdateMembers(owner, name, updatedMemberList)
 }
 
-func (s *Service) DeleteGroup(owner string, name string) error {
-	err := s.Repo.DeleteGroup(owner, name)
+func (s *Service) DeleteGroup(owner string, id string) error {
+	err := s.Repo.DeleteGroup(owner, id)
 	if err != nil {
 		return err
 	}

@@ -142,15 +142,15 @@ func (r *Repo) UpdateMembers(owner string, name string, groupMembers []string) e
 	return nil
 }
 
-func (r *Repo) DeleteGroup(owner string, name string) error {
+func (r *Repo) DeleteGroup(owner string, id string) error {
 	db, err := r.ConnectToDB()
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 
-	query := fmt.Sprintf(`DELETE FROM "%v" WHERE owner=$1 AND name=$2`, r.Table)
-	_, err = db.Exec(query, owner, name)
+	query := fmt.Sprintf(`DELETE FROM "%v" WHERE owner=$1 AND id=$2`, r.Table)
+	_, err = db.Exec(query, owner, id)
 	if err != nil {
 		return err
 	}
