@@ -1,8 +1,6 @@
 package admin
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/vilmis04/eurovision-game-service/internal/utils"
 )
@@ -29,12 +27,14 @@ func (ctrl *controller) Use() {
 		c.Writer.Write(*encodedConfig)
 	})
 
-	ctrl.router.PATCH("/", func(c *gin.Context) {
-		err := ctrl.service.UpdateConfig(c.Request)
-		if err != nil {
-			utils.HandleServerError(err, c)
-			return
-		}
-		c.Writer.WriteHeader(http.StatusOK)
-	})
+	// Disabled until admin portal is implemented
+
+	// ctrl.router.PATCH("/", func(c *gin.Context) {
+	// 	err := ctrl.service.UpdateConfig(c.Request)
+	// 	if err != nil {
+	// 		utils.HandleServerError(err, c)
+	// 		return
+	// 	}
+	// 	c.Writer.WriteHeader(http.StatusOK)
+	// })
 }
