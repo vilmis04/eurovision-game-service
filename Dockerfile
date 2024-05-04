@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN go build -o /bin/eurovision-game-service ./cmd/app
+RUN go build -o ./bin/eurovision-game-service ./cmd/app
 
 FROM alpine:latest
 
