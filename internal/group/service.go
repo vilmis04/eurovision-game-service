@@ -151,7 +151,10 @@ func (s *Service) JoinGroup(user string, request *http.Request) error {
 		return err
 	}
 	group := (*groupList)[0]
-	updatedMemberList := append(group.Members, user)
+	updatedMemberList := group.Members
+	if !slices.Contains(updatedMemberList, user) {
+		updatedMemberList = append(group.Members, user)
+	}
 
 	err = s.Repo.UpdateMembers(groupOwner, groupName, updatedMemberList)
 	if err != nil {

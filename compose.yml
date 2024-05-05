@@ -26,6 +26,15 @@ services:
     env_file:
       - .env.auth
 
+
+  # client:
+  #   container_name: client
+  #   image: vsud/ev-game:client-2.1.1
+  #   tty: true
+  #   restart: always
+  #   ports:
+  #     - "3300:3300"
+
   db:
     container_name: postgres
     image: postgres:16-alpine
@@ -42,7 +51,7 @@ services:
     image: adminer
     restart: always
     ports:
-      - 8080:8080
+      - 5555:8080
 
 volumes:
   pgdata:
