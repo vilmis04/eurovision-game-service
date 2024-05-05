@@ -156,7 +156,12 @@ func (s *Service) GetUserScore(user string) (uint16, error) {
 		return 0, err
 	}
 
-	return s.CalculateTotalScore(countries, scores), nil
+	skipFinalCalculation := false
+	if adminConfig.GameType != admin.GameTypeFinal || adminConfig.IsVotingAcitve {
+		skipFinalCalculation = true
+	}
+
+	return s.CalculateTotalScore(countries, scores, skipFinalCalculation), nil
 }
 
 func (s *Service) sortCountryList(countries []country.Country) (semiWinners []string, finalCountryList map[string]CountryResult) {
@@ -199,11 +204,14 @@ func (s *Service) calculateSemiScore(semiWinners []string, scores []Score) uint1
 	return scoredPoints
 }
 
-func (s *Service) calculateFinalScore(finalCountryList map[string]CountryResult, scores []Score) uint16 {
+func (s *Service) calculateFinalScore(finalCountryList map[string]CountryResult, scores []Score, skipFinalCalculation bool) uint16 {
 	var finalScore uint16 = 0
+	if skipFinalCalculation {
+		return finalScore
+	}
 	for _, score := range scores {
 		finalPosition := finalCountryList[score.Country].Position
-		if score.Position == 0 {
+		if score.Position == 0 || finalPosition == 0 {
 			continue
 		}
 		diff := finalPosition - score.Position
@@ -215,15 +223,16 @@ func (s *Service) calculateFinalScore(finalCountryList map[string]CountryResult,
 			finalScore = finalScore + Points["winner"]
 			continue
 		}
+		fmt.Printf("diff: %v, absDiff: %v, finalPosition: %v, score.Position: %v, Points: %v, country: %v\n", diff, absDiff, finalPosition, score.Position, Points[fmt.Sprint(absDiff)], score.Country)
 		finalScore = finalScore + Points[fmt.Sprint(absDiff)]
 	}
 	return finalScore
 }
 
-func (s *Service) CalculateTotalScore(countries []country.Country, scores []Score) uint16 {
+func (s *Service) CalculateTotalScore(countries []country.Country, scores []Score, skipFinalCalculation bool) uint16 {
 	semiWinners, finalCountryList := s.sortCountryList(countries)
 	semiScore := s.calculateSemiScore(semiWinners, scores)
-	finalScore := s.calculateFinalScore(finalCountryList, scores)
+	finalScore := s.calculateFinalScore(finalCountryList, scores, skipFinalCalculation)
 
 	return finalScore + semiScore
 }
