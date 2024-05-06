@@ -120,7 +120,7 @@ INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song,
 VALUES ('San Marino', 'sm', 2024, 'semi2', 0, false, 'MEGARA', '11:11', 10, 0);
 
 INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
-VALUES ('Georgia', 'gs', 2024, 'semi2', 0, false, 'Nutsa Buzaladze', 'Firefighter', 11, 0);
+VALUES ('Georgia', 'ge', 2024, 'semi2', 0, false, 'Nutsa Buzaladze', 'Firefighter', 11, 0);
 
 INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
 VALUES ('Belgium', 'be', 2024, 'semi2', 0, false, 'Mustii', 'Before the Party''s Over', 12, 0);
