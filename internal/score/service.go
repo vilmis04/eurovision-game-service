@@ -101,7 +101,10 @@ func (s *Service) GetAllScores(user string, allGameTypes bool) (*[]byte, error) 
 			return nil, fmt.Errorf("failed to get scores for user %s: %v", user, err)
 		}
 		scores = append(scores, semiScores...)
-		if len(scores) == 0 {
+		if len(scores) == 0 && !allGameTypes {
+			fmt.Println("-------------")
+			fmt.Println(len(scores))
+			fmt.Println("-------------")
 			scores, err = s.InitializeScores(user, config.Year, config.GameType)
 			if err != nil {
 				return nil, fmt.Errorf("failed to initialize scores for user %s: %v", user, err)
@@ -115,8 +118,8 @@ func (s *Service) GetAllScores(user string, allGameTypes bool) (*[]byte, error) 
 			return nil, fmt.Errorf("failed to get scores for user %s: %v", user, err)
 		}
 		scores = append(scores, finalScores...)
-		if len(finalScores) < 25 {
-			initFinalScores, err := s.InitializeScores(user, config.Year, config.GameType)
+		if len(finalScores) < 25 && !allGameTypes {
+			initFinalScores, err := s.InitializeScores(user, config.Year, admin.GameTypeFinal)
 			if err != nil {
 				return nil, fmt.Errorf("failed to initialize scores for user %s: %v", user, err)
 			}
