@@ -55,26 +55,17 @@ func (s *Service) UpdateScore(user string, request *http.Request) error {
 	if err != nil {
 		return fmt.Errorf("service: %v", err)
 	}
-	// fmt.Printf("------------------------\n")
-	// fmt.Printf("body.Country: %v, body.Position: %v, body.InFinal: %v\n", body.Country, body.Position, body.InFinal)
-	// fmt.Printf("------------------------\n")
 
 	score, err := s.GetScore(user, body.Country, config.Year)
 	if err != nil {
 		return err
 	}
-	// fmt.Printf("------------------------\n")
-	// fmt.Printf("score.Country: %v, score.Position: %v, score.InFinal: %v, score.GameType: %v, score.User: %v, score.Year: %v\n", score.Country, score.Position, score.InFinal, score.GameType, score.User, score.Year)
-	// fmt.Printf("------------------------\n")
 	if config.GameType == admin.GameTypeFinal {
 		score.Position = body.Position
 	} else {
 		score.InFinal = body.InFinal
 	}
 
-	// fmt.Printf("------------------------\n")
-	// fmt.Printf("score.Country: %v, score.Position: %v, score.InFinal: %v, score.GameType: %v, score.User: %v, score.Year: %v\n", score.Country, score.Position, score.InFinal, score.GameType, score.User, score.Year)
-	// fmt.Printf("------------------------\n")
 	err = s.storage.UpdateScore(user, score)
 	if err != nil {
 		return err
