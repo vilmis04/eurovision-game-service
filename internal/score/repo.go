@@ -6,7 +6,6 @@ import (
 	"log"
 
 	"github.com/vilmis04/eurovision-game-service/internal/admin"
-	"github.com/vilmis04/eurovision-game-service/internal/country"
 	"github.com/vilmis04/eurovision-game-service/internal/storage"
 )
 
@@ -40,7 +39,7 @@ func (r *Repo) GetScore(user string, country string, year uint16) (*Score, error
 	return &score, nil
 }
 
-func (r *Repo) GetAllScores(user string, gameType admin.GameType, year uint16) ([]ScoreResponse, error) {
+func (r *Repo) GetAllOrSemiScores(user string, gameType admin.GameType, year uint16) ([]ScoreResponse, error) {
 	db, err := r.storage.ConnectToDB()
 	if err != nil {
 		return nil, err
@@ -78,35 +77,43 @@ func (r *Repo) GetAllScores(user string, gameType admin.GameType, year uint16) (
 	return scores, nil
 }
 
-func (r *Repo) InitializeScores(user string, year uint16, gameType admin.GameType, countries *[]country.Country) ([]ScoreResponse, error) {
+func (r *Repo) InitializeScores(user string, year uint16, gameType admin.GameType) ([]ScoreResponse, error) {
 	db, err := r.storage.ConnectToDB()
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
 
-	scores := []ScoreResponse{}
-	for _, country := range *countries {
-		score := Score{
-			Country:  country.Name,
-			Year:     year,
-			User:     user,
-			GameType: gameType,
-			InFinal:  false,
-			Position: 0,
-		}
+	countryQuery := `SELECT name FROM country WHERE gameType=$1 AND year=$2`
+	rows, err := db.Query(countryQuery, gameType, year)
+	if err != nil {
+		return nil, fmt.Errorf("retrieve countries err: %v", err)
+	}
+	defer rows.Close()
 
-		query := `INSERT INTO score ("user", country, year, gametype, inFinal, position) VALUES ($1, $2, $3, $4, $5, $6)`
-		_, err = db.Exec(query, score.User, score.Country, score.Year, score.GameType, score.InFinal, score.Position)
+	scoresQuery := ""
+	scores := []ScoreResponse{}
+	for rows.Next() {
+		var country string
+		err = rows.Scan(&country)
 		if err != nil {
 			return nil, err
 		}
 
-		scores = append(scores, ScoreResponse{
-			Country:  score.Country,
-			InFinal:  score.InFinal,
-			Position: score.Position,
-		})
+		score := ScoreResponse{
+			Country:  country,
+			InFinal:  false,
+			Position: 0,
+		}
+		scores = append(scores, score)
+		scoresQuery = fmt.Sprintf("%v ($1, '%v', $2, $3, false, 0),", scoresQuery, country)
+	}
+
+	baseScoreQuery := fmt.Sprintf(`INSERT INTO score ("user", country, year, gametype, inFinal, position) VALUES %v`, scoresQuery)
+	query := baseScoreQuery[:len(baseScoreQuery)-1]
+	_, err = db.Exec(query, user, year, gameType)
+	if err != nil {
+		return nil, fmt.Errorf("insert scores err: %v", err)
 	}
 
 	return scores, nil
@@ -135,4 +142,37 @@ func (r *Repo) UpdateScore(user string, score *Score) error {
 	}
 
 	return nil
+}
+
+func (r *Repo) GetFinalScores(user string, year uint16) ([]ScoreResponse, error) {
+	db, err := r.storage.ConnectToDB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	query := `
+				SELECT s.country, s.infinal, s.position
+				FROM country c
+				JOIN score s ON c.name = s.country
+				WHERE c.isinfinal = true AND s.user=$1 AND c.year=$2
+			`
+	rows, err := db.Query(query, user, year)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	scores := []ScoreResponse{}
+	for rows.Next() {
+		score := ScoreResponse{}
+		err = rows.Scan(&score.Country, &score.InFinal, &score.Position)
+		if err != nil {
+			return nil, err
+		}
+
+		scores = append(scores, score)
+	}
+
+	return scores, nil
 }
