@@ -3,10 +3,8 @@ package group
 import (
 	"database/sql"
 	"fmt"
-	"html"
 	"strings"
 
-	"github.com/lib/pq"
 	"github.com/vilmis04/eurovision-game-service/internal/storage"
 )
 
@@ -55,7 +53,8 @@ func (r *Repo) GetGroupList(user string, groupId string) (*[]Group, error) {
 
 		membersResponse, _ = strings.CutPrefix(membersResponse, "{")
 		membersResponse, _ = strings.CutSuffix(membersResponse, "}")
-		group.Members = strings.Split(membersResponse, ",")
+		groupMembersList := strings.ReplaceAll(membersResponse, `"`, "")
+		group.Members = strings.Split(groupMembersList, ",")
 
 		groups = append(groups, group)
 	}
@@ -80,7 +79,7 @@ func (r *Repo) CreateGroup(group *Group) (*int64, error) {
 	`, r.Table)
 
 	var id int64
-	err = db.QueryRow(query, group.Name, group.Owner, pq.Array(group.Members), group.DateCreated).Scan(&id)
+	err = db.QueryRow(query, group.Name, group.Owner, r.textifyMembers(group.Members), group.DateCreated).Scan(&id)
 	if err != nil {
 		return nil, err
 	}
@@ -120,6 +119,23 @@ func (r *Repo) GetGroupNames(owner string) (*([]string), error) {
 	return &names, nil
 }
 
+func (r *Repo) textifyMembers(members []string) string {
+	numberOfMembers := len(members)
+
+	var builder strings.Builder
+	builder.WriteString("{")
+
+	for i, member := range members {
+		builder.WriteString(member)
+		if i != numberOfMembers-1 {
+			builder.WriteString(",")
+		}
+	}
+	builder.WriteString("}")
+
+	return builder.String()
+}
+
 func (r *Repo) UpdateMembers(owner string, name string, groupMembers []string) error {
 	db, err := r.ConnectToDB()
 	if err != nil {
@@ -127,14 +143,13 @@ func (r *Repo) UpdateMembers(owner string, name string, groupMembers []string) e
 	}
 	defer db.Close()
 
-	// TODO: check if quotes around the %v are needed - could it break if owner or group.Name is 'group' (for example)
 	query := fmt.Sprintf(`
 		UPDATE "%v" 
 		SET members=$1 
 		WHERE owner='%v' AND name='%v'
-	`, r.Table, html.EscapeString(owner), html.EscapeString(name))
+	`, r.Table, owner, name)
 
-	_, err = db.Exec(query, pq.Array(groupMembers))
+	_, err = db.Exec(query, r.textifyMembers(groupMembers))
 	if err != nil {
 		return fmt.Errorf("query err: %v", err)
 	}
