@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/vilmis04/eurovision-game-service/internal/admin"
 	"github.com/vilmis04/eurovision-game-service/internal/storage"
@@ -172,6 +173,57 @@ func (r *Repo) GetFinalScores(user string, year uint16) ([]ScoreResponse, error)
 		}
 
 		scores = append(scores, score)
+	}
+
+	return scores, nil
+}
+
+func (r *Repo) GetMultipleScores(userList []string) (map[string][]Score, error) {
+	db, err := r.storage.ConnectToDB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	var queryBuilder strings.Builder
+	queryBuilder.WriteString(`SELECT * FROM score WHERE "user" IN (`)
+	for i := range userList {
+		queryBuilder.WriteString(fmt.Sprintf("$%v", i+1))
+		if i != len(userList)-1 {
+			queryBuilder.WriteString(",")
+		}
+	}
+	queryBuilder.WriteString(")")
+
+	scores := make(map[string][]Score)
+	query := queryBuilder.String()
+	fmt.Println(query)
+
+	args := make([]interface{}, len(userList))
+	for i, v := range userList {
+		args[i] = v
+	}
+
+	rows, err := db.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id int64
+		score := Score{}
+		err = rows.Scan(&id, &score.Country, &score.Year, &score.GameType, &score.User, &score.InFinal, &score.Position)
+		if err != nil {
+			return nil, err
+		}
+
+		if _, ok := scores[score.User]; !ok {
+			scores[score.User] = []Score{score}
+			continue
+		}
+
+		scores[score.User] = append(scores[score.User], score)
 	}
 
 	return scores, nil

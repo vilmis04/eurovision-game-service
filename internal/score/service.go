@@ -102,9 +102,6 @@ func (s *Service) GetAllScores(user string, allGameTypes bool) (*[]byte, error) 
 		}
 		scores = append(scores, semiScores...)
 		if len(scores) == 0 && !allGameTypes {
-			fmt.Println("-------------")
-			fmt.Println(len(scores))
-			fmt.Println("-------------")
 			scores, err = s.InitializeScores(user, config.Year, config.GameType)
 			if err != nil {
 				return nil, fmt.Errorf("failed to initialize scores for user %s: %v", user, err)
@@ -135,6 +132,49 @@ func (s *Service) GetAllScores(user string, allGameTypes bool) (*[]byte, error) 
 	return &encodedScores, nil
 }
 
+type Member struct {
+	Name     string `json:"name"`
+	Score    uint16 `json:"score"`
+	Position int    `json:"position"`
+}
+
+func (s *Service) GetMultipleUserScores(userList []string) (map[string]uint16, error) {
+	adminConfigResponse, err := s.adminService.GetConfig()
+	if err != nil {
+		return nil, err
+	}
+	var adminConfig admin.Admin
+	err = json.Unmarshal(*adminConfigResponse, &adminConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	finalists, err := s.countryService.GetFinalists(adminConfig.Year)
+	if err != nil {
+		return nil, err
+	}
+
+	skipFinalCalculation := false
+	if adminConfig.GameType != admin.GameTypeFinal || adminConfig.IsVotingAcitve {
+		skipFinalCalculation = true
+	}
+
+	scoresMap, err := s.storage.GetMultipleScores(userList)
+	if err != nil {
+		return nil, err
+	}
+
+	pointsMap := make(map[string]uint16)
+	for _, user := range userList {
+		scores := scoresMap[user]
+		points := s.CalculateTotalScore(finalists, scores, skipFinalCalculation)
+		pointsMap[user] = points
+	}
+
+	return pointsMap, nil
+}
+
+// TODO: check if this is needed
 func (s *Service) GetUserScore(user string) (uint16, error) {
 	adminConfigResponse, err := s.adminService.GetConfig()
 	if err != nil {

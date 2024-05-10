@@ -115,3 +115,12 @@ func (s *Service) UpdateCountry(params map[string]string, request *http.Request)
 func (s *Service) DeleteCountry(params *map[string]string) error {
 	return s.storage.DeleteCountry((*params)["year"], (*params)["name"])
 }
+
+func (s *Service) GetFinalists(year uint16) ([]Country, error) {
+	finalists, err := s.storage.GetFinalists(year)
+	if err != nil {
+		return nil, err
+	}
+
+	return finalists, nil
+}

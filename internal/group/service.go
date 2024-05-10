@@ -166,13 +166,13 @@ func (s *Service) JoinGroup(user string, request *http.Request) error {
 
 func (s *Service) getGroupList(user string, groupId string) (map[int64]string, *[]Group, error) {
 
-	allGroupList := make(map[int64]string)
+	allGroupMap := make(map[int64]string)
 	allGroups, err := s.GetGroupList(user, "")
 	if err != nil {
 		return nil, nil, err
 	}
 	for _, group := range *allGroups {
-		allGroupList[group.Id] = group.Name
+		allGroupMap[group.Id] = group.Name
 	}
 
 	groupList, err := s.GetGroupList(user, groupId)
@@ -180,24 +180,33 @@ func (s *Service) getGroupList(user string, groupId string) (map[int64]string, *
 		return nil, nil, err
 	}
 
-	return allGroupList, groupList, nil
+	return allGroupMap, groupList, nil
 }
 
 func (s *Service) getPlayerResults(groupList *[]Group) (map[string]Member, error) {
 	memberMap := make(map[string]Member)
+	memberList := []string{}
 	for _, group := range *groupList {
 		for _, member := range group.Members {
 			_, ok := memberMap[member]
 			if !ok {
-				points, err := s.scoreService.GetUserScore(member)
-				if err != nil {
-					return nil, err
-				}
+				memberList = append(memberList, member)
 				memberMap[member] = Member{
-					Name:  member,
-					Score: points,
+					Name: member,
 				}
 			}
+		}
+	}
+
+	pointsMap, err := s.scoreService.GetMultipleUserScores(memberList)
+	if err != nil {
+		return nil, err
+	}
+	for member, results := range memberMap {
+		points := pointsMap[member]
+		memberMap[member] = Member{
+			Name:  results.Name,
+			Score: points,
 		}
 	}
 

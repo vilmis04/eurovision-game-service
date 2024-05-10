@@ -227,3 +227,37 @@ func (r *Repo) DeleteCountry(year string, name string) error {
 
 	return nil
 }
+
+func (r *Repo) GetFinalists(year uint16) ([]Country, error) {
+	db, err := r.storage.ConnectToDB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	query := `
+				SELECT * FROM "country" 
+				WHERE "year"=$1 AND "isinfinal"=true
+			`
+
+	rows, err := db.Query(query, year)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	finalists := []Country{}
+	for rows.Next() {
+		var id int64
+		country := Country{}
+
+		err := rows.Scan(&id, &country.Name, &country.Code, &country.Year, &country.GameType, &country.Score, &country.IsInFinal, &country.Artist, &country.Song, &country.OrderSemi, &country.OrderFinal)
+		if err != nil {
+			return nil, err
+		}
+
+		finalists = append(finalists, country)
+	}
+
+	return finalists, nil
+}

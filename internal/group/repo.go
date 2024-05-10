@@ -51,6 +51,7 @@ func (r *Repo) GetGroupList(user string, groupId string) (*[]Group, error) {
 			return nil, fmt.Errorf("group row scan err: %v", err)
 		}
 
+		// TODO: refactor to untextifyMembers function
 		membersResponse, _ = strings.CutPrefix(membersResponse, "{")
 		membersResponse, _ = strings.CutSuffix(membersResponse, "}")
 		groupMembersList := strings.ReplaceAll(membersResponse, `"`, "")
