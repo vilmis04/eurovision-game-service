@@ -174,53 +174,6 @@ func (s *Service) GetMultipleUserScores(userList []string) (map[string]uint16, e
 	return pointsMap, nil
 }
 
-// TODO: check if this is needed
-func (s *Service) GetUserScore(user string) (uint16, error) {
-	adminConfigResponse, err := s.adminService.GetConfig()
-	if err != nil {
-		return 0, err
-	}
-	var adminConfig admin.Admin
-	err = json.Unmarshal(*adminConfigResponse, &adminConfig)
-	if err != nil {
-		return 0, err
-	}
-
-	countryResponse, err := s.countryService.GetCountryList(fmt.Sprint(adminConfig.Year), "", "")
-	if err != nil {
-		return 0, err
-	}
-	var countries []country.Country
-	err = json.Unmarshal(*countryResponse, &countries)
-	if err != nil {
-		return 0, err
-	}
-	finalists := []country.Country{}
-	for _, country := range countries {
-		if country.IsInFinal {
-			finalists = append(finalists, country)
-		}
-	}
-
-	scoresResponse, err := s.GetAllScores(user, true)
-	if err != nil {
-		return 0, err
-	}
-
-	var scores []Score
-	err = json.Unmarshal(*scoresResponse, &scores)
-	if err != nil {
-		return 0, err
-	}
-
-	skipFinalCalculation := false
-	if adminConfig.GameType != admin.GameTypeFinal || adminConfig.IsVotingAcitve {
-		skipFinalCalculation = true
-	}
-
-	return s.CalculateTotalScore(finalists, scores, skipFinalCalculation), nil
-}
-
 func (s *Service) sortCountryList(countries []country.Country) map[string]CountryResult {
 	slices.SortStableFunc(countries, func(a, b country.Country) int {
 		return cmp.Compare(b.Score, a.Score)
