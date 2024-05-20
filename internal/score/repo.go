@@ -78,15 +78,15 @@ func (r *Repo) GetAllOrSemiScores(user string, gameType admin.GameType, year uin
 	return scores, nil
 }
 
-func (r *Repo) InitializeScores(user string, year uint16, gameType admin.GameType) ([]ScoreResponse, error) {
+func (r *Repo) InitializeScores(user string, year uint16) ([]ScoreResponse, error) {
 	db, err := r.storage.ConnectToDB()
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
 
-	countryQuery := `SELECT name FROM country WHERE gameType=$1 AND year=$2`
-	rows, err := db.Query(countryQuery, gameType, year)
+	countryQuery := `SELECT name, gametype FROM country WHERE year=$1`
+	rows, err := db.Query(countryQuery, year)
 	if err != nil {
 		return nil, fmt.Errorf("retrieve countries err: %v", err)
 	}
@@ -96,7 +96,8 @@ func (r *Repo) InitializeScores(user string, year uint16, gameType admin.GameTyp
 	scores := []ScoreResponse{}
 	for rows.Next() {
 		var country string
-		err = rows.Scan(&country)
+		var gameType string
+		err = rows.Scan(&country, &gameType)
 		if err != nil {
 			return nil, err
 		}
@@ -107,12 +108,12 @@ func (r *Repo) InitializeScores(user string, year uint16, gameType admin.GameTyp
 			Position: 0,
 		}
 		scores = append(scores, score)
-		scoresQuery = fmt.Sprintf("%v ($1, '%v', $2, $3, false, 0),", scoresQuery, country)
+		scoresQuery = fmt.Sprintf("%v ($1, '%v', $2, '%v', false, 0),", scoresQuery, country, gameType)
 	}
 
 	baseScoreQuery := fmt.Sprintf(`INSERT INTO score ("user", country, year, gametype, inFinal, position) VALUES %v`, scoresQuery)
 	query := baseScoreQuery[:len(baseScoreQuery)-1]
-	_, err = db.Exec(query, user, year, gameType)
+	_, err = db.Exec(query, user, year)
 	if err != nil {
 		return nil, fmt.Errorf("insert scores err: %v", err)
 	}

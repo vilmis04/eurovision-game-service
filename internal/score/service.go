@@ -26,8 +26,8 @@ func NewService() *Service {
 	}
 }
 
-func (s *Service) InitializeScores(user string, year uint16, gameType admin.GameType) ([]ScoreResponse, error) {
-	scores, err := s.storage.InitializeScores(user, year, gameType)
+func (s *Service) InitializeScores(user string, year uint16) ([]ScoreResponse, error) {
+	scores, err := s.storage.InitializeScores(user, year)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func (s *Service) GetAllScores(user string, allGameTypes bool) (*[]byte, error) 
 		}
 		scores = append(scores, semiScores...)
 		if len(scores) == 0 && !allGameTypes {
-			scores, err = s.InitializeScores(user, config.Year, config.GameType)
+			scores, err = s.InitializeScores(user, config.Year)
 			if err != nil {
 				return nil, fmt.Errorf("failed to initialize scores for user %s: %v", user, err)
 			}
@@ -116,7 +116,7 @@ func (s *Service) GetAllScores(user string, allGameTypes bool) (*[]byte, error) 
 		}
 		scores = append(scores, finalScores...)
 		if len(finalScores) < 25 && !allGameTypes {
-			initFinalScores, err := s.InitializeScores(user, config.Year, admin.GameTypeFinal)
+			initFinalScores, err := s.InitializeScores(user, config.Year)
 			if err != nil {
 				return nil, fmt.Errorf("failed to initialize scores for user %s: %v", user, err)
 			}
