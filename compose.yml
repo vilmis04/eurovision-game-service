@@ -1,5 +1,3 @@
-version: '0.0.1'
-
 services:
   go-service:
     container_name: go-service
