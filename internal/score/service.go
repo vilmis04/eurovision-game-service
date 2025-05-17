@@ -115,6 +115,7 @@ func (s *Service) GetAllScores(user string, allGameTypes bool) (*[]byte, error) 
 			return nil, fmt.Errorf("failed to get scores for user %s: %v", user, err)
 		}
 		scores = append(scores, finalScores...)
+		// TODO: move magic number 26 to be calculated by the amount of isInFinal countries
 		if len(finalScores) < 26 && !allGameTypes {
 			initFinalScores, err := s.InitializeScores(user, config.Year)
 			if err != nil {
