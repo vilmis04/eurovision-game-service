@@ -4,6 +4,9 @@ start:
 stop:
 		docker compose stop
 
+restart:
+		docker compose stop && docker compose up -d --build && docker exec -it go-service sh
+
 attach:
 		docker exec -it go-service sh
 

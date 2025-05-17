@@ -265,7 +265,7 @@ INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song,
 VALUES ('Czechia', 'cz', 2025, 'semi2', 0, false, 'ADONXS', 'Kiss Kiss Goodbye', 12, 0);
 
 INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
-VALUES ('Luxembourg', 'lu', 2025, 'semi1', 0, false, 'Laura Thorn', 'La Poupée Monte Le Son', 13, 0);
+VALUES ('Luxembourg', 'lu', 2025, 'semi2', 0, false, 'Laura Thorn', 'La Poupée Monte Le Son', 13, 0);
 
 INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
 VALUES ('Israel', 'il', 2025, 'semi2', 0, false, 'Yuval Raphael', 'New Day Will Rise', 14, 0);
@@ -296,5 +296,5 @@ INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song,
 VALUES ('United Kingdom', 'gb', 2025, 'final', 0, true, 'Remember Monday', 'What The Hell Just Happened?', 0, 0);
 
 INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
-VALUES ('Switzerland', 'ch', 2025, 'final', 0, false, 'Zoë Më', 'Voyage', 4, 0);
+VALUES ('Switzerland', 'ch', 2025, 'final', 0, true, 'Zoë Më', 'Voyage', 0, 0);
 

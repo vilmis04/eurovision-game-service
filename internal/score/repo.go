@@ -157,7 +157,7 @@ func (r *Repo) GetFinalScores(user string, year uint16) ([]ScoreResponse, error)
 				SELECT s.country, s.infinal, s.position
 				FROM country c
 				JOIN score s ON c.name = s.country
-				WHERE c.isinfinal = true AND s.user=$1 AND c.year=$2
+				WHERE c.isinfinal = true AND s.user=$1 AND c.year=$2 AND s.year=$2
 			`
 	rows, err := db.Query(query, user, year)
 	if err != nil {
@@ -179,7 +179,7 @@ func (r *Repo) GetFinalScores(user string, year uint16) ([]ScoreResponse, error)
 	return scores, nil
 }
 
-func (r *Repo) GetMultipleScores(userList []string) (map[string][]Score, error) {
+func (r *Repo) GetMultipleScores(userList []string, year uint16) (map[string][]Score, error) {
 	db, err := r.storage.ConnectToDB()
 	if err != nil {
 		return nil, err
@@ -187,9 +187,9 @@ func (r *Repo) GetMultipleScores(userList []string) (map[string][]Score, error) 
 	defer db.Close()
 
 	var queryBuilder strings.Builder
-	queryBuilder.WriteString(`SELECT * FROM score WHERE "user" IN (`)
+	queryBuilder.WriteString(`SELECT * FROM score WHERE year=$1 AND "user" IN (`)
 	for i := range userList {
-		queryBuilder.WriteString(fmt.Sprintf("$%v", i+1))
+		queryBuilder.WriteString(fmt.Sprintf("$%v", i+2))
 		if i != len(userList)-1 {
 			queryBuilder.WriteString(",")
 		}
@@ -200,9 +200,10 @@ func (r *Repo) GetMultipleScores(userList []string) (map[string][]Score, error) 
 	query := queryBuilder.String()
 	fmt.Println(query)
 
-	args := make([]interface{}, len(userList))
+	args := make([]interface{}, len(userList)+1) // adding year as an arg
+	args[0] = year
 	for i, v := range userList {
-		args[i] = v
+		args[i+1] = v // offset the year
 	}
 
 	rows, err := db.Query(query, args...)

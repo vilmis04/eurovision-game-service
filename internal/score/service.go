@@ -115,7 +115,7 @@ func (s *Service) GetAllScores(user string, allGameTypes bool) (*[]byte, error) 
 			return nil, fmt.Errorf("failed to get scores for user %s: %v", user, err)
 		}
 		scores = append(scores, finalScores...)
-		if len(finalScores) < 25 && !allGameTypes {
+		if len(finalScores) < 26 && !allGameTypes {
 			initFinalScores, err := s.InitializeScores(user, config.Year)
 			if err != nil {
 				return nil, fmt.Errorf("failed to initialize scores for user %s: %v", user, err)
@@ -159,7 +159,7 @@ func (s *Service) GetMultipleUserScores(userList []string) (map[string]uint16, e
 		skipFinalCalculation = true
 	}
 
-	scoresMap, err := s.storage.GetMultipleScores(userList)
+	scoresMap, err := s.storage.GetMultipleScores(userList, adminConfig.Year)
 	if err != nil {
 		return nil, err
 	}
