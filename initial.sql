@@ -298,3 +298,120 @@ VALUES ('United Kingdom', 'gb', 2025, 'final', 0, true, 'Remember Monday', 'What
 INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
 VALUES ('Switzerland', 'ch', 2025, 'final', 0, true, 'Zoë Më', 'Voyage', 0, 0);
 
+
+
+
+
+-- ------------------------------------------------------------
+-- Countries in 2026
+
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Moldova', 'md', 2026, 'semi1', 0, false, 'Satoshi', 'Viva, Moldova!', 1, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Sweden', 'se', 2026, 'semi1', 0, false, 'FELICIA', 'My System', 2, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Croatia', 'hr', 2026, 'semi1', 0, false, 'LELEK', 'Andromeda', 3, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Greece', 'gr', 2026, 'semi1', 0, false, 'Akylas', 'Ferto', 4, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Portugal', 'pt', 2026, 'semi1', 0, false, 'Bandidos do Cante', 'Rosa', 5, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Georgia', 'ge', 2026, 'semi1', 0, false, 'Bzikebi', 'On Replay', 6, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Finland', 'fi', 2026, 'semi1', 0, false, 'Linda Lampenius x Pete Parkkonen', 'Liekinheitin', 7, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Montenegro', 'me', 2026, 'semi1', 0, false, 'Tamara Živković', 'Nova Zora', 8, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Estonia', 'ee', 2026, 'semi1', 0, false, 'Vanilla Ninja', 'Too Epic To Be True', 9, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Israel', 'il', 2026, 'semi1', 0, false, 'Noam Bettan', 'Michelle', 10, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Belgium', 'be', 2026, 'semi1', 0, false, 'ESSYLA', 'Dancing on the Ice', 11, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Lithuania', 'lt', 2026, 'semi1', 0, false, 'Lion Ceccah', 'Sólo Quiero Más', 12, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('San Marino', 'sm', 2026, 'semi1', 0, false, 'SENHIT', 'Superstar', 13, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Poland', 'pl', 2026, 'semi1', 0, false, 'ALICJA', 'Pray', 14, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Serbia', 'rs', 2026, 'semi1', 0, false, 'LAVINA', 'Krah Mene', 15, 0);
+
+
+
+
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Bulgaria', 'bg', 2026, 'semi2', 0, false, 'DARA', 'Bangaranga', 1, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Azerbaijan', 'az', 2026, 'semi2', 0, false, 'JIVA', 'Just Go', 2, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Romania', 'ro', 2026, 'semi2', 0, false, 'Alexandra Căpitănescu', 'Choke Me', 3, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Luxembourg', 'lu', 2026, 'semi2', 0, false, 'Eva Marija', 'Mother Nature', 4, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Czechia', 'cz', 2026, 'semi2', 0, false, 'Daniel Zizka', 'CROSSROADS', 5, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Armenia', 'am', 2026, 'semi2', 0, false, 'SIMÓN', 'Paloma Rumba', 6, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Switzerland', 'ch', 2026, 'semi2', 0, false, 'Veronica Fusaro', 'Alice', 7, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Cyprus', 'cy', 2026, 'semi2', 0, false, 'Antigoni', 'JALLA', 8, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Latvia', 'lv', 2026, 'semi2', 0, false, 'Atvara', 'Ēnā', 9, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Australia', 'au', 2026, 'semi2', 0, false, 'Delta Goodrem', 'Exclipse', 10, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Ukraine', 'ua', 2026, 'semi2', 0, false, 'LELÉKA', 'Ridnym', 11, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Albania', 'al', 2026, 'semi2', 0, false, 'Alis', 'Nân', 12, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Malta', 'mt', 2026, 'semi2', 0, false, 'AIDAN', 'Bella', 13, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Norway', 'no', 2026, 'semi2', 0, false, 'JONAS LOVV', 'YA YA YA', 14, 0);
+
+
+
+
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Austria', 'at', 2026, 'final', 0, true, 'COSMÓ', 'Tanzschein', 0, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('France', 'fr', 2026, 'final', 0, true, 'Monroe', 'Regarde !', 0, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Germany', 'de', 2026, 'final', 0, true, 'Sarah Engels', 'Fire', 0, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('Italy', 'it', 2026, 'final', 0, true, 'Sal Da Vinci', 'Per Sempre Sì', 0, 0);
+
+INSERT INTO country (name, code, year, gameType, score, isInFinal, artist, song, orderSemi, orderFinal)
+VALUES ('United Kingdom', 'gb', 2026, 'final', 0, true, 'LOOK MUM NO COMPUTER', 'Eins, Zwei, Drei', 0, 0);
