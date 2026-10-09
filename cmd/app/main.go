@@ -8,10 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/vilmis04/eurovision-game-service/internal/admin"
+	"github.com/vilmis04/eurovision-game-service/internal/auth"
 	"github.com/vilmis04/eurovision-game-service/internal/country"
 	"github.com/vilmis04/eurovision-game-service/internal/group"
 	"github.com/vilmis04/eurovision-game-service/internal/score"
-	"github.com/vilmis04/eurovision-game-service/internal/user"
 )
 
 func loadEnvVars() {
@@ -25,19 +25,35 @@ func loadEnvVars() {
 	}
 }
 
+// requireEnv stops the service at startup instead of running without a secret.
+func requireEnv(name string) string {
+	value := os.Getenv(name)
+	if value == "" {
+		log.Fatalf("[Server] %v must be set", name)
+	}
+
+	return value
+}
+
 func init() {
 	loadEnvVars()
 }
 
 func main() {
-	app := gin.Default()
-	apiRoutes := app.Group("api")
+	internalToken := requireEnv("INTERNAL_TOKEN")
+	requireEnv("INVITE_SECRET")
 
-	apiRoutes.GET("health", func(c *gin.Context) {
+	app := gin.Default()
+
+	// health is registered before the proxy middleware so it stays unauthenticated
+	app.GET("api/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"health": "OK"})
 	})
 
-	user.NewController(app).Use()
+	// every route registered below trusts the `user` header only when the
+	// request carries the shared token that the auth proxy adds
+	app.Use(auth.Proxy(internalToken))
+
 	admin.NewController(app).Use()
 	country.NewController(app).Use()
 	group.NewController(app).Use()

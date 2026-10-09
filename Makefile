@@ -18,3 +18,8 @@ build:
 
 run:
 		go run ./cmd/app
+
+check:
+		go vet ./...
+		go test ./...
+		@! grep -rn --include=*.go --exclude=*_test.go -E 'Sprintf\(.*(SELECT|INSERT|UPDATE|DELETE)' internal cmd || (echo "SQL built with Sprintf" && exit 1)

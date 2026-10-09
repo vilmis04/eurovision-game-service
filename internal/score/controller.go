@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/vilmis04/eurovision-game-service/internal/auth"
 	"github.com/vilmis04/eurovision-game-service/internal/types"
 	"github.com/vilmis04/eurovision-game-service/internal/utils"
 )
@@ -22,11 +23,11 @@ func NewController(app *gin.Engine) *controller {
 
 func (ctrl *controller) Use() {
 	ctrl.router.PATCH("/", func(c *gin.Context) {
-		user := c.GetHeader("user")
+		user := auth.User(c)
 
 		err := ctrl.service.UpdateScore(user, c.Request)
 		if err != nil {
-			utils.HandleServerError(err, c)
+			utils.HandleError(err, c)
 			return
 		}
 
@@ -34,11 +35,11 @@ func (ctrl *controller) Use() {
 	})
 
 	ctrl.router.GET("/", func(c *gin.Context) {
-		user := c.GetHeader("user")
+		user := auth.User(c)
 
 		scores, err := ctrl.service.GetAllScores(user, false)
 		if err != nil {
-			utils.HandleServerError(err, c)
+			utils.HandleError(err, c)
 			return
 		}
 
