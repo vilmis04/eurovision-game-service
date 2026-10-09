@@ -21,21 +21,18 @@ type Service struct {
 	countryService *country.Service
 }
 
-func NewService() *Service {
+func NewService(db *sql.DB, adminService *admin.Service, countryService *country.Service) *Service {
 	return &Service{
-		storage:        NewRepo(),
-		adminService:   admin.NewService(),
-		countryService: country.NewService(),
+		storage:        NewRepo(db),
+		adminService:   adminService,
+		countryService: countryService,
 	}
 }
 
-func (s *Service) InitializeScores(user string, year uint16) ([]ScoreResponse, error) {
-	scores, err := s.storage.InitializeScores(user, year)
-	if err != nil {
-		return nil, err
-	}
-
-	return scores, nil
+// EnsureScores creates the user's missing score rows for the year. It is safe to
+// call any number of times: rows that exist are never touched or duplicated.
+func (s *Service) EnsureScores(user string, year uint16) error {
+	return s.storage.EnsureScores(user, year)
 }
 
 func (s *Service) UpdateScore(user string, request *http.Request) error {
@@ -100,6 +97,10 @@ func (s *Service) GetAllScores(user string, allGameTypes bool) (*[]byte, error) 
 		return nil, err
 	}
 
+	if err := s.EnsureScores(user, config.Year); err != nil {
+		return nil, fmt.Errorf("failed to initialize scores for user %s: %v", user, err)
+	}
+
 	scores := []ScoreResponse{}
 	if allGameTypes || config.GameType != admin.GameTypeFinal {
 		semiScores, err := s.storage.GetAllOrSemiScores(user, config.GameType, config.Year)
@@ -107,12 +108,6 @@ func (s *Service) GetAllScores(user string, allGameTypes bool) (*[]byte, error) 
 			return nil, fmt.Errorf("failed to get scores for user %s: %v", user, err)
 		}
 		scores = append(scores, semiScores...)
-		if len(scores) == 0 && !allGameTypes {
-			scores, err = s.InitializeScores(user, config.Year)
-			if err != nil {
-				return nil, fmt.Errorf("failed to initialize scores for user %s: %v", user, err)
-			}
-		}
 	}
 
 	if allGameTypes || config.GameType == admin.GameTypeFinal {
@@ -121,14 +116,6 @@ func (s *Service) GetAllScores(user string, allGameTypes bool) (*[]byte, error) 
 			return nil, fmt.Errorf("failed to get scores for user %s: %v", user, err)
 		}
 		scores = append(scores, finalScores...)
-		// TODO: move magic number 26 to be calculated by the amount of isInFinal countries
-		if len(finalScores) < 26 && !allGameTypes {
-			initFinalScores, err := s.InitializeScores(user, config.Year)
-			if err != nil {
-				return nil, fmt.Errorf("failed to initialize scores for user %s: %v", user, err)
-			}
-			scores = append(scores, initFinalScores...)
-		}
 	}
 
 	encodedScores, err := json.Marshal(scores)

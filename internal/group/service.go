@@ -2,6 +2,7 @@ package group
 
 import (
 	"cmp"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/lib/pq"
 	"github.com/vilmis04/eurovision-game-service/internal/score"
 	"github.com/vilmis04/eurovision-game-service/internal/utils"
 )
@@ -34,15 +36,15 @@ const (
 
 type Service struct {
 	store        store
-	scoreService score.Service
+	scoreService *score.Service
 	inviteSecret []byte
 	now          func() time.Time
 }
 
-func NewService() *Service {
+func NewService(db *sql.DB, scoreService *score.Service) *Service {
 	return &Service{
-		store:        NewRepo(),
-		scoreService: *score.NewService(),
+		store:        NewRepo(db),
+		scoreService: scoreService,
 		inviteSecret: []byte(os.Getenv("INVITE_SECRET")),
 		now:          time.Now,
 	}
@@ -110,6 +112,10 @@ func (s *Service) CreateGroup(owner string, request *http.Request) (*[]byte, err
 	}
 
 	id, err := s.store.CreateGroup(&group)
+	var pqErr *pq.Error
+	if errors.As(err, &pqErr) && pqErr.Code == "23505" { // unique_violation: lost a race with a same-named group
+		return nil, utils.Conflict("group already exists")
+	}
 	if err != nil {
 		return nil, err
 	}

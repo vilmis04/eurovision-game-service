@@ -4,49 +4,19 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/vilmis04/eurovision-game-service/internal/storage/storagetest"
+	"github.com/vilmis04/eurovision-game-service/internal/dbtest"
 )
 
-func TestInitializeScoresBindsCountryValues(t *testing.T) {
-	st, mock := storagetest.New(t, "score")
-	repo := &Repo{storage: st}
+func TestEnsureScoresIsOneIdempotentStatement(t *testing.T) {
+	database, mock := dbtest.NewMock(t)
+	repo := NewRepo(database)
 
-	malicious := "x', false, 0); DROP TABLE score;--"
-	mock.ExpectQuery(`SELECT name, gametype FROM country WHERE year=$1`).
-		WithArgs(2026).
-		WillReturnRows(sqlmock.NewRows([]string{"name", "gametype"}).
-			AddRow("Serbia", "semi1").
-			AddRow(malicious, "final"))
-	mock.ExpectBegin()
-	insert := `INSERT INTO score ("user", country, year, gametype, inFinal, position) VALUES ($1, $2, $3, $4, false, 0)`
-	mock.ExpectPrepare(insert)
-	mock.ExpectExec(insert).WithArgs("bob", "Serbia", 2026, "semi1").WillReturnResult(sqlmock.NewResult(0, 1))
-	mock.ExpectExec(insert).WithArgs("bob", malicious, 2026, "final").WillReturnResult(sqlmock.NewResult(0, 1))
-	mock.ExpectCommit()
+	mock.ExpectExec(`INSERT INTO score ("user", country, year, gametype, infinal, position) SELECT $1, c.name, c.year, c.gametype, false, 0 FROM country c WHERE c.year = $2 ON CONFLICT ("user", country, year) DO NOTHING`).
+		WithArgs("bob'; DROP TABLE score;--", 2026).
+		WillReturnResult(sqlmock.NewResult(0, 0))
 
-	scores, err := repo.InitializeScores("bob", 2026)
-	if err != nil {
+	if err := repo.EnsureScores("bob'; DROP TABLE score;--", 2026); err != nil {
 		t.Fatal(err)
-	}
-	if len(scores) != 2 || scores[1].Country != malicious {
-		t.Fatalf("unexpected scores %+v", scores)
-	}
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestInitializeScoresWithoutCountriesInsertsNothing(t *testing.T) {
-	st, mock := storagetest.New(t, "score")
-	repo := &Repo{storage: st}
-
-	mock.ExpectQuery(`SELECT name, gametype FROM country WHERE year=$1`).
-		WithArgs(2026).
-		WillReturnRows(sqlmock.NewRows([]string{"name", "gametype"}))
-
-	scores, err := repo.InitializeScores("bob", 2026)
-	if err != nil || len(scores) != 0 {
-		t.Fatalf("scores = %v, err = %v", scores, err)
 	}
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Fatal(err)
