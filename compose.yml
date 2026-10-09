@@ -2,7 +2,7 @@ services:
   go-service:
     container_name: go-service
     # build: .
-    image: golang:1.22.0-alpine
+    image: golang:1.24-alpine
     tty: true
     working_dir: /code
     restart: always
