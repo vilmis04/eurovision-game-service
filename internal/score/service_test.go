@@ -214,6 +214,20 @@ var scores = []Score{
 
 var service = NewService(nil, nil, nil)
 
+// Production only ever hands the finalists (country.Service.GetFinalists) to the
+// score calculation, so the semi and total tests do the same. Passing every
+// participant counted each non-finalist's correct qualifier guess again.
+func finalistsOf(all []country.Country) []country.Country {
+	finalists := []country.Country{}
+	for _, c := range all {
+		if c.IsInFinal {
+			finalists = append(finalists, c)
+		}
+	}
+
+	return finalists
+}
+
 func TestSortCountryList(t *testing.T) {
 	finalCountryList := service.sortCountryList(countries)
 	if len(finalCountryList) != 10 {
@@ -223,7 +237,7 @@ func TestSortCountryList(t *testing.T) {
 }
 
 func TestCalculateSemiScore(t *testing.T) {
-	semiWinners := service.sortCountryList(countries)
+	semiWinners := service.sortCountryList(finalistsOf(countries))
 	semiScore := service.calculateSemiScore(semiWinners, scores)
 	if semiScore != 15 {
 		t.Errorf("semiScore should be 15, but got %v", semiScore)
@@ -239,8 +253,12 @@ func TestCalculateFinalScore(t *testing.T) {
 }
 
 func TestCalculateTotalScore(t *testing.T) {
-	totalScore := service.CalculateTotalScore(countries, scores, false)
-	if totalScore != 86 {
-		t.Errorf("totalScore should be 86, but got %v", totalScore)
+	// finalists Serbia, Ireland, Poland, Croatia and Iceland:
+	// semi: Serbia, Poland and Iceland qualified in the guesses = 3 x 5 = 15
+	// final, ranked by score: Ireland 1 (guessed 1: winner 25), Croatia 2 (guessed 7: 1),
+	// Iceland 3 (guessed 8: 1), Poland 4 (guessed 6: 5), Serbia 5 (guessed 2: 3) = 35
+	totalScore := service.CalculateTotalScore(finalistsOf(countries), scores, false)
+	if totalScore != 50 {
+		t.Errorf("totalScore should be 50, but got %v", totalScore)
 	}
 }
