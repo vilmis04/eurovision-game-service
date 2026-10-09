@@ -1,0 +1,138 @@
+name: CI
+
+# Runs on pull requests, and is reused by the publish workflow before an image is pushed.
+on:
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # integration tests (migrations, score rows) create and drop their own databases
+      TEST_DATABASE_URL: postgres://ci:ci@localhost:5432/postgres?sslmode=disable
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+        with:
+          go-version-file: go.mod
+
+      - name: Dockerfile uses the Go version from go.mod
+        run: |
+          mod=$(awk '/^go /{print $2}' go.mod | cut -d. -f1,2)
+          docker=$(sed -n 's/^ARG GO_VERSION=//p' Dockerfile | head -n1)
+          if [ "$mod" != "$docker" ]; then
+            echo "::error::go.mod says Go $mod but the Dockerfile builds with Go $docker"
+            exit 1
+          fi
+
+      - name: gofmt
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "::error::gofmt needed on:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: No SQL built with fmt.Sprintf
+        run: |
+          if grep -rn --include=*.go --exclude=*_test.go -E 'Sprintf\(.*(SELECT|INSERT|UPDATE|DELETE)' internal cmd; then
+            echo "::error::SQL must use query parameters, not fmt.Sprintf"
+            exit 1
+          fi
+
+      - name: go test
+        run: go test ./...
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      MAX_IMAGE_BYTES: 41943040 # 40 MiB; lower it to about 1.5x the size of a green build
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+
+      - name: Build image (not pushed)
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          push: false
+          load: true
+          tags: eurovision-game-service:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Image runs as non-root
+        run: |
+          user=$(docker image inspect eurovision-game-service:ci --format '{{.Config.User}}')
+          echo "user: $user"
+          case "$user" in ""|root|0|0:0) echo "::error::image must not run as root"; exit 1;; esac
+
+      - name: Image size
+        run: |
+          size=$(docker image inspect eurovision-game-service:ci --format '{{.Size}}')
+          echo "image size: $size bytes (limit $MAX_IMAGE_BYTES)"
+          if [ "$size" -gt "$MAX_IMAGE_BYTES" ]; then
+            echo "::error::image is larger than the limit"
+            exit 1
+          fi
+
+      - name: Container migrates, starts and reports healthy
+        run: |
+          docker run -d --name smoke --network host \
+            -e PORT=8080 \
+            -e INTERNAL_TOKEN=ci-token \
+            -e INVITE_SECRET=ci-secret \
+            -e DB_SSLMODE=disable \
+            -e DATABASE_URL=postgres://ci:ci@127.0.0.1:5432/postgres \
+            eurovision-game-service:ci
+          for i in $(seq 1 30); do
+            status=$(docker inspect smoke --format '{{.State.Health.Status}}')
+            [ "$status" = "healthy" ] && break
+            sleep 2
+          done
+          docker logs smoke
+          [ "$status" = "healthy" ] || { echo "::error::container did not become healthy (last status: $status)"; exit 1; }
