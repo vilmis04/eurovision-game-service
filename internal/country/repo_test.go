@@ -4,14 +4,14 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/vilmis04/eurovision-game-service/internal/storage/storagetest"
+	"github.com/vilmis04/eurovision-game-service/internal/dbtest"
 )
 
 const maliciousName = "x'; DROP TABLE country;--"
 
 func TestRepoUpdateCountryIsParameterised(t *testing.T) {
-	st, mock := storagetest.New(t, "country")
-	repo := &Repo{storage: st}
+	database, mock := dbtest.NewMock(t)
+	repo := NewRepo(database)
 
 	inFinal := true
 	mock.ExpectExec(`UPDATE country SET isInFinal=COALESCE($1, isInFinal), score=COALESCE($2, score), orderSemi=COALESCE($3, orderSemi), orderFinal=COALESCE($4, orderFinal) WHERE year=$5 AND name=$6`).
@@ -32,8 +32,8 @@ func TestRepoUpdateCountryIsParameterised(t *testing.T) {
 
 func TestRepoDeleteCountryCommitsOnlyForExactlyOneRow(t *testing.T) {
 	t.Run("one row commits", func(t *testing.T) {
-		st, mock := storagetest.New(t, "country")
-		repo := &Repo{storage: st}
+		database, mock := dbtest.NewMock(t)
+		repo := NewRepo(database)
 
 		mock.ExpectBegin()
 		mock.ExpectExec(`DELETE FROM country WHERE year=$1 AND name=$2`).
@@ -51,8 +51,8 @@ func TestRepoDeleteCountryCommitsOnlyForExactlyOneRow(t *testing.T) {
 	})
 
 	t.Run("several rows roll back", func(t *testing.T) {
-		st, mock := storagetest.New(t, "country")
-		repo := &Repo{storage: st}
+		database, mock := dbtest.NewMock(t)
+		repo := NewRepo(database)
 
 		mock.ExpectBegin()
 		mock.ExpectExec(`DELETE FROM country WHERE year=$1 AND name=$2`).

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/vilmis04/eurovision-game-service/internal/admin"
 	"github.com/vilmis04/eurovision-game-service/internal/auth"
 )
 
@@ -19,7 +20,7 @@ func newTestRouter(t *testing.T) *gin.Engine {
 
 	app := gin.New()
 	app.Use(auth.Proxy("secret"))
-	NewController(app).Use()
+	NewController(app, NewService(nil, admin.NewService(nil))).Use()
 
 	return app
 }

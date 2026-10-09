@@ -15,9 +15,9 @@ type controller struct {
 	admins  []string
 }
 
-func NewController(app *gin.Engine) *controller {
+func NewController(app *gin.Engine, service *Service) *controller {
 	return &controller{
-		service: NewService(),
+		service: service,
 		router:  app.Group("api/country"),
 		admins:  auth.AdminsFromEnv(),
 	}

@@ -5,28 +5,21 @@ import (
 	"strings"
 
 	"github.com/vilmis04/eurovision-game-service/internal/admin"
-	"github.com/vilmis04/eurovision-game-service/internal/storage"
 )
 
 type Repo struct {
-	storage *storage.Storage
+	db *sql.DB
 }
 
-func NewRepo() *Repo {
-	return &Repo{
-		storage: storage.New("country"),
-	}
+func NewRepo(db *sql.DB) *Repo {
+	return &Repo{db: db}
 }
 
 func (r *Repo) Create(country *Country) (*int64, error) {
-	db, err := r.storage.ConnectToDB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
+	var err error
 
 	var id int64
-	err = db.QueryRow(`
+	err = r.db.QueryRow(`
 		INSERT INTO country (name, code, gameType, year, score, isInFinal, artist, song, orderSemi, orderFinal)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		RETURNING id`,
@@ -93,17 +86,11 @@ func (r *Repo) queryCountries(gameType string, baseQuery string, name string, ye
 // Nothing specified will return all countries in the year.
 // Specify name to get the specific country in that year
 func (r *Repo) GetCountryList(year string, gameType string, name string) (*[]Country, error) {
-	db, err := r.storage.ConnectToDB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
 	var id int
 	var countries []Country = []Country{}
 
 	baseQuery := "SELECT * FROM country WHERE year=$1"
-	rows, err := r.queryCountries(gameType, baseQuery, name, year, db)
+	rows, err := r.queryCountries(gameType, baseQuery, name, year, r.db)
 	if err != nil {
 		return nil, err
 	}
@@ -130,15 +117,9 @@ func (r *Repo) GetCountryList(year string, gameType string, name string) (*[]Cou
 // Nothing specified will return all countries in the year.
 // Specify name to get the specific country in that year
 func (r *Repo) GetCountrySummary(year string, gameType string, name string) (*[]CountrySummary, error) {
-	db, err := r.storage.ConnectToDB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
 	countries := []CountrySummary{}
 	baseQuery := "SELECT name, code, artist, song, orderSemi, orderFinal FROM country WHERE year=$1"
-	rows, err := r.queryCountries(gameType, baseQuery, name, year, db)
+	rows, err := r.queryCountries(gameType, baseQuery, name, year, r.db)
 	if err != nil {
 		return nil, err
 	}
@@ -164,13 +145,7 @@ func (r *Repo) GetCountrySummary(year string, gameType string, name string) (*[]
 // UpdateCountry applies the provided fields (nil fields keep their value)
 // and returns the number of updated rows.
 func (r *Repo) UpdateCountry(req *UpdateCountryRequest, year int, name string) (int64, error) {
-	db, err := r.storage.ConnectToDB()
-	if err != nil {
-		return 0, err
-	}
-	defer db.Close()
-
-	result, err := db.Exec(`
+	result, err := r.db.Exec(`
 		UPDATE country
 		SET isInFinal=COALESCE($1, isInFinal),
 			score=COALESCE($2, score),
@@ -188,13 +163,7 @@ func (r *Repo) UpdateCountry(req *UpdateCountryRequest, year int, name string) (
 // DeleteCountry deletes the country only when exactly one row matches.
 // It returns the number of rows that matched, 0 and >1 delete nothing.
 func (r *Repo) DeleteCountry(year int, name string) (int64, error) {
-	db, err := r.storage.ConnectToDB()
-	if err != nil {
-		return 0, err
-	}
-	defer db.Close()
-
-	tx, err := db.Begin()
+	tx, err := r.db.Begin()
 	if err != nil {
 		return 0, err
 	}
@@ -220,18 +189,12 @@ func (r *Repo) DeleteCountry(year int, name string) (int64, error) {
 }
 
 func (r *Repo) GetFinalists(year uint16) ([]Country, error) {
-	db, err := r.storage.ConnectToDB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
 	query := `
 				SELECT * FROM "country" 
 				WHERE "year"=$1 AND "isinfinal"=true
 			`
 
-	rows, err := db.Query(query, year)
+	rows, err := r.db.Query(query, year)
 	if err != nil {
 		return nil, err
 	}

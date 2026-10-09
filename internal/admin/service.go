@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 
@@ -12,9 +13,9 @@ type Service struct {
 	storage *Repo
 }
 
-func NewService() *Service {
+func NewService(db *sql.DB) *Service {
 	return &Service{
-		storage: NewRepo(),
+		storage: NewRepo(db),
 	}
 }
 

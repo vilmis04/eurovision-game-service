@@ -4,12 +4,12 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/vilmis04/eurovision-game-service/internal/storage/storagetest"
+	"github.com/vilmis04/eurovision-game-service/internal/dbtest"
 )
 
 func TestRepoUpdateMembersIsParameterised(t *testing.T) {
-	st, mock := storagetest.New(t, "group")
-	repo := &Repo{Storage: *st}
+	database, mock := dbtest.NewMock(t)
+	repo := NewRepo(database)
 
 	mock.ExpectExec(`UPDATE "group" SET members=$1 WHERE id=$2`).
 		WithArgs(sqlmock.AnyArg(), int64(7)).
@@ -25,8 +25,8 @@ func TestRepoUpdateMembersIsParameterised(t *testing.T) {
 }
 
 func TestRepoDeleteGroupIsParameterised(t *testing.T) {
-	st, mock := storagetest.New(t, "group")
-	repo := &Repo{Storage: *st}
+	database, mock := dbtest.NewMock(t)
+	repo := NewRepo(database)
 
 	mock.ExpectExec(`DELETE FROM "group" WHERE owner=$1 AND id=$2`).
 		WithArgs("o' OR '1'='1", int64(3)).
