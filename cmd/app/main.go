@@ -26,6 +26,11 @@ import (
 const shutdownTimeout = 15 * time.Second
 
 func main() {
+	// handled first: the probe needs only PORT, not the secrets and the database
+	if len(os.Args) > 1 && os.Args[1] == "healthcheck" {
+		os.Exit(runHealthcheck())
+	}
+
 	if err := run(); err != nil {
 		log.Fatalf("[Server] %v", err)
 	}
@@ -47,6 +52,11 @@ func portFromEnv() (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	return validPort(port)
+}
+
+func validPort(port string) (string, error) {
 	number, err := strconv.Atoi(port)
 	if err != nil || number < 1 || number > 65535 {
 		return "", errors.New("PORT must be a number between 1 and 65535")

@@ -1,1 +1,20 @@
-backend-service-go
+# Version control and tooling
+.git
+.github
+.claude
+
+# Never send local secrets to the build
+.env
+.env.*
+
+# Not needed to build the binary
+compose.yml
+Dockerfile
+.dockerignore
+Makefile
+README.md
+*.md
+bin/
+
+# Tests are run in CI, not in the image build
+**/*_test.go
