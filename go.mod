@@ -1,6 +1,6 @@
 module github.com/vilmis04/eurovision-game-service
 
-go 1.21.5
+go 1.24
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
