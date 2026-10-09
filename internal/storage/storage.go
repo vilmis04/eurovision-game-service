@@ -9,6 +9,8 @@ import (
 type Storage struct {
 	ConnString string
 	Table      string
+	// Driver is the database/sql driver name, "postgres" unless overridden (e.g. in tests).
+	Driver string
 }
 
 func New(table string) *Storage {
@@ -19,12 +21,13 @@ func New(table string) *Storage {
 			os.Getenv("POSTGRES_USER"),
 			os.Getenv("POSTGRES_PASSWORD"),
 			os.Getenv("POSTGRES_DB")),
-		Table: table,
+		Table:  table,
+		Driver: "postgres",
 	}
 }
 
 func (s *Storage) ConnectToDB() (*sql.DB, error) {
-	db, err := sql.Open("postgres", s.ConnString)
+	db, err := sql.Open(s.Driver, s.ConnString)
 	if err != nil {
 		return nil, err
 	}

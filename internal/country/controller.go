@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/vilmis04/eurovision-game-service/internal/auth"
 	"github.com/vilmis04/eurovision-game-service/internal/types"
 	"github.com/vilmis04/eurovision-game-service/internal/utils"
 )
@@ -11,25 +12,29 @@ import (
 type controller struct {
 	service *Service
 	router  *gin.RouterGroup
+	admins  []string
 }
 
 func NewController(app *gin.Engine) *controller {
 	return &controller{
 		service: NewService(),
 		router:  app.Group("api/country"),
+		admins:  auth.AdminsFromEnv(),
 	}
 }
 
 func (ctrl *controller) Use() {
-	ctrl.router.POST("/", func(c *gin.Context) {
+	admin := auth.Admin(ctrl.admins)
+
+	ctrl.router.POST("/", admin, func(c *gin.Context) {
 		id, err := ctrl.service.CreateCountry(c.Request)
 		if err != nil {
-			utils.HandleServerError(err, c)
+			utils.HandleError(err, c)
 			return
 		}
 
-		c.Writer.WriteHeader(http.StatusCreated)
 		c.Writer.Header().Set(types.HeaderContentType, types.HeaderApplicationJson)
+		c.Writer.WriteHeader(http.StatusCreated)
 		c.Writer.Write(*id)
 	})
 
@@ -40,7 +45,7 @@ func (ctrl *controller) Use() {
 
 		countries, err := ctrl.service.GetCountrySummary(c.Param("year"), gameType, name)
 		if err != nil {
-			utils.HandleServerError(err, c)
+			utils.HandleError(err, c)
 			return
 		}
 
@@ -48,7 +53,7 @@ func (ctrl *controller) Use() {
 		c.Writer.Write(*countries)
 	})
 
-	ctrl.router.PATCH(":year/:name", func(c *gin.Context) {
+	ctrl.router.PATCH(":year/:name", admin, func(c *gin.Context) {
 		params := map[string]string{
 			"year": c.Param("year"),
 			"name": c.Param("name"),
@@ -56,14 +61,14 @@ func (ctrl *controller) Use() {
 
 		err := ctrl.service.UpdateCountry(params, c.Request)
 		if err != nil {
-			utils.HandleServerError(err, c)
+			utils.HandleError(err, c)
 			return
 		}
 
 		c.Writer.WriteHeader(http.StatusOK)
 	})
 
-	ctrl.router.DELETE(":year/:name", func(c *gin.Context) {
+	ctrl.router.DELETE(":year/:name", admin, func(c *gin.Context) {
 		params := map[string]string{
 			"year": c.Param("year"),
 			"name": c.Param("name"),
@@ -71,7 +76,7 @@ func (ctrl *controller) Use() {
 
 		err := ctrl.service.DeleteCountry(&params)
 		if err != nil {
-			utils.HandleServerError(err, c)
+			utils.HandleError(err, c)
 			return
 		}
 

@@ -1,10 +1,10 @@
 package group
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/vilmis04/eurovision-game-service/internal/auth"
 	"github.com/vilmis04/eurovision-game-service/internal/types"
 	"github.com/vilmis04/eurovision-game-service/internal/utils"
 )
@@ -23,9 +23,9 @@ func NewController(app *gin.Engine) *controller {
 
 func (ctrl *controller) Use() {
 	ctrl.router.GET("/", func(c *gin.Context) {
-		groups, err := ctrl.service.GetGroups(c.GetHeader("user"), c.Request)
+		groups, err := ctrl.service.GetGroups(auth.User(c), c.Request)
 		if err != nil {
-			utils.HandleServerError(err, c)
+			utils.HandleError(err, c)
 			return
 		}
 
@@ -34,9 +34,9 @@ func (ctrl *controller) Use() {
 	})
 
 	ctrl.router.POST("/", func(c *gin.Context) {
-		id, err := ctrl.service.CreateGroup(c.GetHeader("user"), c.Request)
+		id, err := ctrl.service.CreateGroup(auth.User(c), c.Request)
 		if err != nil {
-			utils.HandleServerError(err, c)
+			utils.HandleError(err, c)
 			return
 		}
 
@@ -44,14 +44,10 @@ func (ctrl *controller) Use() {
 		c.Writer.Write(*id)
 	})
 
-	ctrl.router.PATCH(":owner/:name", func(c *gin.Context) {
-		err := ctrl.service.UpdateMembers(c.Param("owner"), c.Param("name"), c.Request)
+	ctrl.router.PATCH(":id", func(c *gin.Context) {
+		err := ctrl.service.UpdateMembers(auth.User(c), c.Param("id"), c.Request)
 		if err != nil {
-			if err.Error() == fmt.Sprint(http.StatusBadRequest) {
-				utils.HandleClientError(err, c)
-				return
-			}
-			utils.HandleServerError(err, c)
+			utils.HandleError(err, c)
 			return
 		}
 
@@ -59,9 +55,9 @@ func (ctrl *controller) Use() {
 	})
 
 	ctrl.router.DELETE(":id", func(c *gin.Context) {
-		err := ctrl.service.DeleteGroup(c.GetHeader("user"), c.Param("id"))
+		err := ctrl.service.DeleteGroup(auth.User(c), c.Param("id"))
 		if err != nil {
-			utils.HandleServerError(err, c)
+			utils.HandleError(err, c)
 			return
 		}
 
@@ -69,9 +65,10 @@ func (ctrl *controller) Use() {
 	})
 
 	ctrl.router.POST(":id/generate-invite", func(c *gin.Context) {
-		inviteCode, err := ctrl.service.GenerateInvite(c.Param("id"), c.GetHeader("user"))
+		inviteCode, err := ctrl.service.GenerateInvite(c.Param("id"), auth.User(c))
 		if err != nil {
-			utils.HandleServerError(err, c)
+			utils.HandleError(err, c)
+			return
 		}
 
 		c.Writer.Header().Set(types.HeaderContentType, "text/plain")
@@ -79,18 +76,19 @@ func (ctrl *controller) Use() {
 	})
 
 	ctrl.router.POST("join", func(c *gin.Context) {
-		err := ctrl.service.JoinGroup(c.GetHeader("user"), c.Request)
+		err := ctrl.service.JoinGroup(auth.User(c), c.Request)
 		if err != nil {
-			utils.HandleServerError(err, c)
+			utils.HandleError(err, c)
+			return
 		}
 
 		c.Writer.WriteHeader(http.StatusOK)
 	})
 
 	ctrl.router.GET("leaderboard", func(c *gin.Context) {
-		leaderboard, err := ctrl.service.GetLeaderboard(c.GetHeader("user"), c.Query("id"))
+		leaderboard, err := ctrl.service.GetLeaderboard(auth.User(c), c.Query("id"))
 		if err != nil {
-			utils.HandleServerError(err, c)
+			utils.HandleError(err, c)
 			return
 		}
 

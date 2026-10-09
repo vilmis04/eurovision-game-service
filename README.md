@@ -16,10 +16,26 @@ To stop virtual environment: `make stop`
 
 To attach to go-service when container is running: `make attach`
 
+## Configuration
+
+The service must only be reachable through the auth proxy. Do not assign a public domain or a published port to it in Coolify.
+
+| Env var | Required | Purpose |
+|---|---|---|
+| `INTERNAL_TOKEN` | yes | Shared secret. The proxy sends it in the `X-Internal-Token` header; requests without it are rejected with 401 and the `user` header is never trusted. |
+| `INVITE_SECRET` | yes | HMAC key used to sign group invites (valid for 7 days). Changing it invalidates all outstanding invites. |
+| `ADMIN_USERS` | no | Comma separated user ids allowed to create, update and delete countries. Empty means nobody. |
+
+The service refuses to start without `INTERNAL_TOKEN` and `INVITE_SECRET`. `/api/health` is the only unauthenticated route.
+
+## Checks
+
+`make check` runs `go vet`, the tests and a scan that no SQL is built with `fmt.Sprintf`.
+
 ## Roadmap
 
-- [ ] proxy for permission checking
-- [ ] env var to define admin list
+- [x] proxy for permission checking
+- [x] env var to define admin list
 - [x] score calculation
 
 ## Deployment
