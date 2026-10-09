@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/vilmis04/eurovision-game-service/internal/admin"
@@ -48,16 +49,11 @@ func (r *Repo) GetAllOrSemiScores(user string, gameType admin.GameType, year uin
 	defer db.Close()
 
 	scores := []ScoreResponse{}
-	queryEnd := ""
-	if gameType != "" {
-		queryEnd = `AND "gametype"=$3`
-	}
-	query := fmt.Sprintf(`SELECT country, infinal, position FROM score WHERE ("user"=$1 AND "year"=$2 %v)`, queryEnd)
 	var rows *sql.Rows
 	if gameType == "" {
-		rows, err = db.Query(query, user, year)
+		rows, err = db.Query(`SELECT country, infinal, position FROM score WHERE ("user"=$1 AND "year"=$2)`, user, year)
 	} else {
-		rows, err = db.Query(query, user, year, gameType)
+		rows, err = db.Query(`SELECT country, infinal, position FROM score WHERE ("user"=$1 AND "year"=$2 AND "gametype"=$3)`, user, year, gameType)
 	}
 	if err != nil {
 		return nil, err
@@ -85,36 +81,51 @@ func (r *Repo) InitializeScores(user string, year uint16) ([]ScoreResponse, erro
 	}
 	defer db.Close()
 
-	countryQuery := `SELECT name, gametype FROM country WHERE year=$1`
-	rows, err := db.Query(countryQuery, year)
+	type countryRow struct{ name, gameType string }
+	countries := []countryRow{}
+
+	rows, err := db.Query(`SELECT name, gametype FROM country WHERE year=$1`, year)
 	if err != nil {
 		return nil, fmt.Errorf("retrieve countries err: %v", err)
 	}
 	defer rows.Close()
-
-	scoresQuery := ""
-	scores := []ScoreResponse{}
 	for rows.Next() {
-		var country string
-		var gameType string
-		err = rows.Scan(&country, &gameType)
-		if err != nil {
+		var row countryRow
+		if err = rows.Scan(&row.name, &row.gameType); err != nil {
 			return nil, err
 		}
+		countries = append(countries, row)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	rows.Close()
 
-		score := ScoreResponse{
-			Country:  country,
-			InFinal:  false,
-			Position: 0,
-		}
-		scores = append(scores, score)
-		scoresQuery = fmt.Sprintf("%v ($1, '%v', $2, '%v', false, 0),", scoresQuery, country, gameType)
+	scores := []ScoreResponse{}
+	if len(countries) == 0 {
+		return scores, nil
 	}
 
-	baseScoreQuery := fmt.Sprintf(`INSERT INTO score ("user", country, year, gametype, inFinal, position) VALUES %v`, scoresQuery)
-	query := baseScoreQuery[:len(baseScoreQuery)-1]
-	_, err = db.Exec(query, user, year)
+	tx, err := db.Begin()
 	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	insert, err := tx.Prepare(`INSERT INTO score ("user", country, year, gametype, inFinal, position) VALUES ($1, $2, $3, $4, false, 0)`)
+	if err != nil {
+		return nil, fmt.Errorf("insert scores err: %v", err)
+	}
+	defer insert.Close()
+
+	for _, country := range countries {
+		if _, err = insert.Exec(user, country.name, year, country.gameType); err != nil {
+			return nil, fmt.Errorf("insert scores err: %v", err)
+		}
+		scores = append(scores, ScoreResponse{Country: country.name, InFinal: false, Position: 0})
+	}
+
+	if err = tx.Commit(); err != nil {
 		return nil, fmt.Errorf("insert scores err: %v", err)
 	}
 
@@ -186,19 +197,22 @@ func (r *Repo) GetMultipleScores(userList []string, year uint16) (map[string][]S
 	}
 	defer db.Close()
 
+	scores := make(map[string][]Score)
+	if len(userList) == 0 {
+		return scores, nil
+	}
+
+	// only positional placeholders are generated here, user values are bound as args
 	var queryBuilder strings.Builder
 	queryBuilder.WriteString(`SELECT * FROM score WHERE year=$1 AND "user" IN (`)
 	for i := range userList {
-		queryBuilder.WriteString(fmt.Sprintf("$%v", i+2))
+		queryBuilder.WriteString("$" + strconv.Itoa(i+2))
 		if i != len(userList)-1 {
 			queryBuilder.WriteString(",")
 		}
 	}
 	queryBuilder.WriteString(")")
-
-	scores := make(map[string][]Score)
 	query := queryBuilder.String()
-	fmt.Println(query)
 
 	args := make([]interface{}, len(userList)+1) // adding year as an arg
 	args[0] = year

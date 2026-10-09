@@ -2,7 +2,9 @@ package score
 
 import (
 	"cmp"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"net/http"
@@ -10,6 +12,7 @@ import (
 
 	"github.com/vilmis04/eurovision-game-service/internal/admin"
 	"github.com/vilmis04/eurovision-game-service/internal/country"
+	"github.com/vilmis04/eurovision-game-service/internal/utils"
 )
 
 type Service struct {
@@ -47,16 +50,19 @@ func (s *Service) UpdateScore(user string, request *http.Request) error {
 	}
 
 	if !config.IsVotingAcitve {
-		return fmt.Errorf("voting is not active")
+		return utils.Forbidden("voting is not active")
 	}
 
 	var body ScoreResponse
 	err = json.NewDecoder(request.Body).Decode(&body)
 	if err != nil {
-		return fmt.Errorf("service: %v", err)
+		return utils.BadRequest("invalid request body")
 	}
 
 	score, err := s.GetScore(user, body.Country, config.Year)
+	if errors.Is(err, sql.ErrNoRows) {
+		return utils.NotFound("score not found")
+	}
 	if err != nil {
 		return err
 	}

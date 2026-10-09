@@ -1,8 +1,6 @@
 package admin
 
 import (
-	"fmt"
-
 	"github.com/vilmis04/eurovision-game-service/internal/storage"
 )
 
@@ -26,17 +24,13 @@ func (r *Repo) GetConfig() (*Admin, error) {
 	var config Admin
 	var id uint16
 
-	row := db.QueryRow(fmt.Sprintf("SELECT * FROM %v WHERE id=1", r.storage.Table))
+	row := db.QueryRow(`SELECT * FROM admin_config WHERE id=1`)
 	err = row.Scan(&id, &config.Year, &config.GameType, &config.IsVotingAcitve, &config.VotingEnd)
 	if err != nil {
 		return nil, err
 	}
 
 	return &config, nil
-}
-
-func (r *Repo) formatConfigUpdateQuery(property string) string {
-	return fmt.Sprintf("UPDATE %v SET %v=$1 WHERE id=1", r.storage.Table, property)
 }
 
 func (r *Repo) UpdateConfig(body *adminConfigRequestBody) error {
@@ -47,19 +41,19 @@ func (r *Repo) UpdateConfig(body *adminConfigRequestBody) error {
 	defer db.Close()
 
 	if body.GameType != nil {
-		_, err = db.Exec(r.formatConfigUpdateQuery("gameType"), *body.GameType)
+		_, err = db.Exec(`UPDATE admin_config SET gameType=$1 WHERE id=1`, *body.GameType)
 		if err != nil {
 			return err
 		}
 	}
 	if body.Year != nil {
-		_, err = db.Exec(r.formatConfigUpdateQuery("year"), *body.Year)
+		_, err = db.Exec(`UPDATE admin_config SET year=$1 WHERE id=1`, *body.Year)
 		if err != nil {
 			return err
 		}
 	}
 	if body.IsVotingAcitve != nil {
-		_, err = db.Exec(r.formatConfigUpdateQuery("isVotingActive"), *body.IsVotingAcitve)
+		_, err = db.Exec(`UPDATE admin_config SET isVotingActive=$1 WHERE id=1`, *body.IsVotingAcitve)
 		if err != nil {
 			return err
 		}

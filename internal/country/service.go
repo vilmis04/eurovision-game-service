@@ -25,6 +25,9 @@ func (s *Service) CreateCountry(request *http.Request) (*[]byte, error) {
 	var requestBody CreateCountryRequest
 	err := utils.DecodeRequestJson(request, &requestBody)
 	if err != nil {
+		return nil, utils.BadRequest("invalid request body")
+	}
+	if err := requestBody.validate(); err != nil {
 		return nil, err
 	}
 
@@ -66,6 +69,10 @@ func (s *Service) CreateCountry(request *http.Request) (*[]byte, error) {
 }
 
 func (s *Service) GetCountrySummary(year string, gameType string, name string) (*[]byte, error) {
+	if _, err := parseYear(year); err != nil {
+		return nil, err
+	}
+
 	countries, err := s.storage.GetCountrySummary(year, gameType, name)
 	if err != nil {
 		return nil, err
@@ -92,28 +99,57 @@ func (s *Service) GetCountryList(year string, gameType string, name string) (*[]
 }
 
 func (s *Service) UpdateCountry(params map[string]string, request *http.Request) error {
+	year, err := parseYear(params["year"])
+	if err != nil {
+		return err
+	}
+	name, err := parseName(params["name"])
+	if err != nil {
+		return err
+	}
+
 	var requestBody UpdateCountryRequest
-	err := utils.DecodeRequestJson(request, requestBody)
+	err = utils.DecodeRequestJson(request, &requestBody)
+	if err != nil {
+		return utils.BadRequest("invalid request body")
+	}
+	if requestBody.Score == nil && requestBody.IsInFinal == nil && requestBody.OrderSemi == nil && requestBody.OrderFinal == nil {
+		return utils.BadRequest("nothing to update")
+	}
+
+	updated, err := s.storage.UpdateCountry(&requestBody, year, name)
 	if err != nil {
 		return err
 	}
-
-	countryList, err := s.storage.GetCountryList(params["year"], "", params["name"])
-	if err != nil {
-		return err
-	}
-	if len(*countryList) > 1 {
-		return fmt.Errorf("query returned multiple countries: %v", http.StatusBadRequest)
-	}
-	if len(*countryList) == 0 {
-		return fmt.Errorf("country not found: %v", http.StatusNotFound)
+	if updated == 0 {
+		return utils.NotFound("country not found")
 	}
 
-	return s.storage.UpdateCountry(&requestBody, &params)
+	return nil
 }
 
 func (s *Service) DeleteCountry(params *map[string]string) error {
-	return s.storage.DeleteCountry((*params)["year"], (*params)["name"])
+	year, err := parseYear((*params)["year"])
+	if err != nil {
+		return err
+	}
+	name, err := parseName((*params)["name"])
+	if err != nil {
+		return err
+	}
+
+	deleted, err := s.storage.DeleteCountry(year, name)
+	if err != nil {
+		return err
+	}
+	if deleted == 0 {
+		return utils.NotFound("country not found")
+	}
+	if deleted > 1 {
+		return fmt.Errorf("delete country %v %v matched %v rows, nothing deleted", year, name, deleted)
+	}
+
+	return nil
 }
 
 func (s *Service) GetFinalists(year uint16) ([]Country, error) {
