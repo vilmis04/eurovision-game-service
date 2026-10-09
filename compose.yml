@@ -1,29 +1,45 @@
+# LOCAL DEVELOPMENT ONLY. Production runs the image built by CI (see README).
+#
+#   cp .env.example .env
+#   docker compose up -d db          # just the database, then `make run`
+#   docker compose up -d             # database + the service in a golang container
+#   docker compose --profile proxy up -d   # also build and start the auth proxy
+#
+# Everything is published on 127.0.0.1 only.
 services:
   go-service:
     container_name: go-service
-    # build: .
+    # build: .   # to run the production image instead of mounting the source
     image: golang:1.24-alpine
     tty: true
     working_dir: /code
     restart: always
     ports:
-      - "4200:4200"
+      - "127.0.0.1:4200:4200"
     env_file:
       - .env
+    environment:
+      # inside the compose network the database is reached by its service name
+      DATABASE_URL: postgres://${POSTGRES_USER:-evgame}:${POSTGRES_PASSWORD:-evgame}@db:5432/${POSTGRES_DB:-evgame}
     volumes:
       - .:/code
+    depends_on:
+      - db
 
+  # Optional: the auth proxy from https://github.com/vilmis04/auth-proxy.
+  # By default it is built straight from GitHub. To use a local checkout instead set
+  # AUTH_PROXY_CONTEXT=/path/to/auth-proxy in .env. Configure it in .env.auth
+  # (see .env.auth.example); it must send the same INTERNAL_TOKEN as .env.
   auth-proxy:
+    profiles: ["proxy"]
     container_name: auth-proxy
-    # image: auth-proxy-img
-    build: ../../auth-proxy/feat-auth-proxy
+    build: ${AUTH_PROXY_CONTEXT:-https://github.com/vilmis04/auth-proxy.git#master}
     tty: true
     restart: always
     ports:
-      - "4300:4300"
+      - "127.0.0.1:4300:4300"
     env_file:
       - .env.auth
-
 
   # client:
   #   container_name: client
@@ -42,14 +58,14 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
 
   admin:
     container_name: admin
     image: adminer
     restart: always
     ports:
-      - 5555:8080
+      - "127.0.0.1:5555:8080"
 
 volumes:
   pgdata:
