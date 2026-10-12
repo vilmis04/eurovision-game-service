@@ -1,3 +1,5 @@
+.PHONY: start stop restart attach remove build vet test docker-build run migrate-status migrate-up migrate-down migrate-new test-integration check
+
 start:
 		docker compose up -d --build && docker exec -it go-service sh
 
@@ -14,7 +16,17 @@ remove:
 		docker compose down
 
 build:
-		go build ./cmd/app -o /bin
+		go build -trimpath -o bin/app ./cmd/app
+
+vet:
+		go vet ./...
+
+test:
+		go test ./...
+
+# Builds the production image the same way CI does.
+docker-build:
+		docker build -t eurovision-game-service:local .
 
 # Loads .env into the environment (the service itself no longer reads .env files).
 run:
@@ -44,7 +56,5 @@ test-integration:
 		@test -n "$$TEST_DATABASE_URL" || (echo "set TEST_DATABASE_URL" && exit 1)
 		go test ./...
 
-check:
-		go vet ./...
-		go test ./...
+check: vet test
 		@! grep -rn --include=*.go --exclude=*_test.go -E 'Sprintf\(.*(SELECT|INSERT|UPDATE|DELETE)' internal cmd || (echo "SQL built with Sprintf" && exit 1)

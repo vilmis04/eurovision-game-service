@@ -125,9 +125,44 @@ progress) and adds the keys, and the seeds skip rows that exist. The `group` tab
 - [x] env var to define admin list
 - [x] score calculation
 
-## Deployment
+## Docker image
 
-- run command to deploy to image to dockerhub (replace x.x.x with version): `docker build -t vsud/ev-game:service-x.x.x . && docker push vsud/ev-game:service-x.x.x`
-- ssh into the server, update docker compose with the new image version tag: `vi ~/PROJECTS/docker-compose.yaml`
-- run `docker compose up -d` to start the service with the changes
-- set `DATABASE_URL`, `DB_SSLMODE` and `PORT` for the application before deploying a version with migrations
+`Dockerfile` is a multi-stage build: dependencies are downloaded in their own cached layer (rebuilds after a
+code-only change do not download anything again), the binary is built with `CGO_ENABLED=0 -trimpath -ldflags="-s -w"`,
+and the final image is `gcr.io/distroless/static` running as a non-root user with only the binary in it (about 12 MB).
+`GO_VERSION` in the Dockerfile must match the `go` line in `go.mod`; CI checks it.
+
+- Build locally: `make docker-build`.
+- The image has no shell and no curl. Its `HEALTHCHECK` runs `/app healthcheck`, which requests
+  `http://127.0.0.1:$PORT/api/health` and exits 0 on HTTP 200. `/api/health` pings the database, so a database
+  outage also makes the container unhealthy.
+- `PORT` defaults to `8080` inside the image. The port exposed in Coolify must equal `PORT`.
+- Build without make: `go build -trimpath -o bin/app ./cmd/app`; run without building: `go run ./cmd/app`.
+
+## CI and deployment
+
+- **Pull requests** run `.github/workflows/ci.yml`: `gofmt`, `go vet`, `go test ./...` (with a Postgres service, so the
+  integration tests run), the Dockerfile/`go.mod` Go version check, and a Docker build. The built image must run as
+  non-root, stay under the size limit, migrate an empty database and report healthy. Nothing is pushed.
+- **Merging to `main`** runs `.github/workflows/publish.yml`: the same checks, then the image is pushed to
+  `ghcr.io/vilmis04/eurovision-game-service` tagged `sha-<commit>` and `latest` (version tags `v*` are also tagged),
+  then the Coolify deploy webhook is called.
+- **One-time setup**
+  - Coolify: create the application from the Docker image `ghcr.io/vilmis04/eurovision-game-service:latest`
+    (add registry credentials with `read:packages` if the package is private), set its exposed port to `PORT`, set the
+    environment variables from the table above, and leave the UI health check off (the image has no curl; the
+    Dockerfile `HEALTHCHECK` is used). Run it next to the old deployment, verify, then move the domain over.
+    Do not assign a public domain or published port to the service itself; it is reached through the auth proxy.
+  - GitHub: add the repository secrets `COOLIFY_DEPLOY_URL` (the application's deploy webhook URL) and `COOLIFY_TOKEN`
+    (a Coolify API token that may deploy it). Without them the deploy step is skipped. Require the `CI` checks
+    before merging in the branch protection settings.
+  - After the first publish, link the package to this repository in its GitHub package settings.
+- **Rollback**: redeploy an older `sha-<commit>` tag.
+
+### Auth proxy
+
+[`vilmis04/auth-proxy`](https://github.com/vilmis04/auth-proxy) must send `X-Internal-Token` with the value of this
+service's `INTERNAL_TOKEN` on every request it forwards (for example by setting it on the request in
+`ProxyMiddleware` before `proxy.ServeHTTP`). Until it does, every request gets 401.
+For local development `docker compose --profile proxy up -d` builds the proxy from GitHub (see `compose.yml` and
+`.env.auth.example`).
