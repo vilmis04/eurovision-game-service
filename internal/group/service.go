@@ -2,32 +2,73 @@ package group
 
 import (
 	"cmp"
-	"encoding/base64"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"net/http"
+	"os"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/vilmis04/eurovision-game-service/internal/score"
+	"github.com/vilmis04/eurovision-game-service/internal/utils"
+)
+
+// store is the persistence the service needs, implemented by Repo.
+type store interface {
+	GetGroupList(user string, groupId string) (*[]Group, error)
+	GetGroupById(id int64) (*Group, error)
+	GetGroupNames(owner string) (*[]string, error)
+	CreateGroup(group *Group) (*int64, error)
+	UpdateMembers(id int64, members []string) error
+	DeleteGroup(owner string, id int64) error
+}
+
+const (
+	maxGroupNameLength  = 20  // "group"."name" is VARCHAR(20)
+	maxMemberLength     = 255 // matches "score"."user"
+	maxMembersPerUpdate = 100
 )
 
 type Service struct {
-	Repo
+	store        store
 	scoreService score.Service
+	inviteSecret []byte
+	now          func() time.Time
 }
 
 func NewService() *Service {
 	return &Service{
-		Repo:         *NewRepo(),
+		store:        NewRepo(),
 		scoreService: *score.NewService(),
+		inviteSecret: []byte(os.Getenv("INVITE_SECRET")),
+		now:          time.Now,
 	}
+}
+
+// parseGroupId validates a user supplied group id. An empty id is allowed
+// only when allowEmpty is set and yields 0.
+func parseGroupId(id string, allowEmpty bool) (int64, error) {
+	if id == "" && allowEmpty {
+		return 0, nil
+	}
+	parsed, err := strconv.ParseInt(id, 10, 64)
+	if err != nil || parsed <= 0 {
+		return 0, utils.BadRequest("invalid group id")
+	}
+
+	return parsed, nil
 }
 
 func (s *Service) GetGroups(user string, request *http.Request) (*[]byte, error) {
 	groupId := request.URL.Query().Get("id")
-	groups, err := s.Repo.GetGroupList(user, groupId)
+	if _, err := parseGroupId(groupId, true); err != nil {
+		return nil, err
+	}
+
+	groups, err := s.store.GetGroupList(user, groupId)
 	if err != nil {
 		return nil, err
 	}
@@ -44,27 +85,31 @@ func (s *Service) CreateGroup(owner string, request *http.Request) (*[]byte, err
 	var requestBody CreateGroupRequestBody
 	err := json.NewDecoder(request.Body).Decode(&requestBody)
 	if err != nil {
-		return nil, fmt.Errorf("service: %v", err)
+		return nil, utils.BadRequest("invalid request body")
 	}
 
-	name := requestBody.Name
-	usedNames, err := s.Repo.GetGroupNames(owner)
+	name := strings.TrimSpace(requestBody.Name)
+	if name == "" || utf8.RuneCountInString(name) > maxGroupNameLength {
+		return nil, utils.BadRequest("invalid group name")
+	}
+
+	usedNames, err := s.store.GetGroupNames(owner)
 	if err != nil {
 		return nil, err
 	}
 
 	if slices.Contains(*usedNames, name) {
-		return nil, fmt.Errorf("group %v already exists", name)
+		return nil, utils.Conflict("group already exists")
 	}
 
 	group := Group{
 		Name:        name,
 		Owner:       owner,
-		DateCreated: time.Now(),
+		DateCreated: s.now(),
 		Members:     []string{owner},
 	}
 
-	id, err := s.Repo.CreateGroup(&group)
+	id, err := s.store.CreateGroup(&group)
 	if err != nil {
 		return nil, err
 	}
@@ -77,97 +122,110 @@ func (s *Service) CreateGroup(owner string, request *http.Request) (*[]byte, err
 	return &encodedId, nil
 }
 
-func (s *Service) UpdateMembers(owner string, name string, request *http.Request) error {
-	if owner == "" || name == "" {
-		return fmt.Errorf("%v", http.StatusBadRequest)
+// ownedGroup loads the group and verifies that the user is its owner.
+func (s *Service) ownedGroup(user string, rawGroupId string) (*Group, error) {
+	groupId, err := parseGroupId(rawGroupId, false)
+	if err != nil {
+		return nil, err
 	}
+
+	group, err := s.store.GetGroupById(groupId)
+	if err != nil {
+		return nil, err
+	}
+	if group == nil {
+		return nil, utils.NotFound("group not found")
+	}
+	if group.Owner != user {
+		return nil, utils.Forbidden("only the group owner can do this")
+	}
+
+	return group, nil
+}
+
+func (s *Service) UpdateMembers(user string, rawGroupId string, request *http.Request) error {
+	group, err := s.ownedGroup(user, rawGroupId)
+	if err != nil {
+		return err
+	}
+
 	var requestBody UpdateGroupRequestBody
-	err := json.NewDecoder(request.Body).Decode(&requestBody)
+	err = json.NewDecoder(request.Body).Decode(&requestBody)
 	if err != nil {
-		return err
+		return utils.BadRequest("invalid request body")
+	}
+	if len(requestBody.Members) > maxMembersPerUpdate {
+		return utils.BadRequest("too many members")
 	}
 
-	groupList, err := s.Repo.GetGroupList(owner, name)
-	if err != nil {
-		return err
+	updatedMemberList := slices.Clone(group.Members)
+	for _, member := range requestBody.Members {
+		member = strings.TrimSpace(member)
+		if member == "" || utf8.RuneCountInString(member) > maxMemberLength {
+			return utils.BadRequest("invalid member")
+		}
+		if !slices.Contains(updatedMemberList, member) {
+			updatedMemberList = append(updatedMemberList, member)
+		}
 	}
 
-	numberOfGroups := len(*groupList)
-	if numberOfGroups == 0 {
-		return fmt.Errorf("no group named %v found", name)
-	}
-	if numberOfGroups > 1 {
-		return fmt.Errorf("multiple groups named %v found", name)
-	}
-	group := (*groupList)[0]
-
-	updatedMemberList := append(group.Members, requestBody.Members...)
-
-	return s.Repo.UpdateMembers(owner, name, updatedMemberList)
+	return s.store.UpdateMembers(group.Id, updatedMemberList)
 }
 
-func (s *Service) DeleteGroup(owner string, id string) error {
-	err := s.Repo.DeleteGroup(owner, id)
+func (s *Service) DeleteGroup(owner string, rawGroupId string) error {
+	groupId, err := parseGroupId(rawGroupId, false)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return s.store.DeleteGroup(owner, groupId)
 }
 
-func (s *Service) GenerateInvite(id string, user string) (string, error) {
-	groupList, err := s.GetGroupList(user, id)
+func (s *Service) GenerateInvite(rawGroupId string, user string) (string, error) {
+	group, err := s.ownedGroup(user, rawGroupId)
 	if err != nil {
 		return "", err
 	}
-	name := (*groupList)[0].Name
 
-	date := time.Now().Format("2006-01-02") // 2006-01-02 directs the format in Go for YYYY-DD-MM
-	message := fmt.Sprintf("%v:%v:%v:%v", name, user, id, date)
-	link := base64.RawStdEncoding.EncodeToString([]byte(message))
-
-	return link, nil
+	return createInvite(s.inviteSecret, group.Id, s.now().Add(InviteTTL))
 }
 
 func (s *Service) JoinGroup(user string, request *http.Request) error {
 	var requestBody JoinGroupRequestBody
 	err := json.NewDecoder(request.Body).Decode(&requestBody)
 	if err != nil {
-		return fmt.Errorf("service: %v", err)
+		return utils.BadRequest("invalid request body")
 	}
 
-	link, err := base64.RawStdEncoding.DecodeString(requestBody.InviteCode)
+	groupId, err := parseInvite(s.inviteSecret, requestBody.InviteCode, s.now())
+	if errors.Is(err, errInviteNoSecret) {
+		return err
+	}
 	if err != nil {
-		return fmt.Errorf("service: %v", err)
+		return utils.BadRequest("invalid or expired invite")
 	}
 
-	inviteInfo := strings.Split(string(link), ":")
-	groupName := inviteInfo[0]
-	groupOwner := inviteInfo[1]
-	groupId := inviteInfo[2]
-
-	groupList, err := s.Repo.GetGroupList(groupOwner, groupId)
+	group, err := s.store.GetGroupById(groupId)
 	if err != nil {
 		return err
 	}
-	group := (*groupList)[0]
-	updatedMemberList := group.Members
-	if !slices.Contains(updatedMemberList, user) {
-		updatedMemberList = append(group.Members, user)
+	if group == nil {
+		return utils.NotFound("group not found")
+	}
+	if slices.Contains(group.Members, user) {
+		return nil
 	}
 
-	err = s.Repo.UpdateMembers(groupOwner, groupName, updatedMemberList)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return s.store.UpdateMembers(group.Id, append(slices.Clone(group.Members), user))
 }
 
 func (s *Service) getGroupList(user string, groupId string) (map[int64]string, *[]Group, error) {
+	if _, err := parseGroupId(groupId, true); err != nil {
+		return nil, nil, err
+	}
 
 	allGroupMap := make(map[int64]string)
-	allGroups, err := s.GetGroupList(user, "")
+	allGroups, err := s.store.GetGroupList(user, "")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -175,7 +233,7 @@ func (s *Service) getGroupList(user string, groupId string) (map[int64]string, *
 		allGroupMap[group.Id] = group.Name
 	}
 
-	groupList, err := s.GetGroupList(user, groupId)
+	groupList, err := s.store.GetGroupList(user, groupId)
 	if err != nil {
 		return nil, nil, err
 	}

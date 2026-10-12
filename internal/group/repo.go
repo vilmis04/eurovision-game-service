@@ -2,9 +2,10 @@ package group
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
-	"strings"
 
+	"github.com/lib/pq"
 	"github.com/vilmis04/eurovision-game-service/internal/storage"
 )
 
@@ -18,7 +19,20 @@ func NewRepo() *Repo {
 	}
 }
 
-// To get all groups of the user, provide "" (empty string) as groupName
+const groupColumns = `id, name, owner, members, datecreated`
+
+func scanGroup(row interface{ Scan(dest ...any) error }) (*Group, error) {
+	group := Group{}
+	err := row.Scan(&group.Id, &group.Name, &group.Owner, pq.Array(&group.Members), &group.DateCreated)
+	if err != nil {
+		return nil, err
+	}
+
+	return &group, nil
+}
+
+// To get all groups of the user, provide "" (empty string) as groupId.
+// groupId must be a validated numeric id.
 func (r *Repo) GetGroupList(user string, groupId string) (*[]Group, error) {
 	db, err := r.ConnectToDB()
 	if err != nil {
@@ -27,14 +41,10 @@ func (r *Repo) GetGroupList(user string, groupId string) (*[]Group, error) {
 	defer db.Close()
 
 	var rows *sql.Rows
-	query := fmt.Sprintf(`
-		SELECT * FROM "%v" 
-		WHERE $1 = ANY(members)`, r.Table)
 	if groupId != "" {
-		query = fmt.Sprintf("%v AND id=$2", query)
-		rows, err = db.Query(query, user, groupId)
+		rows, err = db.Query(`SELECT `+groupColumns+` FROM "group" WHERE $1 = ANY(members) AND id=$2`, user, groupId)
 	} else {
-		rows, err = db.Query(query, user)
+		rows, err = db.Query(`SELECT `+groupColumns+` FROM "group" WHERE $1 = ANY(members)`, user)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("group query error for %s: %v", user, err)
@@ -43,27 +53,37 @@ func (r *Repo) GetGroupList(user string, groupId string) (*[]Group, error) {
 
 	var groups []Group
 	for rows.Next() {
-		group := Group{}
-		var membersResponse string
-
-		err := rows.Scan(&group.Id, &group.Name, &group.Owner, &membersResponse, &group.DateCreated)
+		group, err := scanGroup(rows)
 		if err != nil {
 			return nil, fmt.Errorf("group row scan err: %v", err)
 		}
 
-		// TODO: refactor to untextifyMembers function
-		membersResponse, _ = strings.CutPrefix(membersResponse, "{")
-		membersResponse, _ = strings.CutSuffix(membersResponse, "}")
-		groupMembersList := strings.ReplaceAll(membersResponse, `"`, "")
-		group.Members = strings.Split(groupMembersList, ",")
-
-		groups = append(groups, group)
+		groups = append(groups, *group)
 	}
-	if rows.Err() != nil {
+	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("group row err: %v", err)
 	}
 
 	return &groups, nil
+}
+
+// GetGroupById returns nil, nil when no such group exists.
+func (r *Repo) GetGroupById(id int64) (*Group, error) {
+	db, err := r.ConnectToDB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	group, err := scanGroup(db.QueryRow(`SELECT `+groupColumns+` FROM "group" WHERE id=$1`, id))
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("group by id query error: %v", err)
+	}
+
+	return group, nil
 }
 
 func (r *Repo) CreateGroup(group *Group) (*int64, error) {
@@ -73,14 +93,11 @@ func (r *Repo) CreateGroup(group *Group) (*int64, error) {
 	}
 	defer db.Close()
 
-	query := fmt.Sprintf(`
-	INSERT INTO "%v" (name, owner, members, dateCreated)
-	VALUES ($1, $2, $3, $4)
-	RETURNING id
-	`, r.Table)
-
 	var id int64
-	err = db.QueryRow(query, group.Name, group.Owner, r.textifyMembers(group.Members), group.DateCreated).Scan(&id)
+	err = db.QueryRow(
+		`INSERT INTO "group" (name, owner, members, dateCreated) VALUES ($1, $2, $3, $4) RETURNING id`,
+		group.Name, group.Owner, pq.Array(group.Members), group.DateCreated,
+	).Scan(&id)
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +113,7 @@ func (r *Repo) GetGroupNames(owner string) (*([]string), error) {
 	defer db.Close()
 
 	names := []string{}
-	query := fmt.Sprintf(`SELECT name FROM "%v" WHERE owner=$1`, r.Table)
-	rows, err := db.Query(query, owner)
+	rows, err := db.Query(`SELECT name FROM "group" WHERE owner=$1`, owner)
 	if err != nil {
 		return nil, err
 	}
@@ -105,52 +121,27 @@ func (r *Repo) GetGroupNames(owner string) (*([]string), error) {
 
 	for rows.Next() {
 		var name string
-		err := rows.Scan(&name)
-		if err != nil {
+		if err := rows.Scan(&name); err != nil {
 			return nil, err
 		}
 
 		names = append(names, name)
 	}
-	err = rows.Err()
-	if err != nil {
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
 	return &names, nil
 }
 
-func (r *Repo) textifyMembers(members []string) string {
-	numberOfMembers := len(members)
-
-	var builder strings.Builder
-	builder.WriteString("{")
-
-	for i, member := range members {
-		builder.WriteString(member)
-		if i != numberOfMembers-1 {
-			builder.WriteString(",")
-		}
-	}
-	builder.WriteString("}")
-
-	return builder.String()
-}
-
-func (r *Repo) UpdateMembers(owner string, name string, groupMembers []string) error {
+func (r *Repo) UpdateMembers(id int64, groupMembers []string) error {
 	db, err := r.ConnectToDB()
 	if err != nil {
 		return fmt.Errorf("conn error: %v", err)
 	}
 	defer db.Close()
 
-	query := fmt.Sprintf(`
-		UPDATE "%v" 
-		SET members=$1 
-		WHERE owner='%v' AND name='%v'
-	`, r.Table, owner, name)
-
-	_, err = db.Exec(query, r.textifyMembers(groupMembers))
+	_, err = db.Exec(`UPDATE "group" SET members=$1 WHERE id=$2`, pq.Array(groupMembers), id)
 	if err != nil {
 		return fmt.Errorf("query err: %v", err)
 	}
@@ -158,15 +149,14 @@ func (r *Repo) UpdateMembers(owner string, name string, groupMembers []string) e
 	return nil
 }
 
-func (r *Repo) DeleteGroup(owner string, id string) error {
+func (r *Repo) DeleteGroup(owner string, id int64) error {
 	db, err := r.ConnectToDB()
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 
-	query := fmt.Sprintf(`DELETE FROM "%v" WHERE owner=$1 AND id=$2`, r.Table)
-	_, err = db.Exec(query, owner, id)
+	_, err = db.Exec(`DELETE FROM "group" WHERE owner=$1 AND id=$2`, owner, id)
 	if err != nil {
 		return err
 	}
