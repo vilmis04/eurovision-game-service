@@ -1,6 +1,7 @@
 package country
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -14,10 +15,10 @@ type Service struct {
 	adminService *admin.Service
 }
 
-func NewService() *Service {
+func NewService(db *sql.DB, adminService *admin.Service) *Service {
 	return &Service{
-		storage:      NewRepo(),
-		adminService: admin.NewService(),
+		storage:      NewRepo(db),
+		adminService: adminService,
 	}
 }
 

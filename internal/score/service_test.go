@@ -212,7 +212,7 @@ var scores = []Score{
 	},
 }
 
-var service = NewService()
+var service = NewService(nil, nil, nil)
 
 func TestSortCountryList(t *testing.T) {
 	finalCountryList := service.sortCountryList(countries)

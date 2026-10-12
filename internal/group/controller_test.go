@@ -10,14 +10,16 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 	"github.com/vilmis04/eurovision-game-service/internal/auth"
 )
 
 type fakeStore struct {
-	groups  map[int64]*Group
-	err     error
-	updates map[int64][]string
-	deleted []int64
+	groups    map[int64]*Group
+	err       error
+	createErr error
+	updates   map[int64][]string
+	deleted   []int64
 }
 
 func newFakeStore() *fakeStore {
@@ -48,6 +50,9 @@ func (f *fakeStore) GetGroupNames(owner string) (*[]string, error) {
 }
 
 func (f *fakeStore) CreateGroup(group *Group) (*int64, error) {
+	if f.createErr != nil {
+		return nil, f.createErr
+	}
 	id := int64(2)
 	return &id, nil
 }
@@ -270,5 +275,19 @@ func TestGroupEndpointsRejectSpoofedUser(t *testing.T) {
 
 	if rec.Code != http.StatusUnauthorized {
 		t.Fatalf("status = %d, want 401", rec.Code)
+	}
+}
+
+func TestCreateGroupMapsUniqueViolationToConflict(t *testing.T) {
+	store := newFakeStore()
+	store.createErr = &pq.Error{Code: "23505", Message: "duplicate key value violates unique constraint group_owner_name_key"}
+	app := newTestApp(store)
+
+	rec := call(app, http.MethodPost, "/api/group/", "alice", `{"name":"Fresh"}`)
+	if rec.Code != http.StatusConflict {
+		t.Fatalf("status = %d, want 409", rec.Code)
+	}
+	if strings.Contains(rec.Body.String(), "group_owner_name_key") {
+		t.Fatalf("constraint name leaked: %q", rec.Body.String())
 	}
 }
